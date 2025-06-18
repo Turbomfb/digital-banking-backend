@@ -1,0 +1,33 @@
+name: Build and deploy
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ vars.AWS_DEPLOYMENT_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEPLOYMENT_SECRET_KEY }}
+  AWS_REGION: us-east-2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform Apply
+        id: tf-apply
+        working-directory: terraform/prod
+        run: |
+          terraform init
+          terraform apply -no-color -auto-approve -var service_version=${{ github.sha }}
