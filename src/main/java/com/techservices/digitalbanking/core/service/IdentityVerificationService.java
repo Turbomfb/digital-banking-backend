@@ -67,10 +67,10 @@ public class IdentityVerificationService {
 
     private List<String> findMismatchedFields(IdentityVerificationRequest customerData, IdentityVerificationResponse.IdentityVerificationResponseData responseData) {
         List<String> mismatchedFields = new ArrayList<>();
-        if (StringUtils.getLevenshteinDistance(customerData.getFirstName(), responseData.getFirstName()) > 2) {
+        if (StringUtils.getLevenshteinDistance(customerData.getFirstName(), responseData.getFirstName()) > systemProperty.getIdentityVerificationThreshold()) {
             mismatchedFields.add("First Name");
         }
-        if (StringUtils.getLevenshteinDistance(customerData.getLastName(), responseData.getLastName()) > 2) {
+        if (StringUtils.getLevenshteinDistance(customerData.getLastName(), responseData.getLastName()) > systemProperty.getIdentityVerificationThreshold()) {
             mismatchedFields.add("Last Name");
         }
         if (!StringUtils.equalsIgnoreCase(customerData.getPhoneNumber(), responseData.getMobile())) {

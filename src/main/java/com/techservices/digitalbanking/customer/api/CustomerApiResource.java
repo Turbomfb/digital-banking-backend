@@ -34,9 +34,11 @@ public class CustomerApiResource {
 
 	@Operation(summary = "Create a New Customer")
 	@PostMapping
-	public ResponseEntity<CustomerDtoResponse> createMerchantAccount(
-			@Validated @RequestBody CreateCustomerRequest createCustomerRequest) {
-		CustomerDtoResponse postClientsResponse = customerService.createCustomer(createCustomerRequest);
+	public ResponseEntity<Object> createMerchantAccount(
+			@Validated @RequestBody CreateCustomerRequest createCustomerRequest,
+			@RequestParam(name = "command", required = false, defaultValue = "create") String command
+	) {
+		Object postClientsResponse = customerService.createCustomer(createCustomerRequest, command);
 
 		return new ResponseEntity<>(postClientsResponse, HttpStatusCode.valueOf(201));
 	}

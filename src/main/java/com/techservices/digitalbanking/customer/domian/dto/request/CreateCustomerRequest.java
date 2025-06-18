@@ -18,6 +18,8 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateCustomerRequest {
+	private String uniqueId;
+	private String otp;
 	@Valid
 	private List<@Valid PostClientsAddressRequest> address = Collections.emptyList();
 
@@ -42,15 +44,10 @@ public class CreateCustomerRequest {
 
 	private Long savingsProductId;
 
-	@NotEmpty(message = "password cannot be empty")
 	private String password;
-	@NotEmpty(message = "phoneNumber cannot be empty")
 	private String phoneNumber;
-	@NotEmpty(message = "emailAddress cannot be empty")
 	private String emailAddress;
-	@NotEmpty(message = "firstname cannot be empty")
 	private String firstname;
-	@NotEmpty(message = "lastname cannot be empty")
 	private String lastname;
 	private String referralCode;
 }

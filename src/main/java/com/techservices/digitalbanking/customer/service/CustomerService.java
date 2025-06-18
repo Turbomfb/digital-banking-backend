@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface CustomerService {
 
-	CustomerDtoResponse createCustomer(CreateCustomerRequest createCustomerRequest);
+	Object createCustomer(CreateCustomerRequest createCustomerRequest, String command);
 
 	Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer existingCustomer);
 

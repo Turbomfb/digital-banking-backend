@@ -18,4 +18,7 @@ public class SystemProperty {
 
 	@Value("${payinvert.integration.url}")
 	private String payinvertIntegrationUrl;
+
+	@Value("${application.identity.verification.threshold}")
+	private Long identityVerificationThreshold;
 }

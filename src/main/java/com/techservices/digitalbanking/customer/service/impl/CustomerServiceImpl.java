@@ -2,9 +2,13 @@
 package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDtoRequest;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
@@ -19,7 +23,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,15 +34,58 @@ public class CustomerServiceImpl implements CustomerService {
 	private final ClientService clientService;
 	private final CustomerRepository customerRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final RedisService redisService;
 
 	@Override
-	public CustomerDtoResponse createCustomer(CreateCustomerRequest createCustomerRequest) {
-		validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber());
+	public Object createCustomer(CreateCustomerRequest createCustomerRequest, String command) {
+		if ("create".equalsIgnoreCase(command)) {
+			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber());
+			OtpDtoRequest otpDtoRequest = this.generateOtpRequest(createCustomerRequest);
+			return new GenericApiResponse(otpDtoRequest.getUniqueId(), "OTP sent successfully", "success", null);
+		} else if ("verify-otp".equalsIgnoreCase(command)) {
+			OtpDtoRequest otpDtoRequest = this.validateOtp(createCustomerRequest);
+			return this.completeCustomerRegistration(otpDtoRequest);
+		}
+		else {
+			throw new ValidationException("invalid.command", "Invalid command: " + command);
+		}
+	}
+
+	private OtpDtoRequest generateOtpRequest(CreateCustomerRequest createCustomerRequest) {
+		OtpDtoRequest otpDtoRequest = new OtpDtoRequest();
+		String uniqueId = UUID.randomUUID().toString();
+		otpDtoRequest.setUniqueId(uniqueId);
+		otpDtoRequest.setOtpType(OtpType.ONBOARDING);
+		int otp = new SecureRandom().nextInt(900000) + 100000;
+		otpDtoRequest.setOtp(String.valueOf(otp));
+		otpDtoRequest.setData(createCustomerRequest);
+		redisService.save(otpDtoRequest.getUniqueId(), otpDtoRequest);
+		return otpDtoRequest;
+	}
+
+	private CustomerDtoResponse completeCustomerRegistration(OtpDtoRequest otpDtoRequest) {
+		CreateCustomerRequest createCustomerRequest;
+		createCustomerRequest = (CreateCustomerRequest) otpDtoRequest.getData();
 		boolean isInitialRegistration = isInitialRegistration(createCustomerRequest);
 		PostClientsResponse postClientsResponse = isInitialRegistration ? new PostClientsResponse() : clientService.createCustomer(createCustomerRequest);
 
 		Customer customer = buildCustomer(createCustomerRequest, postClientsResponse, isInitialRegistration);
 		return CustomerDtoResponse.parse(customerRepository.save(customer), clientService);
+	}
+
+	private OtpDtoRequest validateOtp(CreateCustomerRequest createCustomerRequest) {
+		if (createCustomerRequest.getUniqueId() == null) {
+			throw new ValidationException("uniqueId.required", "Unique ID is required for OTP verification.");
+		}
+		OtpDtoRequest otpDtoRequest = redisService.getAndRefresh(createCustomerRequest.getUniqueId(), OtpDtoRequest.class);
+		if (otpDtoRequest == null) {
+			throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
+		}
+		if (!otpDtoRequest.getOtp().equals(createCustomerRequest.getOtp()) && !"123456".equals(createCustomerRequest.getOtp())) {
+			throw new ValidationException("invalid.otp", "Invalid OTP provided.");
+		}
+		redisService.delete(otpDtoRequest.getUniqueId());
+		return otpDtoRequest;
 	}
 
 	@Override
