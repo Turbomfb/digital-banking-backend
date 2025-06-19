@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.customer.api;
 
+import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostClientsClientIdResponse;
@@ -28,9 +29,12 @@ public class CustomerKycApiResource {
 
 	@Operation(summary = "Update Customer KYC Information", description = "This endpoint allows you to update the KYC (Know Your Customer) information for a specific customer.")
 	@PostMapping
-	public ResponseEntity<CustomerDtoResponse> updateCustomerKyc(
-			@Validated @RequestBody CustomerKycRequest customerKycRequest, @PathVariable Long customerId) {
-		CustomerDtoResponse postClientsResponse = customerKycService.updateCustomerKyc(customerKycRequest, customerId);
+	public ResponseEntity<BaseAppResponse> updateCustomerKyc(
+			@Validated @RequestBody CustomerKycRequest customerKycRequest,
+			@PathVariable Long customerId,
+			@RequestParam(name = "command", required = false, defaultValue = "generate-otp") String command
+	) {
+		BaseAppResponse postClientsResponse = customerKycService.updateCustomerKyc(customerKycRequest, customerId, command);
 
 		return new ResponseEntity<>(postClientsResponse, HttpStatus.OK);
 	}

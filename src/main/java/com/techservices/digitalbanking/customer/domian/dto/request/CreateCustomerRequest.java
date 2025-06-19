@@ -11,7 +11,6 @@ import com.techservices.digitalbanking.core.fineract.model.request.PostClientsAd
 import com.techservices.digitalbanking.core.fineract.model.request.PostClientsDatatable;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data

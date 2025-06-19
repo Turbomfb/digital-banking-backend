@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.customer.api;
 
+import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import org.springframework.data.domain.Pageable;
@@ -34,11 +35,11 @@ public class CustomerApiResource {
 
 	@Operation(summary = "Create a New Customer")
 	@PostMapping
-	public ResponseEntity<Object> createMerchantAccount(
+	public ResponseEntity<BaseAppResponse> createMerchantAccount(
 			@Validated @RequestBody CreateCustomerRequest createCustomerRequest,
-			@RequestParam(name = "command", required = false, defaultValue = "create") String command
+			@RequestParam(name = "command", required = false, defaultValue = "generate-otp") String command
 	) {
-		Object postClientsResponse = customerService.createCustomer(createCustomerRequest, command);
+		BaseAppResponse postClientsResponse = customerService.createCustomer(createCustomerRequest, command);
 
 		return new ResponseEntity<>(postClientsResponse, HttpStatusCode.valueOf(201));
 	}
@@ -75,18 +76,10 @@ public class CustomerApiResource {
 	@Operation(summary = "Retrieve All Customer's accounts by customer ID")
 	@GetMapping("{customerId}/accounts")
 	public ResponseEntity<GetClientsClientIdAccountsResponse> getCustomerAccountsByClientId(
-			@PathVariable Long customerId) {
-		GetClientsClientIdAccountsResponse getClientsResponse = customerService.getClientAccountsByClientId(customerId);
+			@PathVariable Long customerId, @RequestParam(name = "accountType", required = false) String accountType
+	) {
+		GetClientsClientIdAccountsResponse getClientsResponse = customerService.getClientAccountsByClientId(customerId, accountType);
 
 		return ResponseEntity.ok(getClientsResponse);
-	}
-
-	@Operation(summary = "Manages Customers")
-	@PostMapping("{customerId}")
-	public ResponseEntity<PostClientsClientIdResponse> manageCustomer(@RequestParam(value = "command") String command,
-			@PathVariable Long customerId) {
-		PostClientsClientIdResponse postClientsClientIdResponse = customerService.manageCustomer(command, customerId);
-
-		return ResponseEntity.ok(postClientsClientIdResponse);
 	}
 }

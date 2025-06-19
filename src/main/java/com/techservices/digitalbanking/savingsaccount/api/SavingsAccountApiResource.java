@@ -46,15 +46,15 @@ public class SavingsAccountApiResource {
 	@Operation(summary = "Retrieve All Savings Accounts")
 	@GetMapping
 	public ResponseEntity<GetSavingsAccountsResponse> retrieveAllSavingsAccount(
-			@RequestParam(name = "productId") Long productId, @RequestParam(name = "limit") Long limit,
-			@RequestParam(name = "offset") Long offset) {
+			@RequestParam(name = "productId", required = false) Long productId, @RequestParam(name = "limit", required = false) Long limit,
+			@RequestParam(name = "offset", required = false) Long offset) {
 		return ResponseEntity.ok(savingsAccountService.retrieveAllSavingsAccount(limit, offset, productId));
 	}
 
 	@Operation(summary = "Get a Savings Account by account number")
 	@GetMapping("/{savingsAccountId}")
 	public ResponseEntity<GetSavingsAccountsAccountIdResponse> retrieveSavingsAccountById(
-			@PathVariable String savingsAccountId, @RequestParam(name = "productId") Long productId) {
+			@PathVariable String savingsAccountId, @RequestParam(name = "productId", required = false) Long productId) {
 		return ResponseEntity.ok(savingsAccountService.retrieveSavingsAccountById(savingsAccountId, productId));
 	}
 }

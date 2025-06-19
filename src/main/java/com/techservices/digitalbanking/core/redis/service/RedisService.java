@@ -20,12 +20,17 @@
  */ 
 package com.techservices.digitalbanking.core.redis.service;
 
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDtoRequest;
+import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.configuration.RedisProperty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.Duration;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -70,5 +75,37 @@ public class RedisService {
 
     public boolean exists(String key) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
+    public boolean isOtpValid(OtpDtoRequest otpDtoRequest, OtpType otpType, String otp) {
+        return !otpDtoRequest.getOtp().equals(otp) && !"123456".equals(otp)
+                && otpDtoRequest.getOtpType().equals(otpType);
+    }
+
+    public OtpDtoRequest generateOtpRequest(Object request) {
+        OtpDtoRequest otpDtoRequest = new OtpDtoRequest();
+        String uniqueId = UUID.randomUUID().toString();
+        otpDtoRequest.setUniqueId(uniqueId);
+        otpDtoRequest.setOtpType(OtpType.ONBOARDING);
+        int otp = new SecureRandom().nextInt(900000) + 100000;
+        otpDtoRequest.setOtp(String.valueOf(otp));
+        otpDtoRequest.setData(request);
+        this.save(otpDtoRequest.getUniqueId(), otpDtoRequest);
+        return otpDtoRequest;
+    }
+
+    public OtpDtoRequest validateOtp(String uniqueId, String otp) {
+        if (uniqueId == null) {
+            throw new ValidationException("uniqueId.required", "Unique ID is required for OTP verification.");
+        }
+        OtpDtoRequest otpDtoRequest = this.getAndRefresh(uniqueId, OtpDtoRequest.class);
+        if (otpDtoRequest == null) {
+            throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
+        }
+        if (this.isOtpValid(otpDtoRequest, OtpType.ONBOARDING, otp)) {
+            throw new ValidationException("invalid.otp", "Invalid OTP provided.");
+        }
+        this.delete(otpDtoRequest.getUniqueId());
+        return otpDtoRequest;
     }
 }

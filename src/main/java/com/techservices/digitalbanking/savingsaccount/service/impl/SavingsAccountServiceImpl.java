@@ -41,7 +41,7 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 
 	@Override
 	public GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(String savingsAccountId, Long productId) {
-		return accountService.retrieveSavingsAccount(savingsAccountId, productId, false);
+		return accountService.retrieveSavingsAccount(Long.valueOf(savingsAccountId), true);
 	}
 
 	public GetSavingsAccountsAccountIdResponse retrieveSavingsAccount(String savingsAccountId, long productId) {

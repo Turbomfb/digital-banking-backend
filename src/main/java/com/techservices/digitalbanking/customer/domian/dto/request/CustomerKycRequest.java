@@ -23,4 +23,7 @@ public class CustomerKycRequest {
 
 	@JsonProperty("bvn")
 	private String bvn;
+
+	private String uniqueId;
+	private String otp;
 }

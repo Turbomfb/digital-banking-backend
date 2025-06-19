@@ -3,7 +3,6 @@ package com.techservices.digitalbanking.core.fineract.service;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -182,8 +181,8 @@ public class ClientService {
 		return clientApiClient.retrieveAll(offset, limit);
 	}
 
-	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId) {
-		return clientApiClient.retrieveAssociatedAccounts(customerId, null);
+	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountType) {
+			return clientApiClient.retrieveAssociatedAccounts(customerId, accountType);
 	}
 
 	public PostClientsClientIdResponse manageCustomer(String command, Long customerId) {

@@ -69,4 +69,15 @@ public class Customer extends BaseEntity {
     }
 
 
+    public void setExternalId(Long id) {
+        if (id == null) {
+            this.externalId = null;
+        } else {
+            this.externalId = String.valueOf(id);
+        }
+    }
+
+    public void setExternalId(String id) {
+        this.externalId = id;
+    }
 }

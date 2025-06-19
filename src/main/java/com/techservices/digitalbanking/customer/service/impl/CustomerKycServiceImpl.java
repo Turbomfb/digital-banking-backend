@@ -2,12 +2,17 @@
 package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.core.configuration.SystemProperty;
+import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDtoRequest;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
+import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostClientsResponse;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
+import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
@@ -16,7 +21,6 @@ import com.techservices.digitalbanking.customer.domian.dto.CustomerTierData;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
-import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerKycService;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -32,25 +36,37 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 	private final SystemProperty systemProperty;
 	private final CustomerRepository customerRepository;
 	private final IdentityVerificationService identityVerificationService;
+	private final RedisService redisService;
+	private static final String GENERATE_OTP_COMMAND = "generate-otp";
+	private static final String VERIFY_OTP_COMMAND = "verify-otp";
 
 	@Override
-	public CustomerDtoResponse updateCustomerKyc(CustomerKycRequest customerKycRequest, Long customerId) {
-		Customer foundCustomer = customerService.getCustomerById(customerId);
-		validateKycParameters(customerKycRequest, foundCustomer);
-
-		if (!foundCustomer.isActive()) {
-			activateCustomer(foundCustomer, customerKycRequest);
-		} else {
-			updateCustomerDetails(foundCustomer, customerKycRequest, customerId);
+	public BaseAppResponse updateCustomerKyc(CustomerKycRequest customerKycRequest, Long customerId, String command) {
+		Customer foundCustomer = this.customerService.getCustomerById(customerId);
+		if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
+			OtpDtoRequest otpDtoRequest = this.redisService.validateOtp(customerKycRequest.getUniqueId(), customerKycRequest.getOtp());
+			customerKycRequest = (CustomerKycRequest) otpDtoRequest.getData();
 		}
 
-		updateCustomerKycTier(foundCustomer, customerKycRequest);
-		foundCustomer = customerRepository.save(foundCustomer);
+		IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
+		boolean isIdentityDataRetrieved = verificationResponse != null && GENERATE_OTP_COMMAND.equalsIgnoreCase(command);
+		if (isIdentityDataRetrieved) {
+			OtpDtoRequest otpDtoRequest = this.redisService.generateOtpRequest(customerKycRequest);
+			return new GenericApiResponse(otpDtoRequest.getUniqueId(), "OTP sent successfully", "success", null);
+		}
+		if (!foundCustomer.isActive()) {
+			this.activateCustomer(foundCustomer, customerKycRequest);
+		} else {
+			this.updateCustomerDetails(foundCustomer, customerKycRequest, customerId);
+		}
 
-		return customerService.getCustomerDtoResponse(foundCustomer);
+		this.updateCustomerKycTier(foundCustomer, customerKycRequest);
+		foundCustomer = this.customerRepository.save(foundCustomer);
+
+		return this.customerService.getCustomerDtoResponse(foundCustomer);
 	}
 
-	private void validateKycParameters(CustomerKycRequest customerKycRequest, Customer foundCustomer) {
+	private IdentityVerificationResponse validateKycParameters(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
 		boolean includesNoKycParameter = StringUtils.isAllBlank(customerKycRequest.getBvn(), customerKycRequest.getNin());
 		if (!foundCustomer.isActive() && includesNoKycParameter) {
 			throw new ValidationException("no.kyc.parameter.provided", "At least one KYC parameter (BVN or NIN) must be provided.");
@@ -60,8 +76,13 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 			customerRepository.findByBvn(customerKycRequest.getBvn()).ifPresent(existedCustomer -> {
 				throw new ValidationException("bvn.already.exists", "A customer with this BVN already exists.");
 			});
+
+			if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+				return this.identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
+			}
+
 			IdentityVerificationRequest identityVerificationRequest = IdentityVerificationRequest.parse(foundCustomer);
-			CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyBvn(customerKycRequest.getBvn(), identityVerificationRequest);
+			CustomerIdentityVerificationResponse customerIdentityVerificationResponse = this.identityVerificationService.verifyBvn(customerKycRequest.getBvn(), identityVerificationRequest);
 			foundCustomer.setBvn(customerKycRequest.getBvn());
 			if (!customerIdentityVerificationResponse.isValid()) {
 				throw new ValidationException("bvn.verification.failed", "Verification failed for bvn.", customerIdentityVerificationResponse);
@@ -73,6 +94,11 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 					.ifPresent(existingCustomer -> {
 						throw new ValidationException("nin.already.exists", "A customer with this NIN already exists.");
 					});
+
+			if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+				return this.identityVerificationService.retrieveNinData(customerKycRequest.getNin());
+			}
+
 			IdentityVerificationRequest identityVerificationRequest = IdentityVerificationRequest.parse(foundCustomer);
 			CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyNin(customerKycRequest.getNin(), identityVerificationRequest);
 			foundCustomer.setNin(customerKycRequest.getNin());
@@ -80,6 +106,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 				throw new ValidationException("nin.verification.failed", "Verification failed for nin.", customerIdentityVerificationResponse);
 			}
 		}
+		return null;
 	}
 
 	private void activateCustomer(Customer foundCustomer, CustomerKycRequest customerKycRequest) {

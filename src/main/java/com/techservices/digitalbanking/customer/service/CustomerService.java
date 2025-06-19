@@ -1,9 +1,9 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.customer.service;
 
+import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientsClientIdResponse;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface CustomerService {
 
-	Object createCustomer(CreateCustomerRequest createCustomerRequest, String command);
+	BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command);
 
 	Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer existingCustomer);
 
@@ -24,9 +24,7 @@ public interface CustomerService {
 
 	BasePageResponse<CustomerDtoResponse> getAllCustomers(Pageable pageable);
 
-	GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId);
-
-	PostClientsClientIdResponse manageCustomer(String command, Long customerId);
+	GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountTypes);
 
 	CustomerDtoResponse getCustomerDtoResponse(Customer customerById);
 }

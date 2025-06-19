@@ -67,6 +67,12 @@ public class AccountService {
 		return savingsAccount;
 	}
 
+	public GetSavingsAccountsAccountIdResponse retrieveSavingsAccount(Long savingsAccountId, boolean includeTransactions) {
+		String associations = includeTransactions ? "all" : null;
+        return savingsAccountApiClient
+                .retrieveSavingsAccount(savingsAccountId, false, "all", null, null, associations);
+	}
+
 	public GetSearchResponse searchByAccountNumber(String savingsAccountNumber) {
 		List<GetSearchResponse> searchResponseList = searchApiClient.searchData(savingsAccountNumber, "savings", true);
 		if (searchResponseList.isEmpty()) {

@@ -23,16 +23,26 @@ public class IdentityVerificationService {
     private final ApiService apiService;
     private final SystemProperty systemProperty;
     private static final String IDENTITY_VERIFICATION_URL = "/api/YouVerify/";
+    private static final String NIN_DETAIL = "nin-detail";
+    private static final String BVN_DETAIL = "bvn-detail";
+
+    public IdentityVerificationResponse retrieveBvnData(String bvn) {
+        String url = buildUrl(BVN_DETAIL, bvn);
+        return fetchIdentityVerificationResponse(url, bvn);
+    }
 
     public CustomerIdentityVerificationResponse verifyBvn(String bvn, IdentityVerificationRequest customerData) {
-        String url = buildUrl("bvn-detail", bvn);
-        IdentityVerificationResponse identityVerificationResponse = fetchIdentityVerificationResponse(url, bvn);
+        IdentityVerificationResponse identityVerificationResponse = retrieveBvnData(bvn);
         return processVerificationResponse(identityVerificationResponse, customerData);
     }
 
+    public IdentityVerificationResponse retrieveNinData(String nin) {
+        String url = buildUrl(NIN_DETAIL, nin);
+        return fetchIdentityVerificationResponse(url, nin);
+    }
+
     public CustomerIdentityVerificationResponse verifyNin(String nin, IdentityVerificationRequest customerData) {
-        String url = buildUrl("nin-detail", nin);
-        IdentityVerificationResponse identityVerificationResponse = fetchIdentityVerificationResponse(url, nin);
+        IdentityVerificationResponse identityVerificationResponse = retrieveNinData(nin);
         return processVerificationResponse(identityVerificationResponse, customerData);
     }
 
@@ -45,7 +55,7 @@ public class IdentityVerificationService {
             return apiService.callExternalApi(url, IdentityVerificationResponse.class, HttpMethod.GET, null);
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new ValidationException("verification.failed", "Verification failed for identifier: " + identifier, e);
+            throw new ValidationException("verification.failed", "Verification failed for identifier: " + identifier);
         }
     }
 
