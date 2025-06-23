@@ -21,9 +21,12 @@
 package com.techservices.digitalbanking.authentication.service;
 
 import com.techservices.digitalbanking.authentication.domain.request.AuthenticationRequest;
+import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
 import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 
 public interface AuthenticationService {
     AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest);
 
+    GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest);
 }

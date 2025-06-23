@@ -18,9 +18,17 @@ public class Customer extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customer_seq_gen")
     @SequenceGenerator(name = "customer_seq_gen", sequenceName = "customer_seq", allocationSize = 1)
     private Long id;
+
+    @Column(name = "account_id")
     private String accountId;
+
+    @Column(name = "password")
     private String password;
+
+    @Column(name = "firstname")
     private String firstname;
+
+    @Column(name = "lastname")
     private String lastname;
 
     @Column(unique = true, name = "email_address", nullable = false)

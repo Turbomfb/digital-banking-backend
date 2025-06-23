@@ -31,7 +31,6 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private final ClientService clientService;
 	private final CustomerRepository customerRepository;
-	private final PasswordEncoder passwordEncoder;
 	private final RedisService redisService;
 
 	@Override
@@ -126,7 +125,6 @@ public class CustomerServiceImpl implements CustomerService {
 	private Customer buildCustomer(CreateCustomerRequest createCustomerRequest, PostClientsResponse postClientsResponse, boolean isInitialRegistration) {
 		Customer customer = new Customer();
 		customer.setAccountId(postClientsResponse.getSavingsAccountId());
-		customer.setPassword(passwordEncoder.encode(createCustomerRequest.getPassword()));
 		customer.setFirstname(createCustomerRequest.getFirstname());
 		customer.setLastname(createCustomerRequest.getLastname());
 		customer.setEmailAddress(createCustomerRequest.getEmailAddress());
@@ -139,10 +137,12 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	private void updateCustomerDetails(CustomerUpdateRequest customerUpdateRequest, Customer customer) {
-		if (customer.getExternalId() != null) {
-			clientService.updateCustomer(customerUpdateRequest, Long.valueOf(customer.getExternalId()));
+		if (customerUpdateRequest != null) {
+			if (customer.getExternalId() != null) {
+				clientService.updateCustomer(customerUpdateRequest, Long.valueOf(customer.getExternalId()));
+			}
+			updateCustomerFields(customerUpdateRequest, customer);
 		}
-		updateCustomerFields(customerUpdateRequest, customer);
 		customerRepository.save(customer);
 	}
 

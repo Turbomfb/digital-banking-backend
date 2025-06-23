@@ -21,12 +21,16 @@
 package com.techservices.digitalbanking.authentication.service.impl;
 
 import com.techservices.digitalbanking.authentication.domain.request.AuthenticationRequest;
+import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
 import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
 import com.techservices.digitalbanking.authentication.service.AuthenticationService;
 import com.techservices.digitalbanking.core.configuration.security.JwtUtil;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.model.AppUser;
 import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
+import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,6 +98,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(appUser);
 
         return authenticationResponse;
+    }
+
+    @Override
+    public GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest) {
+        Customer foundCustomer = customerService.getCustomerById(passwordMgtRequest.getCustomerId());
+        if (StringUtils.isBlank(foundCustomer.getPassword())){
+            if (StringUtils.isNotBlank(passwordMgtRequest.getPassword())){
+                foundCustomer.setPassword(passwordEncoder.encode(passwordMgtRequest.getPassword()));
+                customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer);
+                return new GenericApiResponse("Password created successfully", "success", CustomerDtoResponse.parse(foundCustomer));
+            } else {
+                throw new ValidationException("Invalid.credentials.provided", "password cannot be blank");
+            }
+        }
+        throw new ValidationException("password.already.exists", "Password has already been set for this customer. Please use the update password endpoint.");
     }
 
     private String generateToken(String username, Map<String, Object> claims) {

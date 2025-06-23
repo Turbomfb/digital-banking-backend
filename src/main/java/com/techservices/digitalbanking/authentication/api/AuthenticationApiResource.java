@@ -20,12 +20,17 @@
  */ 
 package com.techservices.digitalbanking.authentication.api;
 import com.techservices.digitalbanking.authentication.domain.request.AuthenticationRequest;
+import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
 import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
 import com.techservices.digitalbanking.authentication.service.AuthenticationService;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -39,6 +44,14 @@ public class AuthenticationApiResource {
             @RequestBody AuthenticationRequest postAuthenticationRequest
     ) {
         return ResponseEntity.ok(authenticationService.authenticate(postAuthenticationRequest));
+    }
+
+    @Operation(summary = "Create Password")
+    @PostMapping("/create-password")
+    public ResponseEntity<GenericApiResponse> createPassword(
+            @RequestBody PasswordMgtRequest passwordMgtRequest
+    ) {
+        return ResponseEntity.ok(authenticationService.createPassword(passwordMgtRequest));
     }
 
 }

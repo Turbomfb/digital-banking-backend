@@ -12,7 +12,8 @@ public class AppUtil {
 			"/swagger-ui.html",
 			"/actuator/health",
 			"/actuator/info",
-			"/api/v1/auth"
+			"/api/v1/auth",
+			"/api/v1/auth/create-password"
 	};
 
 	public static final String[] PUBLIC_POST_ENDPOINTS = {

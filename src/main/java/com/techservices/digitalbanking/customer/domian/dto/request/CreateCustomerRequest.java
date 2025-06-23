@@ -43,7 +43,6 @@ public class CreateCustomerRequest {
 
 	private Long savingsProductId;
 
-	private String password;
 	private String phoneNumber;
 	private String emailAddress;
 	private String firstname;
