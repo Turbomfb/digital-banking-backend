@@ -1,0 +1,40 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  develop:
+    if: github.ref == 'refs/heads/develop'
+    uses: ./.github/workflows/build-deploy.yaml
+    with:
+      environment: staging
+      image_tag: dev-latest
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      build_image_token: ${{ secrets.BUILD_IMAGE_TOKEN }}
+      ecs_cluster: ${{ secrets.STAGING_ECS_CLUSTER }}
+      ecs_service: ${{ secrets.STAGING_ECS_SERVICE }}
+      aws_region: ${{ secrets.STAGING_AWS_REGION }}
+
+  production:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/build-deploy.yaml
+    with:
+      environment: production
+      image_tag: latest
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      build_image_token: ${{ secrets.BUILD_IMAGE_TOKEN }}
+      ecs_cluster: ${{ secrets.ECS_CLUSTER }}
+      ecs_service: ${{ secrets.ECS_SERVICE }}
+      aws_region: ${{ secrets.AWS_REGION }}

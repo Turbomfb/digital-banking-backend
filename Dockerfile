@@ -17,8 +17,8 @@ COPY src ./src
 # Build the application
 RUN mvn clean package -DskipTests
 
-# Expose port 8080
-EXPOSE 8080
+# Expose port 8098
+EXPOSE 8098
 
 # Set environment variables with defaults
 ENV JAVA_OPTS="-Xmx512m -Xms256m"
