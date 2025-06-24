@@ -73,7 +73,7 @@ public class SecurityConfig {
     // Configure allowed origins
     configuration.setAllowedOriginPatterns(List.of(
             "http://localhost:*",
-            "https://*.cibuk-dev-rova.com"
+            "https://digital-banking.dev.turbomfb.com"
     ));
 
     // Configure allowed methods
