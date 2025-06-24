@@ -30,16 +30,6 @@ import lombok.RequiredArgsConstructor;
 public class FixedDepositInvestmentProductApiResource {
 	private final FixedDepositInvestmentProductService fixedDepositInvestmentProductService;
 
-	@Operation(summary = "Create an Investment Product")
-	@PostMapping()
-	public ResponseEntity<PostFixedDepositProductsResponse> createProduct(
-			@RequestBody PostFixedDepositProductsRequest postFixedDepositProductsRequest) {
-		PostFixedDepositProductsResponse postRecurringDepositProductResponse = fixedDepositInvestmentProductService
-				.createProduct(postFixedDepositProductsRequest);
-
-		return ResponseEntity.ok(postRecurringDepositProductResponse);
-	}
-
 	@Operation(summary = "Retrieve Investment Product List")
 	@GetMapping
 	public ResponseEntity<List<GetFixedDepositProductsResponse>> retrieveAllProducts() {

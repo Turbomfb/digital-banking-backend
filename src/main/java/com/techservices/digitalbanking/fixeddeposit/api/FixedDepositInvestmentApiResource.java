@@ -28,29 +28,6 @@ import lombok.RequiredArgsConstructor;
 public class FixedDepositInvestmentApiResource {
 	private final FixedDepositInvestmentService investmentService;
 
-	@Operation(summary = "Submit new fixed deposit application")
-	@PostMapping
-	public ResponseEntity<PostSavingsAccountsResponse> submitApplication(
-			@RequestBody FixedDepositApplicationRequest fixedDepositApplicationRequest,
-			@Valid @RequestParam(value = "activate", defaultValue = "false", required = false) boolean activate) {
-		PostSavingsAccountsResponse postSavingsAccountsResponse = investmentService
-				.submitApplication(fixedDepositApplicationRequest, activate);
-
-		return ResponseEntity.ok(postSavingsAccountsResponse);
-	}
-
-	@Operation(summary = "Approve an investment | Activate an investment | Undo approval | Reject investment request | Pre-liquidate investment | Mature closure")
-	@PostMapping("{investmentId}")
-	public ResponseEntity<PostFixedDepositAccountsAccountIdResponse> processInvestmentCommand(
-			@PathVariable("investmentId") Long investmentId,
-			@Valid @RequestBody(required = false) FixedDepositCommandRequest fixedDepositCommandRequest,
-			@Valid @RequestParam(value = "command") String command) {
-		PostFixedDepositAccountsAccountIdResponse postFixedDepositAccountsAccountIdResponse = investmentService
-				.processInvestmentCommand(investmentId, fixedDepositCommandRequest, command);
-
-		return ResponseEntity.ok(postFixedDepositAccountsAccountIdResponse);
-	}
-
 	@Operation(summary = "Retrieve Investment List")
 	@GetMapping
 	public ResponseEntity<GetFixedDepositAccountsResponse> retrieveAllInvestments(

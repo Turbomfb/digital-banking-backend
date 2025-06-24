@@ -14,7 +14,7 @@ public class GetClientsLoanAccounts {
 
 	private String accountNo;
 
-	private Integer externalId;
+	private String externalId;
 
 	private Integer id;
 

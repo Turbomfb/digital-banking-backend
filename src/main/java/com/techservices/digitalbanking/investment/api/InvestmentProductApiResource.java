@@ -29,16 +29,6 @@ import lombok.RequiredArgsConstructor;
 public class InvestmentProductApiResource {
 	private final InvestmentProductService investmentProductService;
 
-	@Operation(summary = "Create an Investment Product")
-	@PostMapping()
-	public ResponseEntity<PostRecurringDepositProductResponse> createProduct(
-			@RequestBody PostRecurringDepositProductsRequest postRecurringDepositProductsRequest) {
-		PostRecurringDepositProductResponse postRecurringDepositProductResponse = investmentProductService
-				.createProduct(postRecurringDepositProductsRequest);
-
-		return ResponseEntity.ok(postRecurringDepositProductResponse);
-	}
-
 	@Operation(summary = "Retrieve Investment Product List")
 	@GetMapping
 	public ResponseEntity<List<GetRecurringDepositProductProductIdResponse>> retrieveAllProducts() {
@@ -54,17 +44,6 @@ public class InvestmentProductApiResource {
 		GetRecurringDepositProductProductIdResponse products = investmentProductService
 				.retrieveInvestmentProductById(productId);
 		return ResponseEntity.ok(products);
-	}
-
-	@PutMapping("{productId}")
-	public ResponseEntity<Object> updateProduct(@PathVariable Long productId,
-			@RequestBody PutRecurringDepositProductRequest request) {
-		return ResponseEntity.ok(investmentProductService.updateProduct(productId, request));
-	}
-
-	@DeleteMapping("{productId}")
-	public ResponseEntity<DeleteRecurringDepositProductResponse> deleteProduct(@PathVariable Long productId) {
-		return ResponseEntity.ok(investmentProductService.deleteProduct(productId));
 	}
 
 	@GetMapping(value = "/template")

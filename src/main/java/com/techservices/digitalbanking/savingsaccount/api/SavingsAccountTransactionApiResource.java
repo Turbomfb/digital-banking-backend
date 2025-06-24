@@ -32,7 +32,7 @@ public class SavingsAccountTransactionApiResource {
 			@PathVariable Long savingsId, @RequestParam(required = false) Integer page,
 			@RequestParam(required = false) Integer size, @RequestParam(required = false) String startDate,
 			@RequestParam(required = false) String endDate, @RequestParam(required = false) String dateFormat,
-			@RequestParam Long productId, @RequestParam(value = "offset", required = false) @Valid Long offset,
+			@RequestParam(required = false) Long productId, @RequestParam(value = "offset", required = false) @Valid Long offset,
 			@RequestParam(value = "limit", required = false) @Valid Long limit) {
 
 		return ResponseEntity.ok(savingsAccountTransactionService.retrieveSavingsAccountTransactions(
