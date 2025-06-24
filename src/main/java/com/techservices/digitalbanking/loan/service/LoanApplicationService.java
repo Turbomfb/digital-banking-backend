@@ -42,4 +42,6 @@ public interface LoanApplicationService {
 
 	PostLoansLoanIdResponse processLoanRescheduleCommand(PostLoansLoanIdRequest postLoansLoanIdRequest,
 			String requestId, String command);
+
+	LoanTransactionResponse retrieveLoanTransactionDetails(@Valid Long loanId, @Valid Long transactionId);
 }

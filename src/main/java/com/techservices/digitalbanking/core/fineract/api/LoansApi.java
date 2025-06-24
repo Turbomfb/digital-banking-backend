@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.fineract.api; /* Developed by MKAN 
 
 import java.util.List;
 
+import com.techservices.digitalbanking.core.fineract.model.response.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,42 +23,6 @@ import com.techservices.digitalbanking.core.fineract.model.request.LoanReschedul
 import com.techservices.digitalbanking.core.fineract.model.request.PostLoanApplicationRequest;
 import com.techservices.digitalbanking.core.fineract.model.request.PostLoanProductsRequest;
 import com.techservices.digitalbanking.core.fineract.model.request.PostLoansLoanIdTransactionsTransactionIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.DeleteLoansLoanIdChargesChargeIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.DeleteLoansLoanIdCollateralsCollateralIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.DeleteLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdChargesChargeIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdChargesTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdCollateralsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdCollateralsTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdTransactionsTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdTransactionsTransactionIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.LoanRescheduleResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoanProductsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdChargesChargeIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdChargesChargeIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdChargesRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdChargesResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdCollateralsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdCollateralsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdScheduleResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdTransactionsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdTransactionsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdTransactionsTransactionIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutLoansLoanIdChargesChargeIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PutLoansLoanIdChargesChargeIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutLoansLoanIdCollateralsCollateralIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutLoansLoanIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PutLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutLoansLoandIdCollateralsCollateralIdRequest;
 
 import jakarta.validation.Valid;
 
@@ -939,4 +904,10 @@ public interface LoansApi {
 	@PostMapping(value = "rescheduleloans/{requestId}")
 	PostLoansLoanIdResponse processLoanRescheduleApproval(@RequestBody PostLoansLoanIdRequest postLoansLoanIdRequest,
 			@PathVariable String requestId, @RequestParam(value = "command") String command);
+
+	@GetMapping(value = "/loans/{loanId}/transactions/{transactionId}")
+    LoanTransactionResponse getLoanTransactionDetails(
+			@Valid @PathVariable(value = "loanId") Long loanId,
+			@Valid @PathVariable(value = "transactionId") Long transactionId
+	);
 }

@@ -51,7 +51,7 @@ public class LoanApplicationApiResource {
 	public ResponseEntity<GetLoansLoanIdResponse> retrieveLoanById(@PathVariable Long loanId,
 			@Valid @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
 			@Valid @RequestParam(value = "associations", required = false, defaultValue = "all") String associations,
-			@Valid @RequestParam(value = "exclude", required = false) String exclude,
+			@Valid @RequestParam(value = "exclude", required = false, defaultValue = "transactions") String exclude,
 			@Valid @RequestParam(value = "fields", required = false) String fields) {
 		GetLoansLoanIdResponse getLoansLoanIdResponse = loanService.retrieveLoanById(loanId, staffInSelectedOfficeOnly,
 				associations, exclude, fields);
@@ -117,5 +117,16 @@ public class LoanApplicationApiResource {
 		FineractPageResponse<LoanTransactionResponse> transactions = loanService.retrieveLoanTransactions(loanId);
 
 		return ResponseEntity.ok(transactions);
+	}
+
+	@Operation(summary = "Retrieve loan transaction details by ID")
+	@GetMapping("{loanId}/transactions/{transactionId}")
+	public ResponseEntity<LoanTransactionResponse> retrieveLoanTransactionDetails(
+			@Valid @PathVariable(value = "loanId") Long loanId,
+			@Valid @PathVariable(value = "transactionId") Long transactionId
+	) {
+		LoanTransactionResponse transaction = loanService.retrieveLoanTransactionDetails(loanId, transactionId);
+
+		return ResponseEntity.ok(transaction);
 	}
 }

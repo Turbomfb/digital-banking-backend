@@ -232,4 +232,8 @@ public class LoanService {
 		postLoansLoanIdRequest.setApprovedOnDate(getCurrentDate());
 		return loansApiClient.processLoanRescheduleApproval(postLoansLoanIdRequest, requestId, command);
 	}
+
+	public LoanTransactionResponse retrieveLoanTransactionDetails(Long loanId, Long transactionId) {
+		return loansApiClient.getLoanTransactionDetails(loanId, transactionId);
+	}
 }

@@ -69,6 +69,12 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 		return loanService.retrieveLoanTransactions(loanId);
 	}
 
+
+	@Override
+	public LoanTransactionResponse retrieveLoanTransactionDetails(Long loanId, Long transactionId) {
+		return loanService.retrieveLoanTransactionDetails(loanId, transactionId);
+	}
+
 	@Override
 	public LoanRescheduleResponse createALoanRescheduleRequest(LoanRescheduleRequest loanRescheduleRequest) {
 		return loanService.createALoanRescheduleRequest(loanRescheduleRequest);
