@@ -42,7 +42,7 @@ public class SavingsAccountTransactionApiResource {
 	@GetMapping("/{transactionId}")
 	public ResponseEntity<SavingsAccountTransactionData> retrieveSavingsAccountTransactionById(
 			@PathVariable Long savingsId, @PathVariable(required = false) Long transactionId,
-			@RequestParam Long productId) {
+			@RequestParam(required = false) Long productId) {
 		return ResponseEntity.ok(savingsAccountTransactionService
 				.retrieveSavingsAccountTransactionById(savingsId, transactionId, productId));
 	}
