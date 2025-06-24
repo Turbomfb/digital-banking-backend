@@ -23,16 +23,6 @@ public class LoanProductApiResource {
 
 	private final LoanProductService loanProductService;
 
-	@Operation(summary = "Create a new Loan Product")
-	@PostMapping
-	public ResponseEntity<PostLoanProductsResponse> createALoanProduct(
-			@Validated @RequestBody PostLoanProductsRequest postLoanProductRequest) {
-		PostLoanProductsResponse postLoanProductsResponse = loanProductService
-				.createALoanProduct(postLoanProductRequest);
-
-		return ResponseEntity.ok(postLoanProductsResponse);
-	}
-
 	@Operation(summary = "Retrieve loan product list")
 	@GetMapping
 	public ResponseEntity<List<GetLoanProductsProductIdResponse>> getLoanProducts(

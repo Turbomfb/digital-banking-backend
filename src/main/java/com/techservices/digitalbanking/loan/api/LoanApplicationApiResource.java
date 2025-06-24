@@ -35,17 +35,6 @@ public class LoanApplicationApiResource {
 
 	private final LoanApplicationService loanService;
 
-	@Operation(summary = "Submit a new Loan Application")
-	@PostMapping
-	public ResponseEntity<PostLoansResponse> calculateLoanScheduleOrSubmitLoanApplication(
-			@Validated @RequestBody LoanApplicationRequest loanApplicationRequest,
-			@RequestParam(value = "command", required = false) String command) {
-		PostLoansResponse postLoansResponse = loanService
-				.calculateLoanScheduleOrSubmitLoanApplication(loanApplicationRequest, command);
-
-		return ResponseEntity.ok(postLoansResponse);
-	}
-
 	@Operation(summary = "Retrieve a Loan by ID")
 	@GetMapping("{loanId}")
 	public ResponseEntity<GetLoansLoanIdResponse> retrieveLoanById(@PathVariable Long loanId,
@@ -73,29 +62,6 @@ public class LoanApplicationApiResource {
 				sortOrder, accountNo);
 
 		return ResponseEntity.ok(getLoansResponse);
-	}
-
-	@Operation(summary = "Approve a loan | Undo approval | Reject Loan request | Disburse loan | Disburse loan to Savings | Undo Disbursement")
-	@PostMapping("{loanId}")
-	public ResponseEntity<PostLoansLoanIdResponse> processLoanCommand(@PathVariable("loanId") Long loanId,
-			@Valid @RequestBody(required = false) PostLoansLoanIdRequest postLoansLoanIdRequest,
-			@Valid @RequestParam(value = "command") String command) {
-		postLoansLoanIdRequest = postLoansLoanIdRequest == null ? new PostLoansLoanIdRequest() : postLoansLoanIdRequest;
-		PostLoansLoanIdResponse postLoansLoanIdResponse = loanService.processLoanCommand(loanId, postLoansLoanIdRequest,
-				command);
-
-		return ResponseEntity.ok(postLoansLoanIdResponse);
-	}
-
-	@Operation(summary = "Manage loan Transactions ")
-	@PostMapping("{loanId}/transactions")
-	public ResponseEntity<PostLoansLoanIdTransactionsResponse> repayLoan(@PathVariable("loanId") Long loanId,
-			@Valid @RequestBody LoanRepaymentRequest loanRepaymentRequest,
-			@Valid @RequestParam(value = "command") String command) {
-		PostLoansLoanIdTransactionsResponse postLoansLoanIdTransactionsResponse = loanService.repayLoan(loanId,
-				loanRepaymentRequest, command);
-
-		return ResponseEntity.ok(postLoansLoanIdTransactionsResponse);
 	}
 
 	@Operation(summary = "Retrieve a loan template")
