@@ -1,21 +1,21 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.fineract.service;
 
+import com.techservices.digitalbanking.core.fineract.model.response.*;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.api.FixeddepositaccountsApiClient;
 import com.techservices.digitalbanking.core.fineract.model.request.PostFixedDepositAccountsAccountIdRequest;
 import com.techservices.digitalbanking.core.fineract.model.request.PostFixedDepositAccountsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostFixedDepositAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
 import com.techservices.digitalbanking.fixeddeposit.domain.request.FixedDepositCommandRequest;
 import com.techservices.digitalbanking.investment.domain.request.FixedDepositApplicationRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.HashSet;
+import java.util.List;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.ACTIVATE;
 import static com.techservices.digitalbanking.core.util.CommandUtil.APPROVE;
@@ -111,12 +111,16 @@ public class FixedDepositService {
 
 	public GetFixedDepositAccountsResponse retrieveAllInvestments(Boolean paged, Integer offset, Integer limit,
 			String orderBy, String sortOrder) {
-		return fixeddepositaccountsApiClient.retrieveAll38(paged, offset, limit, orderBy, sortOrder);
+		List<GetFixedDepositAccountsAccountIdResponse> fixedDepositAccountsAccountIdResponseList = fixeddepositaccountsApiClient.retrieveAll38(paged, offset, limit, orderBy, sortOrder);
+		GetFixedDepositAccountsResponse getFixedDepositAccountsResponse = new GetFixedDepositAccountsResponse();
+		getFixedDepositAccountsResponse.setPageItems(new HashSet<>(fixedDepositAccountsAccountIdResponseList));
+		getFixedDepositAccountsResponse.setTotalFilteredRecords(fixedDepositAccountsAccountIdResponseList.size());
+		return getFixedDepositAccountsResponse;
 	}
 
 	public GetFixedDepositAccountsAccountIdResponse retrieveInvestmentById(Long id, Boolean staffInSelectedOfficeOnly,
 			@Valid String chargeStatus) {
-		return fixeddepositaccountsApiClient.retrieveOne(id, staffInSelectedOfficeOnly, chargeStatus, null);
+		return fixeddepositaccountsApiClient.retrieveOne(id, staffInSelectedOfficeOnly, chargeStatus, "all");
 	}
 
 	public Object retrieveTemplate(Long clientId, Long productId) {

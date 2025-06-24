@@ -21,6 +21,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 public interface FixeddepositaccountsApi {
 
 	/**
@@ -204,7 +206,7 @@ public interface FixeddepositaccountsApi {
 	 * @return OK (status code 200)
 	 */
 	@GetMapping(value = "/fixeddepositaccounts")
-	GetFixedDepositAccountsResponse retrieveAll38(
+	List<GetFixedDepositAccountsAccountIdResponse> retrieveAll38(
 			@Parameter(name = "paged", description = "paged", in = ParameterIn.QUERY) @Valid @RequestParam(value = "paged", required = false) Boolean paged,
 			@Parameter(name = "offset", description = "offset", in = ParameterIn.QUERY) @Valid @RequestParam(value = "offset", required = false) Integer offset,
 			@Parameter(name = "limit", description = "limit", in = ParameterIn.QUERY) @Valid @RequestParam(value = "limit", required = false) Integer limit,
@@ -245,7 +247,7 @@ public interface FixeddepositaccountsApi {
 			@Parameter(name = "accountId", description = "accountId", required = true, in = ParameterIn.PATH) @PathVariable("accountId") Long accountId,
 			@Parameter(name = "staffInSelectedOfficeOnly", description = "staffInSelectedOfficeOnly", in = ParameterIn.QUERY) @Valid @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
 			@Parameter(name = "chargeStatus", description = "chargeStatus", in = ParameterIn.QUERY) @Valid @RequestParam(value = "chargeStatus", required = false, defaultValue = "all") String chargeStatus,
-			@Parameter(name = "associations", description = "associations", in = ParameterIn.QUERY) @Valid @RequestParam(value = "associations", required = false) String associations);
+			@Parameter(name = "associations", description = "associations", in = ParameterIn.QUERY) @Valid @RequestParam(value = "associations", required = false, defaultValue = "all") String associations);
 
 	/**
 	 * GET /fixeddepositaccounts/{fixedDepositAccountId}/transactions/template
