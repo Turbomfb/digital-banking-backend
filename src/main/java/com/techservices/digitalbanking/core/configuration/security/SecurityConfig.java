@@ -50,6 +50,9 @@ public class SecurityConfig {
   @Value("${jwt.secret}")
   private String secretKey;
 
+  @Value("${application.client.url}")
+  private String clientUrl;
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
     return http
@@ -73,7 +76,7 @@ public class SecurityConfig {
     // Configure allowed origins
     configuration.setAllowedOriginPatterns(List.of(
             "http://localhost:*",
-            "https://digital-banking.dev.turbomfb.com"
+            clientUrl
     ));
 
     // Configure allowed methods

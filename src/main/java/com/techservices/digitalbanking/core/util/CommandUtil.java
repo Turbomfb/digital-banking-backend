@@ -13,4 +13,7 @@ public class CommandUtil {
 	public static final String REPAYMENT = "repayment";
 	public static final String DISBURSE_TO_SAVINGS = "disburseToSavings";
 	public static final String UNDO_DISBURSAL = "undoDisbursal";
+	public static final String GENERATE_OTP_COMMAND = "generate-otp";
+	public static final String VERIFY_OTP_COMMAND = "verify-otp";
+	public static final String CHANGE_PASSWORD_COMMAND = "change-password";
 }

@@ -5,9 +5,10 @@ import com.techservices.digitalbanking.core.configuration.SystemProperty;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
-import com.techservices.digitalbanking.core.domain.dto.request.OtpDtoRequest;
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
+import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostClientsResponse;
@@ -27,6 +28,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
+import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
+
 @Service
 @RequiredArgsConstructor
 public class CustomerKycServiceImpl implements CustomerKycService {
@@ -37,22 +41,20 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 	private final CustomerRepository customerRepository;
 	private final IdentityVerificationService identityVerificationService;
 	private final RedisService redisService;
-	private static final String GENERATE_OTP_COMMAND = "generate-otp";
-	private static final String VERIFY_OTP_COMMAND = "verify-otp";
 
 	@Override
 	public BaseAppResponse updateCustomerKyc(CustomerKycRequest customerKycRequest, Long customerId, String command) {
 		Customer foundCustomer = this.customerService.getCustomerById(customerId);
 		if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
-			OtpDtoRequest otpDtoRequest = this.redisService.validateOtp(customerKycRequest.getUniqueId(), customerKycRequest.getOtp());
-			customerKycRequest = (CustomerKycRequest) otpDtoRequest.getData();
+			OtpDto otpDto = this.redisService.validateOtp(customerKycRequest.getUniqueId(), customerKycRequest.getOtp(), OtpType.KYC_UPGRADE);
+			customerKycRequest = (CustomerKycRequest) otpDto.getData();
 		}
 
 		IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
 		boolean isIdentityDataRetrieved = verificationResponse != null && GENERATE_OTP_COMMAND.equalsIgnoreCase(command);
 		if (isIdentityDataRetrieved) {
-			OtpDtoRequest otpDtoRequest = this.redisService.generateOtpRequest(customerKycRequest);
-			return new GenericApiResponse(otpDtoRequest.getUniqueId(), "OTP sent successfully", "success", null);
+			OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE);
+			return new GenericApiResponse(otpDto.getUniqueId(), "OTP sent successfully", "success", null);
 		}
 		if (!foundCustomer.isActive()) {
 			this.activateCustomer(foundCustomer, customerKycRequest);
@@ -78,6 +80,10 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 			});
 
 			if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+				GetClientsClientIdResponse client = clientService.getCustomerByBvn(customerKycRequest.getBvn());
+				if (client != null) {
+					return IdentityVerificationResponse.parse(client);
+				}
 				return this.identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
 			}
 
@@ -96,6 +102,10 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 					});
 
 			if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+				GetClientsClientIdResponse client = clientService.getCustomerByNin(customerKycRequest.getNin());
+				if (client != null) {
+					return IdentityVerificationResponse.parse(client);
+				}
 				return this.identityVerificationService.retrieveNinData(customerKycRequest.getNin());
 			}
 

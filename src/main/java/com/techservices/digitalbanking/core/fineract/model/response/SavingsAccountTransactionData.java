@@ -51,4 +51,10 @@ public class SavingsAccountTransactionData {
 	private String refNo;
 	private String depositIban;
 	private TransactionMetadata additionalInformation;
+
+	public String getActualTransactionType() {
+		return this.transactionType.getWithdrawal() || this.transactionType.getFeeDeduction()?
+				"DEBIT" :
+				this.transactionType.getDeposit() || this.transactionType.getInterestPosting() ? "CREDIT": null;
+	}
 }

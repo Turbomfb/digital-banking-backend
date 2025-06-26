@@ -6,6 +6,8 @@ import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificat
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
+import com.techservices.digitalbanking.core.fineract.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +24,7 @@ public class IdentityVerificationService {
 
     private final ApiService apiService;
     private final SystemProperty systemProperty;
+    private final ClientService clientService;
     private static final String IDENTITY_VERIFICATION_URL = "/api/YouVerify/";
     private static final String NIN_DETAIL = "nin-detail";
     private static final String BVN_DETAIL = "bvn-detail";
@@ -32,7 +35,8 @@ public class IdentityVerificationService {
     }
 
     public CustomerIdentityVerificationResponse verifyBvn(String bvn, IdentityVerificationRequest customerData) {
-        IdentityVerificationResponse identityVerificationResponse = retrieveBvnData(bvn);
+        GetClientsClientIdResponse client = clientService.getCustomerByBvn(bvn);
+        IdentityVerificationResponse identityVerificationResponse = client != null ? IdentityVerificationResponse.parse(client) : retrieveBvnData(bvn);
         return processVerificationResponse(identityVerificationResponse, customerData);
     }
 
@@ -42,7 +46,8 @@ public class IdentityVerificationService {
     }
 
     public CustomerIdentityVerificationResponse verifyNin(String nin, IdentityVerificationRequest customerData) {
-        IdentityVerificationResponse identityVerificationResponse = retrieveNinData(nin);
+        GetClientsClientIdResponse client = clientService.getCustomerByNin(nin);
+        IdentityVerificationResponse identityVerificationResponse = client != null ? IdentityVerificationResponse.parse(client) : retrieveNinData(nin);
         return processVerificationResponse(identityVerificationResponse, customerData);
     }
 

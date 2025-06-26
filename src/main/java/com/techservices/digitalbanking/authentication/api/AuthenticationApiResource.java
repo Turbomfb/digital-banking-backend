@@ -30,7 +30,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -52,6 +55,16 @@ public class AuthenticationApiResource {
             @RequestBody PasswordMgtRequest passwordMgtRequest
     ) {
         return ResponseEntity.ok(authenticationService.createPassword(passwordMgtRequest));
+    }
+
+
+    @Operation(summary = "Forgot Password")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<GenericApiResponse> forgotPassword(
+            @RequestBody PasswordMgtRequest passwordMgtRequest,
+            @RequestParam (value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) String command
+    ) {
+        return ResponseEntity.ok(authenticationService.forgotPassword(passwordMgtRequest, command));
     }
 
 }

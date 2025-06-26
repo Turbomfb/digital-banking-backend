@@ -3,8 +3,10 @@ package com.techservices.digitalbanking.core.fineract.model.data;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +27,17 @@ public class FineractPageResponse<E> implements Serializable {
 	public static <E> FineractPageResponse<E> create(FineractPageTransactionResponse<E> savingsAccountTransactions) {
 		FineractPageResponse<E> response = new FineractPageResponse<>();
 		response.setTotalFilteredRecords(savingsAccountTransactions.getContent().size());
-		response.setPageItems(savingsAccountTransactions.getContent());
+		response.setPageItems(
+				savingsAccountTransactions.getContent()
+						.stream()
+						.sorted((a, b) -> {
+							if (a instanceof SavingsAccountTransactionData && b instanceof SavingsAccountTransactionData) {
+								return ((SavingsAccountTransactionData) a).getId().compareTo(((SavingsAccountTransactionData) b).getId());
+							}
+							return 0;
+						})
+						.toList()
+		);
 		return response;
 	}
 }

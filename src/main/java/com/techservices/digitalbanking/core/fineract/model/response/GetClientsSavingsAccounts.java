@@ -31,4 +31,16 @@ public class GetClientsSavingsAccounts {
 	private EnumOptionData depositType;
 
 	private GetSavingsStatus status;
+
+	public boolean isSavingsAccount() {
+		return this.depositType != null && this.depositType.getId() == 100 && this.status != null && this.status.getActive();
+	}
+
+	public boolean isFixedDeposit() {
+		return this.depositType != null && this.depositType.getId() == 200 && this.status != null && this.status.getActive();
+	}
+
+	public boolean isRecurringDeposit() {
+		return this.depositType != null && this.depositType.getId() == 300 && this.status != null && this.status.getActive();
+	}
 }

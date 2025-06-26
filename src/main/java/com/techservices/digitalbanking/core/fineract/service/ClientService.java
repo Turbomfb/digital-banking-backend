@@ -44,13 +44,13 @@ public class ClientService {
 
 	private PostClientsRequest processCustomerCreation(CreateCustomerRequest createCustomerRequest) {
 		PostClientsRequest postClientsRequest = new PostClientsRequest();
-		postClientsRequest.setLegalFormId(2L);
+		postClientsRequest.setLegalFormId(1L);
 		postClientsRequest.setOfficeId(1L);
 		postClientsRequest.setActive(true);
 		postClientsRequest.setActivationDate(getCurrentDate());
 		postClientsRequest.setDateFormat(DateUtil.getDefaultDateFormat());
 		postClientsRequest.setLocale("en");
-		 postClientsRequest.setSavingsProductId(createCustomerRequest.getSavingsProductId());
+		postClientsRequest.setSavingsProductId(createCustomerRequest.getSavingsProductId());
 		postClientsRequest.setAddress(createCustomerRequest.getAddress());
 		postClientsRequest.setDatatables(createCustomerRequest.getDatatables());
 		postClientsRequest.setDateOfBirth(createCustomerRequest.getDateOfBirth());
@@ -177,11 +177,25 @@ public class ClientService {
 		return clientApiClient.retrieveOne(customerId, false);
 	}
 
-	public GetClientsResponse getAllCustomers(Integer offset, Integer limit) {
-		return clientApiClient.retrieveAll(offset, limit);
+	public GetClientsResponse getAllCustomers(Integer offset, Integer limit, String nin, String bvn) {
+		return clientApiClient.retrieveAll(offset, limit, null, null);
 	}
 
-	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountType) {
+	public GetClientsClientIdResponse getCustomerByBvn(String bvn) {
+		return clientApiClient.retrieveAll(null, 1, null, bvn)						.getPageItems()
+				.stream()
+				.findAny()
+				.orElse(null);
+	}
+
+	public GetClientsClientIdResponse getCustomerByNin(String nin) {
+		return clientApiClient.retrieveAll(null, 1, nin, null)						.getPageItems()
+				.stream()
+				.findAny()
+				.orElse(null);
+	}
+
+	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(String customerId, String accountType) {
 			return clientApiClient.retrieveAssociatedAccounts(customerId, accountType);
 	}
 

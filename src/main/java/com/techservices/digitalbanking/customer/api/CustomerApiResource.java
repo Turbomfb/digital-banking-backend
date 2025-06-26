@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.customer.api;
 
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
@@ -63,6 +64,12 @@ public class CustomerApiResource {
 				customerService.getCustomerById(customerId)
 		);
 		return ResponseEntity.ok(getSavingsAccountsAccountIdResponse);
+	}
+
+	@Operation(summary = "Retrieve Customer's dashboard by ID")
+	@GetMapping("{customerId}/dashboard")
+	public ResponseEntity<CustomerDashboardResponse> retrieveCustomerDashboard(@PathVariable Long customerId) {
+		return ResponseEntity.ok(customerService.retrieveCustomerDashboard(customerId));
 	}
 
 	@Operation(summary = "Retrieve All Customers")

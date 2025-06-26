@@ -2,6 +2,7 @@ package com.techservices.digitalbanking.core.domain.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,6 +18,16 @@ public class IdentityVerificationResponse {
     private boolean success;
     private String statusMessage;
     private String statusCode;
+
+    public static IdentityVerificationResponse parse(GetClientsClientIdResponse client) {
+        IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
+        IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData = new IdentityVerificationResponse.IdentityVerificationResponseData();
+        identityVerificationResponseData.setFirstName(client.getFirstname());
+        identityVerificationResponseData.setLastName(client.getLastname());
+        identityVerificationResponseData.setMobile(client.getMobileNo());
+        identityVerificationResponse.setData(identityVerificationResponseData);
+        return identityVerificationResponse;
+    }
 
     @Setter
     @Getter

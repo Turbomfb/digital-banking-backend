@@ -17,6 +17,11 @@ import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountTran
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+
 import static com.techservices.digitalbanking.core.util.TransactionUtil.*;
 import static com.techservices.digitalbanking.core.util.TransactionUtil.UNDO;
 
@@ -79,5 +84,17 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long savingsAccountId,
 			Long transactionId, Long productId) {
 		return accountTransactionService.retrieveSavingsAccountTransactionById(savingsAccountId, transactionId);
+	}
+
+	@Override
+	public BigDecimal getBalanceAsOfDate(Long savingsId, LocalDate localDate) {
+		return this.retrieveSavingsAccountTransactions(savingsId, localDate.toString(), null, "yyyy-MM-dd", null, null, null)
+				.getPageItems()
+				.stream()
+				.filter(transaction -> !transaction.getDate().isAfter(localDate))
+				.sorted(Comparator.comparing(SavingsAccountTransactionData::getDate))
+				.reduce((first, second) -> second)
+				.map(SavingsAccountTransactionData::getRunningBalance)
+				.orElse(BigDecimal.ZERO);
 	}
 }

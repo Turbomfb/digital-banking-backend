@@ -70,8 +70,12 @@ public interface ClientApi {
 	PostClientClientIdImagesResponse uploadImageFile(@PathVariable String clientId, MultipartFile file);
 
 	@GetMapping(value = "/clients")
-	GetClientsResponse retrieveAll(@RequestParam(value = "offset", required = false) Integer offset,
-			@RequestParam(value = "limit", required = false) Integer limit);
+	GetClientsResponse retrieveAll(
+			@RequestParam(value = "offset", required = false) Integer offset,
+			@RequestParam(value = "limit", required = false) Integer limit,
+			@RequestParam(value = "nin", required = false) String nin,
+			@RequestParam(value = "bvn", required = false) String bvn
+	);
 
 	@PostMapping(value = "/clients/{clientId}")
 	PostClientsClientIdResponse manageClient(@PathVariable("clientId") Long clientId,
@@ -84,7 +88,7 @@ public interface ClientApi {
 			@Valid @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly);
 
 	@GetMapping(value = "/clients/{clientId}/accounts")
-	GetClientsClientIdAccountsResponse retrieveAssociatedAccounts(@PathVariable("clientId") Long clientId,
+	GetClientsClientIdAccountsResponse retrieveAssociatedAccounts(@PathVariable("clientId") String clientId,
 			@RequestParam(value = "fields", required = false) String fields);
 
 	@GetMapping(value = "/datatables/{registeredTableName}/{clientId}")

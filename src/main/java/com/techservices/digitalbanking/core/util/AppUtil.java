@@ -11,13 +11,14 @@ public class AppUtil {
 			"/swagger-ui/**",
 			"/swagger-ui.html",
 			"/actuator/health",
-			"/actuator/info",
-			"/api/v1/auth",
-			"/api/v1/auth/create-password"
+			"/actuator/info"
 	};
 
 	public static final String[] PUBLIC_POST_ENDPOINTS = {
-			"/api/v1/customers"
+			"/api/v1/customers",
+			"/api/v1/auth",
+			"/api/v1/auth/create-password",
+			"/api/v1/auth/forgot-password"
 	};
 
 	public static String concatenate(String... strings) {

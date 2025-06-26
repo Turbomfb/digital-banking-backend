@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.fineract.model.response;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,5 +42,9 @@ public class GetSavingsAccountsAccountIdResponse {
 
 	public String getPreferredName() {
 		return StringUtils.isNotBlank(accountName) ? accountName : clientName;
+	}
+
+	public BigDecimal getAccountBalance() {
+		return this.summary != null ? this.summary.getAvailableBalance() : BigDecimal.ZERO;
 	}
 }

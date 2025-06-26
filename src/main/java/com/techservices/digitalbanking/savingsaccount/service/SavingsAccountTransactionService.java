@@ -8,6 +8,9 @@ import com.techservices.digitalbanking.savingsaccount.request.CreateSavingsAccou
 
 import jakarta.validation.Valid;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 public interface SavingsAccountTransactionService {
 
 	PostSavingsAccountTransactionsResponse processTransaction(CreateSavingsAccountTransactionRequest request,
@@ -18,4 +21,6 @@ public interface SavingsAccountTransactionService {
 
 	SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long savingsId, Long transactionId,
 			Long productId);
+
+	BigDecimal getBalanceAsOfDate(Long savingsId, LocalDate localDate);
 }

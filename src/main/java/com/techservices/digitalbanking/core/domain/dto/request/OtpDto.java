@@ -6,9 +6,10 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class OtpDtoRequest {
+public class OtpDto {
     private String uniqueId;
     private String otp;
     private Object data;
     private OtpType otpType;
+    private boolean isValidated;
 }

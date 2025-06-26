@@ -61,7 +61,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
 
             if (jwtUtil.isTokenValid(token)) {
-                String username = jwtUtil.extractUsername(token);
                 AppUser appUser = extractUserInfoFromJwt(token);
 
                 Collection<GrantedAuthority> authorities = mapAuthorities(appUser);

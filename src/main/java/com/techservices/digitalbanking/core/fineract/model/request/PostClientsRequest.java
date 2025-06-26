@@ -29,7 +29,6 @@ public class PostClientsRequest {
 	private String dateOfBirth;
 	private String externalId;
 	private String firstname;
-	private String fullname;
 	private Integer groupId;
 	private String lastname;
 	private Long legalFormId;

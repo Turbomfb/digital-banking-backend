@@ -20,7 +20,7 @@
  */ 
 package com.techservices.digitalbanking.core.redis.service;
 
-import com.techservices.digitalbanking.core.domain.dto.request.OtpDtoRequest;
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.configuration.RedisProperty;
@@ -77,35 +77,66 @@ public class RedisService {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
-    public boolean isOtpValid(OtpDtoRequest otpDtoRequest, OtpType otpType, String otp) {
-        return !otpDtoRequest.getOtp().equals(otp) && !"123456".equals(otp)
-                && otpDtoRequest.getOtpType().equals(otpType);
+    public boolean isOtpValid(OtpDto otpDto, OtpType otpType, String otp) {
+        return !otpDto.getOtp().equals(otp) && !"123456".equals(otp)
+                && otpDto.getOtpType().equals(otpType);
     }
 
-    public OtpDtoRequest generateOtpRequest(Object request) {
-        OtpDtoRequest otpDtoRequest = new OtpDtoRequest();
+    public OtpDto generateOtpRequest(Object request, OtpType otpType) {
+        OtpDto otpDto = new OtpDto();
         String uniqueId = UUID.randomUUID().toString();
-        otpDtoRequest.setUniqueId(uniqueId);
-        otpDtoRequest.setOtpType(OtpType.ONBOARDING);
+        otpDto.setUniqueId(uniqueId);
+        otpDto.setOtpType(otpType);
         int otp = new SecureRandom().nextInt(900000) + 100000;
-        otpDtoRequest.setOtp(String.valueOf(otp));
-        otpDtoRequest.setData(request);
-        this.save(otpDtoRequest.getUniqueId(), otpDtoRequest);
-        return otpDtoRequest;
+        otpDto.setOtp(String.valueOf(otp));
+        otpDto.setData(request);
+        this.save(otpDto.getUniqueId(), otpDto);
+        return otpDto;
     }
 
-    public OtpDtoRequest validateOtp(String uniqueId, String otp) {
+    public OtpDto validateOtp(String uniqueId, String otp, OtpType otpType) {
+        OtpDto otpDto = retrieveOtpDto(uniqueId);
+        if (otpDto == null) {
+            throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
+        }
+        if (this.isOtpValid(otpDto, otpType, otp)) {
+            throw new ValidationException("invalid.otp", "Invalid OTP provided.");
+        }
+        this.delete(otpDto.getUniqueId());
+        return otpDto;
+    }
+
+
+    public OtpDto validateOtpWithoutDeletingRecord(String uniqueId, String otp, OtpType otpType) {
+        OtpDto otpDto = retrieveOtpDto(uniqueId);
+        if (otpDto == null) {
+            throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
+        }
+        if (this.isOtpValid(otpDto, otpType, otp)) {
+            throw new ValidationException("invalid.otp", "Invalid OTP provided.");
+        }
+        otpDto.setValidated(true);
+        this.save(otpDto.getUniqueId(), otpDto);
+        return otpDto;
+    }
+
+
+    public OtpDto validateOtpWithoutOtp(String uniqueId) {
+        OtpDto otpDto = retrieveOtpDto(uniqueId);
+        if (otpDto == null) {
+            throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
+        }
+        if (!otpDto.isValidated()){
+            throw new ValidationException("otp.not.validated", "OTP has not been validated yet.");
+        }
+        this.delete(otpDto.getUniqueId());
+        return otpDto;
+    }
+
+    public OtpDto retrieveOtpDto(String uniqueId) {
         if (uniqueId == null) {
             throw new ValidationException("uniqueId.required", "Unique ID is required for OTP verification.");
         }
-        OtpDtoRequest otpDtoRequest = this.getAndRefresh(uniqueId, OtpDtoRequest.class);
-        if (otpDtoRequest == null) {
-            throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
-        }
-        if (this.isOtpValid(otpDtoRequest, OtpType.ONBOARDING, otp)) {
-            throw new ValidationException("invalid.otp", "Invalid OTP provided.");
-        }
-        this.delete(otpDtoRequest.getUniqueId());
-        return otpDtoRequest;
+        return this.getAndRefresh(uniqueId, OtpDto.class);
     }
 }

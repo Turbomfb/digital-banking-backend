@@ -10,4 +10,8 @@ import lombok.Setter;
 public class PasswordMgtRequest {
     private Long customerId;
     private String password;
+    private String emailAddress;
+    private String phoneNumber;
+    private String uniqueId;
+    private String otp;
 }

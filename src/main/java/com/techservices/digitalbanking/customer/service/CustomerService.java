@@ -7,6 +7,7 @@ import com.techservices.digitalbanking.core.fineract.model.response.GetClientsCl
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
+import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import org.springframework.data.domain.Pageable;
 
@@ -27,4 +28,6 @@ public interface CustomerService {
 	GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountTypes);
 
 	CustomerDtoResponse getCustomerDtoResponse(Customer customerById);
+
+	CustomerDashboardResponse retrieveCustomerDashboard(Long customerId);
 }

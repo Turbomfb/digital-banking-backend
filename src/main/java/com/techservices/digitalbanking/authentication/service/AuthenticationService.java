@@ -29,4 +29,6 @@ public interface AuthenticationService {
     AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest);
 
     GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest);
+
+    GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command);
 }

@@ -4,13 +4,15 @@ package com.techservices.digitalbanking.customer.service.impl;
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
-import com.techservices.digitalbanking.core.domain.dto.request.OtpDtoRequest;
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
+import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.*;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
@@ -20,7 +22,6 @@ import com.techservices.digitalbanking.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -37,11 +38,11 @@ public class CustomerServiceImpl implements CustomerService {
 	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command) {
 		if ("generate-otp".equalsIgnoreCase(command)) {
 			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber());
-			OtpDtoRequest otpDtoRequest = this.redisService.generateOtpRequest(createCustomerRequest);
-			return new GenericApiResponse(otpDtoRequest.getUniqueId(), "OTP sent successfully", "success", null);
+			OtpDto otpDto = this.redisService.generateOtpRequest(createCustomerRequest, OtpType.ONBOARDING);
+			return new GenericApiResponse(otpDto.getUniqueId(), "OTP sent successfully", "success", null);
 		} else if ("verify-otp".equalsIgnoreCase(command)) {
-			OtpDtoRequest otpDtoRequest = this.redisService.validateOtp(createCustomerRequest.getUniqueId(), createCustomerRequest.getOtp());
-			createCustomerRequest = (CreateCustomerRequest) otpDtoRequest.getData();
+			OtpDto otpDto = this.redisService.validateOtp(createCustomerRequest.getUniqueId(), createCustomerRequest.getOtp(), OtpType.ONBOARDING);
+			createCustomerRequest = (CreateCustomerRequest) otpDto.getData();
 			return this.completeCustomerRegistration(createCustomerRequest);
 		}
 		else {
@@ -89,7 +90,7 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountType) {
 		String externalId = this.retrieveCustomerExternalId(customerId);
-		return clientService.getClientAccountsByClientId(Long.valueOf(externalId), accountType);
+		return clientService.getClientAccountsByClientId(externalId, accountType);
 	}
 
 	private String retrieveCustomerExternalId(Long customerId) {
@@ -99,6 +100,17 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public CustomerDtoResponse getCustomerDtoResponse(Customer customer) {
 		return CustomerDtoResponse.parse(customer, clientService);
+	}
+
+	@Override
+	public CustomerDashboardResponse retrieveCustomerDashboard(Long customerId) {
+		String externalId = this.retrieveCustomerExternalId(customerId);
+		GetClientsClientIdAccountsResponse customerAccounts = clientService.getClientAccountsByClientId(externalId, null);
+		return CustomerDashboardResponse.builder()
+				.walletBalance(customerAccounts.getSavingsAccountsBalance())
+				.flexBalance(customerAccounts.getFixedDepositAccountsBalance())
+				.lockBalance(customerAccounts.getRecurringDepositAccountsBalance())
+				.build();
 	}
 
 	private void validateDuplicateCustomer(String emailAddress, String phoneNumber) {

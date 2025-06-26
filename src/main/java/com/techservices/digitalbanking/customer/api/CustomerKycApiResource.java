@@ -26,13 +26,14 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerKycApiResource {
 
 	private final CustomerKycService customerKycService;
+	private final String GENERATE_OTP = "";
 
 	@Operation(summary = "Update Customer KYC Information", description = "This endpoint allows you to update the KYC (Know Your Customer) information for a specific customer.")
 	@PostMapping
 	public ResponseEntity<BaseAppResponse> updateCustomerKyc(
 			@Validated @RequestBody CustomerKycRequest customerKycRequest,
 			@PathVariable Long customerId,
-			@RequestParam(name = "command", required = false, defaultValue = "generate-otp") String command
+			@RequestParam(name = "command", required = false, defaultValue = GENERATE_OTP) String command
 	) {
 		BaseAppResponse postClientsResponse = customerKycService.updateCustomerKyc(customerKycRequest, customerId, command);
 
