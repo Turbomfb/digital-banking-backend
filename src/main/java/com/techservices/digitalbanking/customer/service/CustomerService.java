@@ -3,9 +3,11 @@ package com.techservices.digitalbanking.customer.service;
 
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
@@ -30,4 +32,6 @@ public interface CustomerService {
 	CustomerDtoResponse getCustomerDtoResponse(Customer customerById);
 
 	CustomerDashboardResponse retrieveCustomerDashboard(Long customerId);
+
+	GenericApiResponse createTransactionPin(Long customerId, CustomerTransactionPinRequest customerTransactionPinRequest);
 }

@@ -60,6 +60,12 @@ public class Customer extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
+    @Column(name = "is_transaction_pin_set", nullable = false)
+    private boolean isTransactionPinSet;
+
+    @Column(name = "transaction_pin")
+    private String transactionPin;
+
 
     @PrePersist
     public void prePersist() {

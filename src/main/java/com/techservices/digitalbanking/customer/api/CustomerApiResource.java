@@ -3,6 +3,8 @@ package com.techservices.digitalbanking.customer.api;
 
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import org.springframework.data.domain.Pageable;
@@ -88,5 +90,15 @@ public class CustomerApiResource {
 		GetClientsClientIdAccountsResponse getClientsResponse = customerService.getClientAccountsByClientId(customerId, accountType);
 
 		return ResponseEntity.ok(getClientsResponse);
+	}
+
+	@Operation(summary = "Create Transaction Pin")
+	@PostMapping("{customerId}/transaction-pin")
+	public ResponseEntity<GenericApiResponse> createTransactionPin(
+			@RequestBody CustomerTransactionPinRequest customerTransactionPinRequest,
+			@PathVariable Long customerId) {
+		GenericApiResponse genericApiResponse = customerService.createTransactionPin(customerId, customerTransactionPinRequest);
+
+		return ResponseEntity.ok(genericApiResponse);
 	}
 }

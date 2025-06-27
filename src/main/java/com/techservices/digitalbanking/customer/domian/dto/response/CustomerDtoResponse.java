@@ -32,6 +32,7 @@ public class CustomerDtoResponse extends BaseAppResponse {
     private String nin;
     private String bvn;
     private boolean isActive;
+    private boolean isTransactionPinSet;
     private CustomerKycTier kycTier;
     private CustomerTierData kycTierData;
 
@@ -68,6 +69,7 @@ public class CustomerDtoResponse extends BaseAppResponse {
         customerDtoResponse.setActive(customer.isActive());
         customerDtoResponse.setUserType(customer.getUserType());
         customerDtoResponse.setKycTier(customer.getKycTier());
+        customerDtoResponse.setTransactionPinSet(customer.isTransactionPinSet());
         customerDtoResponse.setCreatedAt(customer.getCreatedAt());
         customerDtoResponse.setUpdatedAt(customer.getUpdatedAt());
         return customerDtoResponse;

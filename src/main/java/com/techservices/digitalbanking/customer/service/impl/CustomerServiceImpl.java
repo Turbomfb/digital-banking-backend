@@ -14,6 +14,7 @@ import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.*;
@@ -121,15 +122,6 @@ public class CustomerServiceImpl implements CustomerService {
 				)
 				.flexAccount(
 						new CustomerDashboardResponse.Account(
-								customerAccounts.getTotalAccountBalanceFor(AccountType.FIXED_DEPOSIT),
-								customerAccounts.getTotalAccountInterestsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountDepositsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalActivePlanFor(AccountType.FIXED_DEPOSIT, accountService)
-						)
-				)
-				.lockAccount(
-						new CustomerDashboardResponse.Account(
 								customerAccounts.getTotalAccountBalanceFor(AccountType.RECURRING_DEPOSIT),
 								customerAccounts.getTotalAccountInterestsFor(AccountType.RECURRING_DEPOSIT, accountService),
 								customerAccounts.getTotalAccountDepositsFor(AccountType.RECURRING_DEPOSIT, accountService),
@@ -137,7 +129,34 @@ public class CustomerServiceImpl implements CustomerService {
 								customerAccounts.getTotalActivePlanFor(AccountType.RECURRING_DEPOSIT, accountService)
 						)
 				)
+				.lockAccount(
+						new CustomerDashboardResponse.Account(
+								customerAccounts.getTotalAccountBalanceFor(AccountType.FIXED_DEPOSIT),
+								customerAccounts.getTotalAccountInterestsFor(AccountType.FIXED_DEPOSIT, accountService),
+								customerAccounts.getTotalAccountDepositsFor(AccountType.FIXED_DEPOSIT, accountService),
+								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.FIXED_DEPOSIT, accountService),
+								customerAccounts.getTotalActivePlanFor(AccountType.FIXED_DEPOSIT, accountService)
+						)
+				)
 				.build();
+	}
+
+	@Override
+	public GenericApiResponse createTransactionPin(Long customerId, CustomerTransactionPinRequest customerTransactionPinRequest) {
+		Customer foundCustomer = getCustomerById(customerId);
+		if (StringUtils.isBlank(customerTransactionPinRequest.getPin())) {
+			throw new ValidationException("transaction.pin.required", "pin field is required.");
+		}
+		if (StringUtils.isNotBlank(foundCustomer.getTransactionPin())){
+			throw new ValidationException("transaction.pin.already.set", "Transaction pin has already been set for this customer. Kindly reset it.");
+		}
+		if (customerTransactionPinRequest.getPin().length() < 4) {
+			throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
+		}
+		foundCustomer.setTransactionPin(customerTransactionPinRequest.getPin());
+		foundCustomer.setTransactionPinSet(true);
+		customerRepository.save(foundCustomer);
+		return new GenericApiResponse(null, "Transaction pin created successfully", "success", CustomerDtoResponse.parse(foundCustomer));
 	}
 
 	private void validateDuplicateCustomer(String emailAddress, String phoneNumber) {
