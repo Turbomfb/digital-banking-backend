@@ -13,6 +13,7 @@ import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.CustomerTierData;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,9 +23,29 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class CustomerDashboardResponse {
-    private BigDecimal walletBalance;
-    private BigDecimal flexBalance;
-    private BigDecimal lockBalance;
+    private Account walletAccount;
+    private Account flexAccount;
+    private Account lockAccount;
+
+
+    @Setter
+    @Getter
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @RequiredArgsConstructor
+    public static class Account {
+        private BigDecimal walletBalance;
+        private BigDecimal totalInterestEarned;
+        private BigDecimal totalDeposit;
+        private BigDecimal totalWithdrawal;
+        private Long totalActivePlan;
+
+        public Account (BigDecimal walletBalance, BigDecimal totalInterestEarned, BigDecimal totalDeposit, BigDecimal totalWithdrawal, Long totalActivePlan) {
+            this.walletBalance = walletBalance;
+            this.totalInterestEarned = totalInterestEarned;
+            this.totalDeposit = totalDeposit;
+            this.totalWithdrawal = totalWithdrawal;
+            this.totalActivePlan = totalActivePlan;
+        }
+    }
 }

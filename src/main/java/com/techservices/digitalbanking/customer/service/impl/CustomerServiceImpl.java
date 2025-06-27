@@ -6,9 +6,11 @@ import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.enums.AccountType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
@@ -31,6 +33,7 @@ import java.util.Optional;
 public class CustomerServiceImpl implements CustomerService {
 
 	private final ClientService clientService;
+	private final AccountService accountService;
 	private final CustomerRepository customerRepository;
 	private final RedisService redisService;
 
@@ -107,9 +110,33 @@ public class CustomerServiceImpl implements CustomerService {
 		String externalId = this.retrieveCustomerExternalId(customerId);
 		GetClientsClientIdAccountsResponse customerAccounts = clientService.getClientAccountsByClientId(externalId, null);
 		return CustomerDashboardResponse.builder()
-				.walletBalance(customerAccounts.getSavingsAccountsBalance())
-				.flexBalance(customerAccounts.getFixedDepositAccountsBalance())
-				.lockBalance(customerAccounts.getRecurringDepositAccountsBalance())
+				.walletAccount(
+						new CustomerDashboardResponse.Account(
+								customerAccounts.getTotalAccountBalanceFor(AccountType.SAVINGS),
+								customerAccounts.getTotalAccountInterestsFor(AccountType.SAVINGS, accountService),
+								customerAccounts.getTotalAccountDepositsFor(AccountType.SAVINGS, accountService),
+								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.SAVINGS, accountService),
+								customerAccounts.getTotalActivePlanFor(AccountType.SAVINGS, accountService)
+						)
+				)
+				.flexAccount(
+						new CustomerDashboardResponse.Account(
+								customerAccounts.getTotalAccountBalanceFor(AccountType.FIXED_DEPOSIT),
+								customerAccounts.getTotalAccountInterestsFor(AccountType.FIXED_DEPOSIT, accountService),
+								customerAccounts.getTotalAccountDepositsFor(AccountType.FIXED_DEPOSIT, accountService),
+								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.FIXED_DEPOSIT, accountService),
+								customerAccounts.getTotalActivePlanFor(AccountType.FIXED_DEPOSIT, accountService)
+						)
+				)
+				.lockAccount(
+						new CustomerDashboardResponse.Account(
+								customerAccounts.getTotalAccountBalanceFor(AccountType.RECURRING_DEPOSIT),
+								customerAccounts.getTotalAccountInterestsFor(AccountType.RECURRING_DEPOSIT, accountService),
+								customerAccounts.getTotalAccountDepositsFor(AccountType.RECURRING_DEPOSIT, accountService),
+								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.RECURRING_DEPOSIT, accountService),
+								customerAccounts.getTotalActivePlanFor(AccountType.RECURRING_DEPOSIT, accountService)
+						)
+				)
 				.build();
 	}
 

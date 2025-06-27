@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import com.techservices.digitalbanking.core.domain.enums.AccountType;
+import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.Data;
 
@@ -24,27 +26,42 @@ public class GetClientsClientIdAccountsResponse {
 	@Valid
 	private Set<@Valid GetClientsSavingsAccounts> savingsAccounts = new LinkedHashSet<>();
 
-	public BigDecimal getSavingsAccountsBalance() {
+	public BigDecimal getTotalAccountBalanceFor(AccountType accountType) {
 		return this.getSavingsAccounts()
 				.stream()
-				.filter(GetClientsSavingsAccounts::isSavingsAccount)
+				.filter(account -> account != null && account.isAccountType(accountType))
 				.map(account -> Optional.ofNullable(account.getAccountBalance()).orElse(BigDecimal.ZERO))
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
-	public BigDecimal getFixedDepositAccountsBalance() {
+	public BigDecimal getTotalAccountDepositsFor(AccountType accountType, AccountService accountService) {
 		return this.getSavingsAccounts()
 				.stream()
-				.filter(GetClientsSavingsAccounts::isFixedDeposit)
-				.map(account -> Optional.ofNullable(account.getAccountBalance()).orElse(BigDecimal.ZERO))
+				.filter(account -> account != null && account.isAccountType(accountType))
+				.map(account -> Optional.ofNullable(account.getTotalDeposits(accountService)).orElse(BigDecimal.ZERO))
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
-	public BigDecimal getRecurringDepositAccountsBalance() {
+	public BigDecimal getTotalAccountWithdrawalsFor(AccountType accountType, AccountService accountService) {
 		return this.getSavingsAccounts()
 				.stream()
-				.filter(GetClientsSavingsAccounts::isRecurringDeposit)
-				.map(account -> Optional.ofNullable(account.getAccountBalance()).orElse(BigDecimal.ZERO))
+				.filter(account -> account != null && account.isAccountType(accountType))
+				.map(account -> Optional.ofNullable(account.getTotalWithdrawals(accountService)).orElse(BigDecimal.ZERO))
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public BigDecimal getTotalAccountInterestsFor(AccountType accountType, AccountService accountService) {
+		return this.getSavingsAccounts()
+				.stream()
+				.filter(account -> account != null && account.isAccountType(accountType))
+				.map(account -> Optional.ofNullable(account.getTotalInterests(accountService)).orElse(BigDecimal.ZERO))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public Long getTotalActivePlanFor(AccountType accountType, AccountService accountService) {
+		return this.getSavingsAccounts()
+				.stream()
+				.filter(account -> account != null && account.isAccountType(accountType))
+				.count();
 	}
 }

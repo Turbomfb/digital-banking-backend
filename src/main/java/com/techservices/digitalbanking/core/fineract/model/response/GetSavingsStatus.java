@@ -12,6 +12,7 @@ import lombok.Data;
 public class GetSavingsStatus {
 
 	private Boolean active;
+	private Boolean matured;
 	private Boolean approved;
 	private Boolean closed;
 	private String code;

@@ -16,4 +16,7 @@ public class GetSavingsAccountsSummary {
 	private BigDecimal accountBalance;
 	private BigDecimal availableBalance;
 	private GetSavingsCurrency currency;
+	private BigDecimal totalDeposits;
+	private BigDecimal totalWithdrawals;
+	private BigDecimal totalInterestEarned;
 }
