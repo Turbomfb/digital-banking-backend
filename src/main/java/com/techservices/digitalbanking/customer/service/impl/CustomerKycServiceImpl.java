@@ -25,12 +25,14 @@ import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdat
 import com.techservices.digitalbanking.customer.service.CustomerKycService;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomerKycServiceImpl implements CustomerKycService {
@@ -46,7 +48,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 	public BaseAppResponse updateCustomerKyc(CustomerKycRequest customerKycRequest, Long customerId, String command) {
 		Customer foundCustomer = this.customerService.getCustomerById(customerId);
 		if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
-			OtpDto otpDto = this.redisService.validateOtp(customerKycRequest.getUniqueId(), customerKycRequest.getOtp(), OtpType.KYC_UPGRADE);
+			OtpDto otpDto = this.redisService.validateOtpWithoutDeletingRecord(customerKycRequest.getUniqueId(), customerKycRequest.getOtp(), OtpType.KYC_UPGRADE);
 			customerKycRequest = (CustomerKycRequest) otpDto.getData();
 		}
 
@@ -64,7 +66,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
 		this.updateCustomerKycTier(foundCustomer, customerKycRequest);
 		foundCustomer = this.customerRepository.save(foundCustomer);
-
+		this.redisService.validateOtp(customerKycRequest.getUniqueId(), customerKycRequest.getOtp(), OtpType.KYC_UPGRADE);
 		return this.customerService.getCustomerDtoResponse(foundCustomer);
 	}
 
@@ -113,6 +115,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 			CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyNin(customerKycRequest.getNin(), identityVerificationRequest);
 			foundCustomer.setNin(customerKycRequest.getNin());
 			if (!customerIdentityVerificationResponse.isValid()) {
+				log.error("NIN verification failed: {}", customerIdentityVerificationResponse);
 				throw new ValidationException("nin.verification.failed", "Verification failed for nin.", customerIdentityVerificationResponse);
 			}
 		}

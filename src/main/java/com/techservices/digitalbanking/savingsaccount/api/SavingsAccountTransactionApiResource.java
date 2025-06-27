@@ -52,10 +52,12 @@ public class SavingsAccountTransactionApiResource {
 			@RequestParam(required = false) Integer size, @RequestParam(required = false) String startDate,
 			@RequestParam(required = false) String endDate, @RequestParam(required = false) String dateFormat,
 			@RequestParam(required = false) Long productId, @RequestParam(value = "offset", required = false) @Valid Long offset,
-			@RequestParam(value = "limit", required = false) @Valid Long limit) {
+			@RequestParam(value = "limit", required = false) @Valid Long limit,
+			@RequestParam(value = "transactionType", required = false) @Valid String transactionType
+	) {
 
 		return ResponseEntity.ok(savingsAccountTransactionService.retrieveSavingsAccountTransactions(
-				savingsId, startDate, endDate, dateFormat, productId, limit, offset));
+				savingsId, startDate, endDate, dateFormat, productId, limit, offset, transactionType));
 	}
 
 	@GetMapping("/statement")

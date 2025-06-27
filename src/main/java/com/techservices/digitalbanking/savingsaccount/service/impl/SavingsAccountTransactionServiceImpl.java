@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
-import java.util.List;
 
 import static com.techservices.digitalbanking.core.util.TransactionUtil.*;
 import static com.techservices.digitalbanking.core.util.TransactionUtil.UNDO;
@@ -75,9 +74,9 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 	@Override
 	public FineractPageResponse<SavingsAccountTransactionData> retrieveSavingsAccountTransactions(
 			Long savingsAccountId, String startDate, String endDate, String dateFormat, Long productId,
-			Long limit, @Valid Long offset) {
+			Long limit, @Valid Long offset, @Valid String transactionType) {
 		return accountTransactionService.retrieveSavingsAccountTransactions(savingsAccountId, startDate, endDate,
-				dateFormat, limit, offset);
+				dateFormat, limit, offset, transactionType);
 	}
 
 	@Override
@@ -88,7 +87,7 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 
 	@Override
 	public BigDecimal getBalanceAsOfDate(Long savingsId, LocalDate localDate) {
-		return this.retrieveSavingsAccountTransactions(savingsId, localDate.toString(), null, "yyyy-MM-dd", null, null, null)
+		return this.retrieveSavingsAccountTransactions(savingsId, localDate.toString(), null, "yyyy-MM-dd", null, null, null, null)
 				.getPageItems()
 				.stream()
 				.filter(transaction -> !transaction.getDate().isAfter(localDate))

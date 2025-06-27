@@ -47,7 +47,7 @@ public class SavingsAccountStatementServiceImpl implements SavingsAccountStateme
                         "yyyy-MM-dd",
                         request.getProductId(),
                         request.getLimit(),
-                        request.getOffset());
+                        request.getOffset(), null);
 
         List<SavingsAccountTransactionData> transactions = transactionResult.getPageItems();
 

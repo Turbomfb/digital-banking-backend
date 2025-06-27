@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.validation.Valid;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.exception.AbstractPlatformDomainRuleException;
@@ -167,10 +169,18 @@ public class AccountTransactionService {
 	}
 
 	public FineractPageResponse<SavingsAccountTransactionData> retrieveSavingsAccountTransactions(Long savingsAccountId,
-			String startDate, String endDate, String dateFormat, Long limit, Long offset) {
+																								  String startDate, String endDate, String dateFormat, Long limit, Long offset, @Valid String transactionType) {
 
 		FineractPageTransactionResponse<SavingsAccountTransactionData> savingsAccountTransactions = savingsAccountApiClient
 				.searchTransactions(savingsAccountId, startDate, endDate, dateFormat, offset, limit);
+		if (StringUtils.isNotBlank(transactionType)) {
+			savingsAccountTransactions.setContent(
+					savingsAccountTransactions.getContent().stream()
+							.filter(transaction -> transaction != null && StringUtils.equalsIgnoreCase(transaction.getActualTransactionType(), transactionType))
+							.toList()
+			);
+		}
+
 		return FineractPageResponse.create(savingsAccountTransactions);
 	}
 

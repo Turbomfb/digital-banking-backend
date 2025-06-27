@@ -46,6 +46,7 @@ public class IdentityVerificationService {
     }
 
     public CustomerIdentityVerificationResponse verifyNin(String nin, IdentityVerificationRequest customerData) {
+        log.info("Verifying nin: {}", nin);
         GetClientsClientIdResponse client = clientService.getCustomerByNin(nin);
         IdentityVerificationResponse identityVerificationResponse = client != null ? IdentityVerificationResponse.parse(client) : retrieveNinData(nin);
         return processVerificationResponse(identityVerificationResponse, customerData);

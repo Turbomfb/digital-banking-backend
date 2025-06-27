@@ -5,7 +5,6 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.*;
 import com.techservices.digitalbanking.core.fineract.model.response.PaymentDetailData;
 import org.apache.poi.ss.usermodel.*;
-import com.itextpdf.text.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
@@ -146,7 +145,7 @@ public class StatementService {
                             "yyyy-MM-dd",
                             request.getProductId(),
                             request.getLimit(),
-                            request.getOffset());
+                            request.getOffset(), null);
 
             List<SavingsAccountTransactionData> transactions = transactionResult.getPageItems();
 

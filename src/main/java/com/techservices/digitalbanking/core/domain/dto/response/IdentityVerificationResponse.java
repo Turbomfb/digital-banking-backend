@@ -26,6 +26,7 @@ public class IdentityVerificationResponse {
         identityVerificationResponseData.setLastName(client.getLastname());
         identityVerificationResponseData.setMobile(client.getMobileNo());
         identityVerificationResponse.setData(identityVerificationResponseData);
+        identityVerificationResponse.setSuccess(true);
         return identityVerificationResponse;
     }
 

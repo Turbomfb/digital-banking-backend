@@ -17,7 +17,7 @@ public interface SavingsAccountTransactionService {
 			String command, String savingsAccountNumber, Long transactionId, Long productId);
 
 	FineractPageResponse<SavingsAccountTransactionData> retrieveSavingsAccountTransactions(Long savingsId,
-			String startDate, String endDate, String dateFormat, Long productId, @Valid Long limit, @Valid Long offset);
+																						   String startDate, String endDate, String dateFormat, Long productId, @Valid Long limit, @Valid Long offset, @Valid String transactionType);
 
 	SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long savingsId, Long transactionId,
 			Long productId);
