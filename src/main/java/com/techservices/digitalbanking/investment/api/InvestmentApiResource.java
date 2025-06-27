@@ -22,19 +22,6 @@ import lombok.RequiredArgsConstructor;
 public class InvestmentApiResource {
 	private final InvestmentService investmentService;
 
-	@Operation(summary = "Retrieve Investment List")
-	@GetMapping
-	public ResponseEntity<GetFixedDepositAccountsResponse> retrieveAllInvestments(
-			@Valid @RequestParam(value = "paged", required = false) Boolean paged,
-			@Valid @RequestParam(value = "offset", required = false) Integer offset,
-			@Valid @RequestParam(value = "limit", required = false) Integer limit,
-			@Valid @RequestParam(value = "orderBy", required = false) String orderBy,
-			@Valid @RequestParam(value = "sortOrder", required = false) String sortOrder) {
-		GetFixedDepositAccountsResponse investments = investmentService.retrieveAllInvestments(paged, offset,
-				limit, orderBy, sortOrder);
-		return ResponseEntity.ok(investments);
-	}
-
 	@Operation(summary = "Retrieve an Investment")
 	@GetMapping("{id}")
 	public ResponseEntity<GetFixedDepositAccountsAccountIdResponse> retrieveInvestmentById(@PathVariable Long id,
