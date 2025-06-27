@@ -3,16 +3,15 @@ package com.techservices.digitalbanking.core.fineract.service;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.fineract.model.request.*;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.api.ClientApiClient;
 import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientsClientIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientsDatatable;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientsRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PutClientsClientIdRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsResponse;
@@ -207,5 +206,10 @@ public class ClientService {
 		postClientsClientIdRequest.setLocale(DEFAULT_LOCALE);
 		postClientsClientIdRequest.setDateFormat(DEFAULT_DATE_FORMAT);
 		return clientApiClient.manageClient(customerId, postClientsClientIdRequest, command);
+	}
+
+	public FineractPageResponse<KycTier> retrieveAllKycTier() {
+		List<KycTier> kycTiers = clientApiClient.retrieveAllKycTier();
+        return new FineractPageResponse<>(kycTiers);
 	}
 }

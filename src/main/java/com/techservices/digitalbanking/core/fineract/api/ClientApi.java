@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.fineract.api;
 
 import java.util.List;
 
+import com.techservices.digitalbanking.core.fineract.model.request.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,12 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientClientIdAddressesRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientsClientIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientsRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PutClientClientIdAddressesRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PutClientsClientIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PutDataTableRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientAddressTemplateResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientClientIdAddressesResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
@@ -103,4 +98,7 @@ public interface ClientApi {
 			@PathVariable(name = "clientId") Long clientId,
 			@RequestParam(name = "genericResultSet", defaultValue = "true") String genericResultSet,
 			@Valid @RequestBody PutDataTableRequest putDataTableRequest);
+
+	@GetMapping(value = "/clients/tiers")
+	List<KycTier> retrieveAllKycTier();
 }

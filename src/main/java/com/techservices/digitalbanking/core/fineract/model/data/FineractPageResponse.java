@@ -8,14 +8,21 @@ import java.util.List;
 
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class FineractPageResponse<E> implements Serializable {
 
 	private int totalFilteredRecords;
 	private List<E> pageItems = Collections.emptyList();
+
+	public FineractPageResponse(List<E> contents) {
+		this.totalFilteredRecords = contents.size();
+		this.pageItems = !contents.isEmpty() ? contents : Collections.emptyList();
+	}
 
 	public static <E> FineractPageResponse<E> create(int totalFilteredRecords, List<E> pageItems) {
 		FineractPageResponse<E> response = new FineractPageResponse<>();

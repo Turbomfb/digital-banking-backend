@@ -14,11 +14,9 @@ public class KycTier {
 
 	private BigDecimal maximumBalance;
 
-	private BigDecimal maximumDailyDepositLimit;
+	private BigDecimal singleDepositLimit;
 
-	private BigDecimal maximumSingleDepositLimit;
+	private BigDecimal dailyWithdrawalLimit;
 
-	private BigDecimal maximumDailyWithdrawalLimit;
-
-	private BigDecimal maximumSingleWithdrawalLimit;
+	private BigDecimal singleWithdrawalLimit;
 }

@@ -2,6 +2,9 @@
 package com.techservices.digitalbanking.customer.api;
 
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.fineract.model.request.KycTier;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostClientsClientIdResponse;
@@ -20,7 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("api/v1/customers/{customerId}/kyc")
+@RequestMapping("api/v1")
 @RestController
 @RequiredArgsConstructor
 public class CustomerKycApiResource {
@@ -29,13 +32,21 @@ public class CustomerKycApiResource {
 	private final String GENERATE_OTP = "";
 
 	@Operation(summary = "Update Customer KYC Information", description = "This endpoint allows you to update the KYC (Know Your Customer) information for a specific customer.")
-	@PostMapping
+	@PostMapping("customers/{customerId}/kyc")
 	public ResponseEntity<BaseAppResponse> updateCustomerKyc(
 			@Validated @RequestBody CustomerKycRequest customerKycRequest,
 			@PathVariable Long customerId,
 			@RequestParam(name = "command", required = false, defaultValue = GENERATE_OTP) String command
 	) {
 		BaseAppResponse postClientsResponse = customerKycService.updateCustomerKyc(customerKycRequest, customerId, command);
+
+		return new ResponseEntity<>(postClientsResponse, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Retrieve all KYC Tiers", description = "This endpoint allows you to retrieve the KYC tiers for a specific customer.")
+	@GetMapping("kyc-tiers")
+	public ResponseEntity<FineractPageResponse<KycTier>> retrieveAllKycTier() {
+		FineractPageResponse<KycTier> postClientsResponse = customerKycService.retrieveAllKycTier();
 
 		return new ResponseEntity<>(postClientsResponse, HttpStatus.OK);
 	}

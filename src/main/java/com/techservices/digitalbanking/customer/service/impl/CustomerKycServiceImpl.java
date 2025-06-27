@@ -10,6 +10,8 @@ import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentity
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.fineract.model.request.KycTier;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostClientsResponse;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
@@ -68,6 +70,11 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		foundCustomer = this.customerRepository.save(foundCustomer);
 		this.redisService.validateOtp(customerKycRequest.getUniqueId(), customerKycRequest.getOtp(), OtpType.KYC_UPGRADE);
 		return this.customerService.getCustomerDtoResponse(foundCustomer);
+	}
+
+	@Override
+	public FineractPageResponse<KycTier> retrieveAllKycTier() {
+		return clientService.retrieveAllKycTier();
 	}
 
 	private IdentityVerificationResponse validateKycParameters(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
