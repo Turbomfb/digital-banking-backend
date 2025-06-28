@@ -11,7 +11,8 @@ public class AppUtil {
 			"/swagger-ui/**",
 			"/swagger-ui.html",
 			"/actuator/health",
-			"/actuator/info"
+			"/actuator/info",
+			"/api/v1/cba/health"
 	};
 
 	public static final String[] PUBLIC_POST_ENDPOINTS = {
