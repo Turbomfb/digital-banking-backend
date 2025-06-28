@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import feign.RetryableException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -98,5 +99,14 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 		}
 		ExceptionResponse error = new ExceptionResponse(new Date(), "Validation Failed", details);
 		return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(RetryableException.class)
+	protected ResponseEntity<Object> handleRetryableException(RetryableException ex,
+																  HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+
+		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+				request.getDescription(false), ex.getLocalizedMessage(), null);
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 }
