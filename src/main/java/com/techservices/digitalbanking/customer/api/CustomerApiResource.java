@@ -70,13 +70,8 @@ public class CustomerApiResource {
 
 	@Operation(summary = "Retrieve Customer's dashboard by ID")
 	@GetMapping("{customerId}/dashboard")
-	public ResponseEntity<Object> retrieveCustomerDashboard(@PathVariable Long customerId) {
-		try {
-			return ResponseEntity.ok(customerService.retrieveCustomerDashboard(customerId));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatusCode.valueOf(500))
-					.body(new GenericApiResponse("Error retrieving customer dashboard: ",  e.getMessage(), e.toString()));
-		}
+	public ResponseEntity<CustomerDashboardResponse> retrieveCustomerDashboard(@PathVariable Long customerId) {
+		return ResponseEntity.ok(customerService.retrieveCustomerDashboard(customerId));
 	}
 
 	@Operation(summary = "Retrieve All Customers")
