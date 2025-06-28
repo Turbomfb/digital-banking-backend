@@ -15,6 +15,7 @@ public class CustomerDashboardResponse {
     private Account walletAccount;
     private Account flexAccount;
     private Account lockAccount;
+    private Account investmentMetrics;
 
 
     @Setter

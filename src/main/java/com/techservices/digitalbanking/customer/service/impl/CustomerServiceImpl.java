@@ -110,7 +110,7 @@ public class CustomerServiceImpl implements CustomerService {
 	public CustomerDashboardResponse retrieveCustomerDashboard(Long customerId) {
 		String externalId = this.retrieveCustomerExternalId(customerId);
 		GetClientsClientIdAccountsResponse customerAccounts = clientService.getClientAccountsByClientId(externalId, null);
-		return CustomerDashboardResponse.builder()
+		CustomerDashboardResponse customerDashboardResponse = CustomerDashboardResponse.builder()
 				.walletAccount(
 						new CustomerDashboardResponse.Account(
 								customerAccounts.getTotalAccountBalanceFor(AccountType.SAVINGS),
@@ -139,6 +139,16 @@ public class CustomerServiceImpl implements CustomerService {
 						)
 				)
 				.build();
+		customerDashboardResponse.setInvestmentMetrics(
+				new CustomerDashboardResponse.Account(
+						null,
+						customerDashboardResponse.getFlexAccount().getTotalInterestEarned().add(customerDashboardResponse.getLockAccount().getTotalInterestEarned()),
+						customerDashboardResponse.getFlexAccount().getTotalDeposit().add(customerDashboardResponse.getLockAccount().getTotalDeposit()),
+						customerDashboardResponse.getFlexAccount().getTotalWithdrawal().add(customerDashboardResponse.getLockAccount().getTotalWithdrawal()),
+						customerDashboardResponse.getFlexAccount().getTotalActivePlan() + customerDashboardResponse.getLockAccount().getTotalActivePlan()
+				)
+		);
+		return customerDashboardResponse;
 	}
 
 	@Override
