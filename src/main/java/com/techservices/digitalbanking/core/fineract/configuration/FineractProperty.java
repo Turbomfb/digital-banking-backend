@@ -22,4 +22,6 @@ public class FineractProperty {
 	private int readTimeoutMs;
 	private int writeTimeoutMs;
 	private Long paymentTypeId;
+	private Long savingsAccountNominalAnnualInterestRate;
+	private Long defaultSavingsProductId;
 }

@@ -25,6 +25,7 @@ import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.configuration.RedisProperty;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisService {
     private final RedisProperty redisProperty;
 
@@ -116,7 +118,8 @@ public class RedisService {
             throw new ValidationException("invalid.otp", "Invalid OTP provided.");
         }
         otpDto.setValidated(true);
-        this.save(otpDto.getUniqueId(), otpDto);
+        log.info("OTP validated successfully for uniqueId: {}", uniqueId);
+        this.save(uniqueId, otpDto);
         return otpDto;
     }
 

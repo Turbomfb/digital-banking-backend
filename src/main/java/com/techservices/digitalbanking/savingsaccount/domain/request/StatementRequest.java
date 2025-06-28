@@ -1,5 +1,5 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.request;
+package com.techservices.digitalbanking.savingsaccount.domain.request;
 
 import lombok.Builder;
 import lombok.Getter;

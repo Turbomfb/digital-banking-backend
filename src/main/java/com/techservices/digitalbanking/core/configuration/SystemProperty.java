@@ -13,9 +13,6 @@ public class SystemProperty {
 	@Value("${spring.profiles.active}")
 	private String activeProfile;
 
-	@Value("${fineract.integration.default.savings.product.id}")
-	private Long defaultSavingsProductId;
-
 	@Value("${payinvert.integration.url}")
 	private String payinvertIntegrationUrl;
 

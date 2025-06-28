@@ -67,7 +67,7 @@ public class IdentityVerificationService {
 
     private CustomerIdentityVerificationResponse processVerificationResponse(IdentityVerificationResponse response, IdentityVerificationRequest customerData) {
         if (response == null || !response.isSuccess() || response.getData() == null) {
-            log.error(response.toString());
+            log.error(String.valueOf(response));
             throw new ValidationException("verification.failed", "Verification failed for identifier.");
         }
 

@@ -1,7 +1,6 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.customer.service.impl;
 
-import com.techservices.digitalbanking.core.configuration.SystemProperty;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
@@ -10,17 +9,19 @@ import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentity
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.request.KycTier;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostClientsResponse;
+import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
+import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
-import com.techservices.digitalbanking.customer.domian.dto.CustomerTierData;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
@@ -41,16 +42,20 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
 	private final CustomerService customerService;
 	private final ClientService clientService;
-	private final SystemProperty systemProperty;
 	private final CustomerRepository customerRepository;
 	private final IdentityVerificationService identityVerificationService;
 	private final RedisService redisService;
+	private final AccountService accountService;
+	private final FineractProperty fineractProperty;
 
 	@Override
 	public BaseAppResponse updateCustomerKyc(CustomerKycRequest customerKycRequest, Long customerId, String command) {
+		log.info("customerKycRequest: {}", customerKycRequest);
 		Customer foundCustomer = this.customerService.getCustomerById(customerId);
+		String uniqueId = customerKycRequest.getUniqueId();
+		String otp = customerKycRequest.getOtp();
 		if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
-			OtpDto otpDto = this.redisService.validateOtpWithoutDeletingRecord(customerKycRequest.getUniqueId(), customerKycRequest.getOtp(), OtpType.KYC_UPGRADE);
+			OtpDto otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.KYC_UPGRADE);
 			customerKycRequest = (CustomerKycRequest) otpDto.getData();
 		}
 
@@ -60,15 +65,16 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 			OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE);
 			return new GenericApiResponse(otpDto.getUniqueId(), "OTP sent successfully", "success", null);
 		}
+		CustomerKycTier customerKycTier = this.getCustomerKycTier(foundCustomer);
 		if (!foundCustomer.isActive()) {
-			this.activateCustomer(foundCustomer, customerKycRequest);
+			this.activateCustomer(foundCustomer, customerKycRequest, customerKycTier);
 		} else {
-			this.updateCustomerDetails(foundCustomer, customerKycRequest, customerId);
+			this.updateCustomerDetails(foundCustomer, customerKycRequest, customerId, customerKycTier);
 		}
 
-		this.updateCustomerKycTier(foundCustomer, customerKycRequest);
+		foundCustomer.setKycTier(customerKycTier);
 		foundCustomer = this.customerRepository.save(foundCustomer);
-		this.redisService.validateOtp(customerKycRequest.getUniqueId(), customerKycRequest.getOtp(), OtpType.KYC_UPGRADE);
+		this.redisService.validateOtp(uniqueId, otp, OtpType.KYC_UPGRADE);
 		return this.customerService.getCustomerDtoResponse(foundCustomer);
 	}
 
@@ -84,6 +90,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		}
 
 		if (StringUtils.isNotBlank(customerKycRequest.getBvn())) {
+			log.info("Validating BVN: {}", customerKycRequest.getBvn());
 			customerRepository.findByBvn(customerKycRequest.getBvn()).ifPresent(existedCustomer -> {
 				throw new ValidationException("bvn.already.exists", "A customer with this BVN already exists.");
 			});
@@ -105,6 +112,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		}
 
 		if (StringUtils.isNotBlank(customerKycRequest.getNin())) {
+			log.info("Validating NIN: {}", customerKycRequest.getNin());
 			customerRepository.findByNin(customerKycRequest.getNin())
 					.ifPresent(existingCustomer -> {
 						throw new ValidationException("nin.already.exists", "A customer with this NIN already exists.");
@@ -129,18 +137,47 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		return null;
 	}
 
-	private void activateCustomer(Customer foundCustomer, CustomerKycRequest customerKycRequest) {
-		CreateCustomerRequest createCustomerRequest = buildCreateCustomerRequest(foundCustomer, customerKycRequest);
-		PostClientsResponse createCustomerResponse = clientService.createCustomer(createCustomerRequest);
+	private void activateCustomer(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier) {
+		GetClientsClientIdResponse client = clientService.searchClients(customerKycRequest.getNin(), customerKycRequest.getBvn());
+        CreateCustomerRequest createCustomerRequest = buildCreateCustomerRequest(foundCustomer, customerKycRequest, customerKycTier);
+        PostClientsResponse createCustomerResponse = null;
+        if (client == null) {
+            createCustomerResponse = clientService.createCustomer(createCustomerRequest);
+        } else {
+			this.upgradeClientTier(customerKycTier, client.getId());
+		}
 
-		if (createCustomerResponse != null) {
-			foundCustomer.setExternalId(String.valueOf(createCustomerResponse.getClientId()));
-			foundCustomer.setAccountId(createCustomerResponse.getSavingsId());
-			foundCustomer.setActive(true);
+        Long clientId = client != null && client.getId() != null ? client.getId() : createCustomerResponse != null ? createCustomerResponse.getClientId() : null;
+		if (clientId != null) {
+			PostSavingsAccountsResponse savingsAccountsResponse = accountService.createSavingsAccount(
+					clientId, fineractProperty.getDefaultSavingsProductId(), null, null, null,
+					null, true, fineractProperty.getSavingsAccountNominalAnnualInterestRate()
+			);
+
+			if (savingsAccountsResponse != null) {
+				foundCustomer.setExternalId(String.valueOf(clientId));
+				foundCustomer.setAccountId(String.valueOf(savingsAccountsResponse.getSavingsId()));
+				foundCustomer.setActive(true);
+			}
 		}
 	}
 
-	private CreateCustomerRequest buildCreateCustomerRequest(Customer foundCustomer, CustomerKycRequest customerKycRequest) {
+	private void upgradeClientTier(CustomerKycTier customerKycTier, Long clientId) {
+		CustomerUpdateRequest updateRequest = new CustomerUpdateRequest();
+		updateRequest.setKycTier(customerKycTier.getCode());
+		clientService.updateCustomer(updateRequest, clientId);
+	}
+
+	private CustomerKycTier getCustomerKycTier(Customer foundCustomer) {
+		if (!StringUtils.isAllBlank(foundCustomer.getNin(), foundCustomer.getBvn())) {
+			if (StringUtils.isNoneBlank(foundCustomer.getBvn(), foundCustomer.getNin())) {
+				return CustomerKycTier.TIER_2;
+			} return CustomerKycTier.TIER_1;
+		}
+		return null;
+	}
+
+	private CreateCustomerRequest buildCreateCustomerRequest(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier) {
 		CreateCustomerRequest createCustomerRequest = new CreateCustomerRequest();
 		createCustomerRequest.setBvn(customerKycRequest.getBvn());
 		createCustomerRequest.setNin(customerKycRequest.getNin());
@@ -148,22 +185,19 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		createCustomerRequest.setLastname(foundCustomer.getLastname());
 		createCustomerRequest.setEmailAddress(foundCustomer.getEmailAddress());
 		createCustomerRequest.setPhoneNumber(foundCustomer.getPhoneNumber());
-		createCustomerRequest.setSavingsProductId(systemProperty.getDefaultSavingsProductId());
+		if (customerKycTier != null) {
+			createCustomerRequest.setKycTier(customerKycTier.getCode());
+		}
 		return createCustomerRequest;
 	}
 
-	private void updateCustomerDetails(Customer foundCustomer, CustomerKycRequest customerKycRequest, Long customerId) {
+	private void updateCustomerDetails(Customer foundCustomer, CustomerKycRequest customerKycRequest, Long customerId, CustomerKycTier customerKycTier) {
 		CustomerUpdateRequest customerUpdateRequest = new CustomerUpdateRequest();
 		customerUpdateRequest.setBvn(customerKycRequest.getBvn());
 		customerUpdateRequest.setNin(customerKycRequest.getNin());
-		customerService.updateCustomer(customerUpdateRequest, customerId, foundCustomer);
-	}
-
-	private void updateCustomerKycTier(Customer foundCustomer, CustomerKycRequest customerKycRequest) {
-		GetClientsClientIdResponse getClientsClientIdResponse = clientService.getCustomerById(Long.valueOf(foundCustomer.getExternalId()));
-		CustomerTierData kycTier = getClientsClientIdResponse.getKycTier();
-		if (kycTier != null) {
-			foundCustomer.setKycTier(CustomerKycTier.findByCode(String.valueOf(kycTier.getId())));
+		if (customerKycTier != null) {
+			customerUpdateRequest.setKycTier(customerKycTier.getCode());
 		}
+		customerService.updateCustomer(customerUpdateRequest, customerId, foundCustomer);
 	}
 }

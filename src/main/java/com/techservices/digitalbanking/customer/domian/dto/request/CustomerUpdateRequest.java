@@ -49,6 +49,8 @@ public class CustomerUpdateRequest {
 	@JsonProperty("dateOfBirth")
 	private String dateOfBirth;
 
+	private String kycTier;
+
 	private Boolean proofOfAddress;
 
 

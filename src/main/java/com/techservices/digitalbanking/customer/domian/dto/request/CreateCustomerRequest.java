@@ -44,6 +44,7 @@ public class CreateCustomerRequest {
 	private Long savingsProductId;
 
 	private String phoneNumber;
+	private String kycTier;
 	private String emailAddress;
 	private String firstname;
 	private String lastname;

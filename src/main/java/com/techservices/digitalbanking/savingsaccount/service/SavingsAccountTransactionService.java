@@ -4,7 +4,7 @@ package com.techservices.digitalbanking.savingsaccount.service;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountTransactionsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
-import com.techservices.digitalbanking.savingsaccount.request.CreateSavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.savingsaccount.domain.request.CreateSavingsAccountTransactionRequest;
 
 import jakarta.validation.Valid;
 

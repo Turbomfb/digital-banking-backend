@@ -85,13 +85,14 @@ public class AccountService {
 	}
 
 	public PostSavingsAccountsResponse createSavingsAccount(Long clientId, Long productId, String accountNumber,
-			String accountName, String externalId, PostClientsDatatable postClientsDatatable, boolean active) {
+															String accountName, String externalId, PostClientsDatatable postClientsDatatable, boolean active, Long savingsAccountNominalAnnualInterestRate) {
 		PostSavingsAccountsRequest postSavingsAccountsRequest = new PostSavingsAccountsRequest();
 		postSavingsAccountsRequest.setClientId(clientId);
 		postSavingsAccountsRequest.setProductId(productId);
 		postSavingsAccountsRequest.setActive(active);
 		postSavingsAccountsRequest.setLocale("en");
 		postSavingsAccountsRequest.setAccountName(accountName);
+		postSavingsAccountsRequest.setNominalAnnualInterestRate(savingsAccountNominalAnnualInterestRate);
 		postSavingsAccountsRequest.setDateFormat(DateUtil.getDefaultDateFormat());
 
 		postSavingsAccountsRequest.setSubmittedOnDate(DateUtil.getCurrentDate());

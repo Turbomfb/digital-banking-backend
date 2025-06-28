@@ -10,7 +10,7 @@ import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAc
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountTransactionsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.fineract.service.AccountTransactionService;
-import com.techservices.digitalbanking.savingsaccount.request.CreateSavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.savingsaccount.domain.request.CreateSavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountService;
 import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountTransactionService;
 
@@ -35,14 +35,14 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 			CreateSavingsAccountTransactionRequest createSavingsAccountTransactionRequest, String command,
 			String savingsAccountNumber, Long transactionId, Long productId) {
 		GetSavingsAccountsAccountIdResponse savingsAccount = savingsAccountService
-				.retrieveSavingsAccountById(savingsAccountNumber, productId);
+				.retrieveSavingsAccountById(savingsAccountNumber);
 
 		// if beneficiary account number is passed , then get details
 		// of the beneficiary account
 		GetSavingsAccountsAccountIdResponse toSavingsAccount = null;
 		if (StringUtils.isNotBlank(createSavingsAccountTransactionRequest.beneficiaryAccountNumber())) {
 			toSavingsAccount = savingsAccountService.retrieveSavingsAccountById(
-					createSavingsAccountTransactionRequest.beneficiaryAccountNumber(), productId);
+					createSavingsAccountTransactionRequest.beneficiaryAccountNumber());
 		}
 
 		Long savingsAccountId = savingsAccount.getId();

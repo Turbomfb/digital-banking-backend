@@ -30,6 +30,8 @@ public class PostSavingsAccountsRequest {
 
 	private Long productId;
 
+	private Long nominalAnnualInterestRate;
+
 	private Boolean active;
 
 	private String submittedOnDate;

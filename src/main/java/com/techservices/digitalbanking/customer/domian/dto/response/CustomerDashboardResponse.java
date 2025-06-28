@@ -1,6 +1,7 @@
 package com.techservices.digitalbanking.customer.domian.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class CustomerDashboardResponse {
     @Getter
     @JsonIgnoreProperties(ignoreUnknown = true)
     @RequiredArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Account {
         private BigDecimal balance;
         private BigDecimal totalInterestEarned;

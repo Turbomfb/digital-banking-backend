@@ -1,11 +1,15 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.savingsaccount.service;
 
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
-import com.techservices.digitalbanking.savingsaccount.request.CreateSavingsAccountRequest;
+import com.techservices.digitalbanking.savingsaccount.domain.request.CreateSavingsAccountRequest;
+import com.techservices.digitalbanking.savingsaccount.domain.response.SavingsInterestBreakdownResponse;
+
+import java.time.LocalDate;
 
 public interface SavingsAccountService {
 
@@ -15,5 +19,7 @@ public interface SavingsAccountService {
 
 	GetSavingsAccountsResponse retrieveAllSavingsAccount(Long limit, Long offset, Long productId);
 
-	GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(String savingsAccountId, Long productId);
+	GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(String savingsAccountId);
+
+	BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(String savingsAccountId, LocalDate startDate, LocalDate endDate);
 }

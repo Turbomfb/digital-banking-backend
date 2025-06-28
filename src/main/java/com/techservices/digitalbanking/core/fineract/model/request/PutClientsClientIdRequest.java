@@ -75,8 +75,7 @@ public class PutClientsClientIdRequest {
 	@JsonProperty("sourceSystem")
 	private String sourceSystem;
 
-	@JsonProperty("clientTierId")
-	private Long clientTierId;
+	private String kycTier;
 
 	private PostClientNonPersonDetails clientNonPersonDetails;
 	private Long clientTypeId;
@@ -109,7 +108,7 @@ public class PutClientsClientIdRequest {
 	@JsonIgnore
 	public boolean isAllFieldsNull() {
 		return (mobileNo == null && firstname == null && lastname == null && middleName == null && nin == null
-				&& clientTierId == null && bvn == null && fullName == null && emailAddress == null
+				&& kycTier == null && bvn == null && fullName == null && emailAddress == null
 				&& proofOfAddress == null && dateOfBirth == null && clientClassificationId == null
 				&& clientTypeId == null && clientNonPersonDetails == null);
 	}

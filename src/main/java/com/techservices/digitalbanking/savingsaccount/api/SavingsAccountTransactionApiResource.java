@@ -1,7 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.savingsaccount.api;
 
-import com.techservices.digitalbanking.savingsaccount.request.StatementRequest;
+import com.techservices.digitalbanking.savingsaccount.domain.request.StatementRequest;
 import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountStatementService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -10,33 +10,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountTransactionsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
-import com.techservices.digitalbanking.savingsaccount.request.CreateSavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountTransactionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import javax.security.auth.login.AccountNotFoundException;
-import java.io.PrintWriter;
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
-import java.util.List;
 
 @RequestMapping("api/v1/savings-accounts/{savingsId}/transactions")
 @RestController

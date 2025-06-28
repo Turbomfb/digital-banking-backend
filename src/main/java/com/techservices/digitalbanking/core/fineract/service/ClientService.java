@@ -144,9 +144,9 @@ public class ClientService {
 		return postClientsDatatable;
 	}
 
-	public PutClientsClientIdResponse updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId) {
+	public PutClientsClientIdResponse updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long clientId) {
 		PutClientsClientIdRequest putClientsClientIdRequest = this.retrieveUpdateRequest(customerUpdateRequest);
-		return clientApiClient.updateClient(customerId, putClientsClientIdRequest);
+		return clientApiClient.updateClient(clientId, putClientsClientIdRequest);
 	}
 
 	private PutClientsClientIdRequest retrieveUpdateRequest(CustomerUpdateRequest customerUpdateRequest) {
@@ -165,6 +165,7 @@ public class ClientService {
 		putClientsClientIdRequest.setMobileNo(customerUpdateRequest.getPhoneNumber());
 		putClientsClientIdRequest.setNin(customerUpdateRequest.getNin());
 		putClientsClientIdRequest.setBvn(customerUpdateRequest.getBvn());
+		putClientsClientIdRequest.setKycTier(customerUpdateRequest.getKycTier());
 		putClientsClientIdRequest.setBvn(customerUpdateRequest.getBvn());
 		putClientsClientIdRequest.setProofOfAddress(customerUpdateRequest.getProofOfAddress());
 
@@ -189,6 +190,14 @@ public class ClientService {
 
 	public GetClientsClientIdResponse getCustomerByNin(String nin) {
 		return clientApiClient.retrieveAll(null, 1, nin, null)						.getPageItems()
+				.stream()
+				.findAny()
+				.orElse(null);
+	}
+
+	public GetClientsClientIdResponse searchClients(String nin, String bvn) {
+		return clientApiClient.retrieveAll(null, 1, nin, bvn)
+				.getPageItems()
 				.stream()
 				.findAny()
 				.orElse(null);
