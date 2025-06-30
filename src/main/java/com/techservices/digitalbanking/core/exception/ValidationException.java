@@ -27,8 +27,8 @@ public class ValidationException extends RuntimeException {
 	}
 
 	public ValidationException(final String message) {
-		this.globalisationMessageCode = "error.msg.user.unauthorized";
-		this.defaultUserMessage = "message";
+		this.globalisationMessageCode = "error.msg.validation.exception";
+		this.defaultUserMessage = message;
 		this.defaultUserMessageArgs = null;
 	}
 

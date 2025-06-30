@@ -34,4 +34,6 @@ public interface CustomerService {
 	CustomerDashboardResponse retrieveCustomerDashboard(Long customerId);
 
 	GenericApiResponse createTransactionPin(Long customerId, CustomerTransactionPinRequest customerTransactionPinRequest);
+
+	String getCustomerSavingsId(Long customerId);
 }

@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.savingsaccount.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.savingsaccount.domain.response.SavingsInterestBreakdownResponse;
@@ -58,38 +59,51 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 
 	@Override
 	public BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(Long customerId, LocalDate startDate, LocalDate endDate) {
-		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
+		String savingsAccountId = customerService.getCustomerSavingsId(customerId);
 		GetSavingsAccountsAccountIdResponse savingsAccount = retrieveSavingsAccountById(savingsAccountId);
-		int dateDifference = startDate.until(endDate).getDays();
-		BigDecimal currentBalance = savingsAccount.getSummary().getAvailableBalance() != null ? savingsAccount.getSummary().getAvailableBalance() : BigDecimal.ZERO;
-		BigDecimal dailyInterest = currentBalance
-				.multiply(BigDecimal.valueOf(savingsAccount.getNominalAnnualInterestRate()))
-				.divide(BigDecimal.valueOf(Year.of(LocalDate.now().getYear()).length()), 2, RoundingMode.HALF_UP);
+
+		// Validate date range
+		if (startDate.isAfter(endDate)) {
+			throw new ValidationException("Start date cannot be after end date");
+		}
+
+		BigDecimal currentBalance = savingsAccount.getSummary().getAvailableBalance() != null
+				? savingsAccount.getSummary().getAvailableBalance()
+				: BigDecimal.ZERO;
+
+		// Get annual interest rate as decimal (e.g., 5% = 0.05)
+		BigDecimal annualInterestRate = BigDecimal.valueOf(savingsAccount.getNominalAnnualInterestRate())
+				.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
 
 		List<SavingsInterestBreakdownResponse> savingsInterestBreakdownResponses = new ArrayList<>();
 
-		LocalDate currentMonth = startDate.withDayOfMonth(1);
-		BigDecimal interestForDay = BigDecimal.ZERO;
+		LocalDate currentDate = startDate;
 
-		for (int i = 0; i < dateDifference; i++) {
-			LocalDate currentDate = startDate.plusDays(i);
+		// Loop through each day in the date range (inclusive)
+		while (!currentDate.isAfter(endDate)) {
+			// Calculate daily interest rate based on the year the current date falls in
+			int daysInYear = Year.of(currentDate.getYear()).length();
+			BigDecimal dailyInterestRate = annualInterestRate
+					.divide(BigDecimal.valueOf(daysInYear), 8, RoundingMode.HALF_UP);
 
-			if (!currentDate.getMonth().equals(currentMonth.getMonth())) {
-				currentMonth = currentDate.withDayOfMonth(1);
-				interestForDay = BigDecimal.ZERO;
-			}
+			// Calculate interest for this specific day
+			BigDecimal interestForDay = currentBalance
+					.multiply(dailyInterestRate)
+					.setScale(4, RoundingMode.HALF_UP);
 
-			interestForDay = dailyInterest.multiply(BigDecimal.valueOf(currentDate.lengthOfMonth()))
-					.divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP);
 			currentBalance = currentBalance.add(interestForDay);
 
-			SavingsInterestBreakdownResponse savingsInterestBreakdownResponse = SavingsInterestBreakdownResponse.builder()
+			SavingsInterestBreakdownResponse response = SavingsInterestBreakdownResponse.builder()
 					.date(currentDate)
 					.interestEarned(interestForDay)
 					.closingBalance(currentBalance)
 					.build();
-			savingsInterestBreakdownResponses.add(savingsInterestBreakdownResponse);
+
+			savingsInterestBreakdownResponses.add(response);
+
+			currentDate = currentDate.plusDays(1);
 		}
+
 		return BasePageResponse.instance(savingsInterestBreakdownResponses);
 	}
 

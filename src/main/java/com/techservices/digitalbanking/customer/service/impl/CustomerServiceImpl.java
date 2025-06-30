@@ -23,6 +23,7 @@ import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustome
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerServiceImpl implements CustomerService {
 
 	private final ClientService clientService;
@@ -167,6 +169,16 @@ public class CustomerServiceImpl implements CustomerService {
 		foundCustomer.setTransactionPinSet(true);
 		customerRepository.save(foundCustomer);
 		return new GenericApiResponse(null, "Transaction pin created successfully", "success", CustomerDtoResponse.parse(foundCustomer));
+	}
+
+	@Override
+	public String getCustomerSavingsId(Long customerId) {
+		Customer customer = this.getCustomerById(customerId);
+		if (StringUtils.isBlank(customer.getAccountId())) {
+			log.error("No savings account found for customer ID: {}", customerId);
+			throw new ValidationException("No savings account found for customer ID: " + customerId);
+		}
+		return customer.getAccountId();
 	}
 
 	private void validateDuplicateCustomer(String emailAddress, String phoneNumber) {

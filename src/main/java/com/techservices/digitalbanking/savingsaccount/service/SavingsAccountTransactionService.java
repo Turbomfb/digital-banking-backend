@@ -26,5 +26,5 @@ public interface SavingsAccountTransactionService {
 
 	BigDecimal getBalanceAsOfDate(Long savingsId, LocalDate localDate);
 
-	GenericApiResponse processTransactionCommand(@Valid String command, SavingsAccountTransactionRequest request);
+	GenericApiResponse processTransactionCommand(@Valid String command, SavingsAccountTransactionRequest request, Long customerId);
 }

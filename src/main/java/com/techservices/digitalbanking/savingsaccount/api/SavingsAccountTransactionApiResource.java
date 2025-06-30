@@ -43,10 +43,9 @@ public class SavingsAccountTransactionApiResource {
 	public ResponseEntity<GenericApiResponse> processTransactionCommand(
 			@RequestBody SavingsAccountTransactionRequest request,
 			@RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command,
-			@PathVariable String savingsId
+			@PathVariable Long customerId
 	) {
-		request.setSavingsId(savingsId);
-		return ResponseEntity.ok(savingsAccountTransactionService.processTransactionCommand(command, request));
+		return ResponseEntity.ok(savingsAccountTransactionService.processTransactionCommand(command, request, customerId));
 	}
 
 	@GetMapping

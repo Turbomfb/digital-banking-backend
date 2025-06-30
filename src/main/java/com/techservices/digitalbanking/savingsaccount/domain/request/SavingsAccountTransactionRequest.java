@@ -24,11 +24,9 @@ public class SavingsAccountTransactionRequest {
 	private String otp;
 	private String bankNipCode;
 	private String transactionPin;
-	private Long customerId;
 
 	public void validateForOtpGeneration() {
 		this.validateAmount();
-		this.validateCustomerId();
 		this.validateTransactionPin();
 		this.reference = null;
 		this.narration = null;
@@ -50,15 +48,8 @@ public class SavingsAccountTransactionRequest {
 		}
 	}
 
-	private void validateCustomerId() {
-		if (this.customerId == null || this.customerId.compareTo(0L) <= 0) {
-			throw new ValidationException("customerId.field.cannot.be.blank", "Customer ID cannot be empty");
-		}
-	}
-
 	public void validateForOtpVerification() {
 		this.validateAmount();
-		this.validateCustomerId();
 		if (StringUtils.isBlank(this.reference)) {
 			throw new ValidationException("reference.field.cannot.be.blank", "reference cannot be empty");
 		}

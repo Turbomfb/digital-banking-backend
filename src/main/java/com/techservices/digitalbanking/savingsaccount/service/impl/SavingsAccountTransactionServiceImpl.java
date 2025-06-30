@@ -112,9 +112,10 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 	}
 
 	@Override
-	public GenericApiResponse processTransactionCommand(String command, SavingsAccountTransactionRequest request) {
+	public GenericApiResponse processTransactionCommand(String command, SavingsAccountTransactionRequest request, Long customerId) {
+
 		if (GENERATE_OTP_COMMAND.equals(command)) {
-			Customer customer = this.validateCustomerAccount(request);
+			Customer customer = this.validateCustomerAccount(request, customerId);
 			request.validateForOtpGeneration();
 			if (!StringUtils.equals(customer.getTransactionPin(), request.getTransactionPin())) {
 				throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.mismatch",
@@ -127,7 +128,7 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 					response.getData()
 			);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
-			this.validateCustomerAccount(request);
+			this.validateCustomerAccount(request, customerId);
 			request.validateForOtpVerification();
 			ExternalPaymentTransactionOtpVerificationResponse response = externalPaymentService.verifyOtp(request);
 			return new GenericApiResponse(
@@ -139,10 +140,10 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 		return null;
 	}
 
-	private Customer validateCustomerAccount(SavingsAccountTransactionRequest request) {
-		Customer customer = customerService.getCustomerById(request.getCustomerId());
+	private Customer validateCustomerAccount(SavingsAccountTransactionRequest request, Long customerId) {
+		Customer customer = customerService.getCustomerById(customerId);
 		if (!customer.isTransactionPinSet()) {
-			log.error("Customer with ID {} does not have a transaction pin set", request.getCustomerId());
+			log.error("Customer with ID {} does not have a transaction pin set", customerId);
 			throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.not.set",
 					"Customer transaction pin is not set. Please set a transaction pin before proceeding.");
 		}
