@@ -2,6 +2,8 @@
 package com.techservices.digitalbanking.savingsaccount.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.savingsaccount.domain.response.SavingsInterestBreakdownResponse;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SavingsAccountServiceImpl implements SavingsAccountService {
 	private final AccountService accountService;
+	private final CustomerService customerService;
 
 	@Override
 	public PostSavingsAccountsResponse createSavingsAccount(CreateSavingsAccountRequest createSavingsAccountRequest) {
@@ -54,7 +57,8 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 	}
 
 	@Override
-	public BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(String savingsAccountId, LocalDate startDate, LocalDate endDate) {
+	public BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(Long customerId, LocalDate startDate, LocalDate endDate) {
+		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
 		GetSavingsAccountsAccountIdResponse savingsAccount = retrieveSavingsAccountById(savingsAccountId);
 		int dateDifference = startDate.until(endDate).getDays();
 		BigDecimal currentBalance = savingsAccount.getSummary().getAvailableBalance() != null ? savingsAccount.getSummary().getAvailableBalance() : BigDecimal.ZERO;

@@ -21,5 +21,5 @@ public interface SavingsAccountService {
 
 	GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(String savingsAccountId);
 
-	BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(String savingsAccountId, LocalDate startDate, LocalDate endDate);
+	BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(Long customerId, LocalDate startDate, LocalDate endDate);
 }

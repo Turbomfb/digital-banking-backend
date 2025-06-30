@@ -63,14 +63,14 @@ public class SavingsAccountApiResource {
 	}
 
 	@Operation(summary = "Calculate Total Interest Breakdown for a Savings Account")
-	@GetMapping("/{savingsAccountId}/interest-breakdown")
+	@GetMapping("/{customerId}/interest-breakdown")
 	public ResponseEntity<BasePageResponse<SavingsInterestBreakdownResponse>> calculateInterestBreakdown(
-			@PathVariable String savingsAccountId,
+			@PathVariable Long customerId,
 			@RequestParam(name = "startDate", required = false) LocalDate startDate,
 			@RequestParam(name = "endDate", required = false) LocalDate endDate
 	) {
 		startDate = startDate == null ? LocalDate.now() : startDate;
 		endDate = endDate == null || endDate.equals(LocalDate.now()) ? LocalDate.now().plusDays(1) : endDate;
-		return ResponseEntity.ok(savingsAccountService.calculateInterestBreakdown(savingsAccountId, startDate, endDate));
+		return ResponseEntity.ok(savingsAccountService.calculateInterestBreakdown(customerId, startDate, endDate));
 	}
 }

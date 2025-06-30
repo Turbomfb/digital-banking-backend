@@ -29,7 +29,7 @@ import java.time.LocalDate;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
-@RequestMapping("api/v1/savings-accounts/{savingsId}/transactions")
+@RequestMapping("api/v1/savings-accounts/{customerId}/transactions")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -49,7 +49,7 @@ public class SavingsAccountTransactionApiResource {
 
 	@GetMapping
 	public ResponseEntity<FineractPageResponse<SavingsAccountTransactionData>> retrieveSavingsAccountTransactions(
-			@PathVariable Long savingsId, @RequestParam(required = false) Integer page,
+			@PathVariable Long customerId, @RequestParam(required = false) Integer page,
 			@RequestParam(required = false) Integer size, @RequestParam(required = false) String startDate,
 			@RequestParam(required = false) String endDate, @RequestParam(required = false) String dateFormat,
 			@RequestParam(required = false) Long productId, @RequestParam(value = "offset", required = false) @Valid Long offset,
@@ -58,7 +58,7 @@ public class SavingsAccountTransactionApiResource {
 	) {
 
 		return ResponseEntity.ok(savingsAccountTransactionService.retrieveSavingsAccountTransactions(
-				savingsId, startDate, endDate, dateFormat, productId, limit, offset, transactionType));
+				customerId, startDate, endDate, dateFormat, productId, limit, offset, transactionType));
 	}
 
 	@GetMapping("/statement")
@@ -71,7 +71,7 @@ public class SavingsAccountTransactionApiResource {
 			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	public ResponseEntity<Void> generateAccountStatement(
-			@PathVariable @NotNull @Positive Long savingsId,
+			@PathVariable @NotNull @Positive Long customerId,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 			@RequestParam(required = false) @Positive Long productId,
@@ -86,10 +86,10 @@ public class SavingsAccountTransactionApiResource {
 
 		try {
 
-			log.info("Generating statement for account: {} with format: {}", savingsId, format);
+			log.info("Generating statement for account: {} with format: {}", customerId, format);
 
 			StatementRequest statementRequest = StatementRequest.buildStatementRequest(
-					savingsId, startDate, endDate, productId, offset, limit,
+					customerId, startDate, endDate, productId, offset, limit,
 					includeReversals, transactionType
 			);
 			System.err.println("Date Range: " + statementRequest.getStartDate() + " to " + statementRequest.getEndDate());
@@ -108,14 +108,14 @@ public class SavingsAccountTransactionApiResource {
 					throw new IllegalArgumentException("Unsupported format: " + format);
 			}
 
-			log.info("Statement generated successfully for account: {}", savingsId);
+			log.info("Statement generated successfully for account: {}", customerId);
 			return ResponseEntity.ok().build();
 
 		} catch (InvalidParameterException e) {
 			log.error("Invalid parameters for statement generation: {}", e.getMessage(), e);
 			return ResponseEntity.badRequest().build();
 		} catch (Exception e) {
-			log.error("Error generating statement for account: {}", savingsId, e);
+			log.error("Error generating statement for account: {}", customerId, e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}

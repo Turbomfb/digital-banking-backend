@@ -86,9 +86,10 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 
 	@Override
 	public FineractPageResponse<SavingsAccountTransactionData> retrieveSavingsAccountTransactions(
-			Long savingsAccountId, String startDate, String endDate, String dateFormat, Long productId,
+			Long customerId, String startDate, String endDate, String dateFormat, Long productId,
 			Long limit, @Valid Long offset, @Valid String transactionType) {
-		return accountTransactionService.retrieveSavingsAccountTransactions(savingsAccountId, startDate, endDate,
+		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
+		return accountTransactionService.retrieveSavingsAccountTransactions(Long.valueOf(savingsAccountId), startDate, endDate,
 				dateFormat, limit, offset, transactionType);
 	}
 
