@@ -70,7 +70,7 @@ public class SavingsAccountApiResource {
 			@RequestParam(name = "endDate", required = false) LocalDate endDate
 	) {
 		startDate = startDate == null ? LocalDate.now() : startDate;
-		endDate = endDate == null || endDate.equals(LocalDate.now()) ? LocalDate.now().plusDays(1) : endDate;
+		endDate = endDate == null || endDate.equals(LocalDate.now()) ? LocalDate.now().plusDays(24) : endDate;
 		return ResponseEntity.ok(savingsAccountService.calculateInterestBreakdown(customerId, startDate, endDate));
 	}
 }

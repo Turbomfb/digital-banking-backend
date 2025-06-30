@@ -22,8 +22,8 @@ public class StatementRequest {
     private Boolean includeReversals;
     private String transactionType;
 
-    public static StatementRequest buildStatementRequest(Long savingsId, LocalDate startDate, LocalDate endDate,
-                                                   Long productId, Long offset, Long limit, Boolean includeReversals, String transactionType) {
+    public static StatementRequest buildStatementRequest(LocalDate startDate, LocalDate endDate,
+                                                         Long productId, Long offset, Long limit, Boolean includeReversals, String transactionType) {
 
         // Set default date range if not provided (last 90 days)
         if (startDate == null) {
@@ -43,7 +43,6 @@ public class StatementRequest {
         }
 
         return StatementRequest.builder()
-                .savingsId(savingsId)
                 .startDate(startDate)
                 .endDate(endDate)
                 .productId(productId)

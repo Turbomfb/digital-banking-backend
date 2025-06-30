@@ -67,11 +67,22 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 				.divide(BigDecimal.valueOf(Year.of(LocalDate.now().getYear()).length()), 2, RoundingMode.HALF_UP);
 
 		List<SavingsInterestBreakdownResponse> savingsInterestBreakdownResponses = new ArrayList<>();
+
+		LocalDate currentMonth = startDate.withDayOfMonth(1);
+		BigDecimal interestForDay = BigDecimal.ZERO;
+
 		for (int i = 0; i < dateDifference; i++) {
 			LocalDate currentDate = startDate.plusDays(i);
-			BigDecimal interestForDay = dailyInterest.multiply(BigDecimal.valueOf(currentDate.lengthOfMonth()))
+
+			if (!currentDate.getMonth().equals(currentMonth.getMonth())) {
+				currentMonth = currentDate.withDayOfMonth(1);
+				interestForDay = BigDecimal.ZERO;
+			}
+
+			interestForDay = dailyInterest.multiply(BigDecimal.valueOf(currentDate.lengthOfMonth()))
 					.divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP);
 			currentBalance = currentBalance.add(interestForDay);
+
 			SavingsInterestBreakdownResponse savingsInterestBreakdownResponse = SavingsInterestBreakdownResponse.builder()
 					.date(currentDate)
 					.interestEarned(interestForDay)

@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.savingsaccount.api;
 
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.savingsaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.savingsaccount.domain.request.StatementRequest;
 import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountStatementService;
@@ -36,6 +37,7 @@ import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP
 public class SavingsAccountTransactionApiResource {
 	private final SavingsAccountTransactionService savingsAccountTransactionService;
 	private final SavingsAccountStatementService statementService;
+	private final CustomerService customerService;
 
 	@PostMapping
 	public ResponseEntity<GenericApiResponse> processTransactionCommand(
@@ -89,9 +91,11 @@ public class SavingsAccountTransactionApiResource {
 			log.info("Generating statement for account: {} with format: {}", customerId, format);
 
 			StatementRequest statementRequest = StatementRequest.buildStatementRequest(
-					customerId, startDate, endDate, productId, offset, limit,
+					startDate, endDate, productId, offset, limit,
 					includeReversals, transactionType
 			);
+			String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
+			statementRequest.setSavingsId(Long.valueOf(savingsAccountId));
 			System.err.println("Date Range: " + statementRequest.getStartDate() + " to " + statementRequest.getEndDate());
 
 			switch (format.toUpperCase()) {
