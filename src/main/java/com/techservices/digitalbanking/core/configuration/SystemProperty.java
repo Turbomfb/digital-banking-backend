@@ -16,6 +16,15 @@ public class SystemProperty {
 	@Value("${payinvert.integration.url}")
 	private String payinvertIntegrationUrl;
 
+	@Value("${payinvert.merchant.integration.url}")
+	private String payinvertMerchantIntegrationUrl;
+
+	@Value("${payinvert.merchant.email}")
+	private String payinvertMerchantEmail;
+
+	@Value("${payinvert.merchant.password}")
+	private String payinvertMerchantPassword;
+
 	@Value("${application.identity.verification.threshold}")
 	private Long identityVerificationThreshold;
 }

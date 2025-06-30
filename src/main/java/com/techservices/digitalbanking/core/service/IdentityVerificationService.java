@@ -1,10 +1,12 @@
 package com.techservices.digitalbanking.core.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techservices.digitalbanking.core.configuration.SystemProperty;
 import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
+import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
@@ -58,10 +60,13 @@ public class IdentityVerificationService {
 
     private IdentityVerificationResponse fetchIdentityVerificationResponse(String url, String identifier) {
         try {
-            return apiService.callExternalApi(url, IdentityVerificationResponse.class, HttpMethod.GET, null);
-        } catch (Exception e) {
+            return apiService.callExternalApi(url, IdentityVerificationResponse.class, HttpMethod.GET, null, null);
+        } catch (PlatformServiceException e) {
+            log.error(e.getDefaultUserMessage());
+            throw new ValidationException("verification.failed","Verification failed", e.getDefaultUserMessage());
+        } catch (JsonProcessingException e) {
             log.error(e.getMessage());
-            throw new ValidationException("verification.failed", "Verification failed for identifier: " + identifier);
+            throw new ValidationException("verification.failed","Verification failed", e.getMessage());
         }
     }
 

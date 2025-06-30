@@ -6,6 +6,7 @@ import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "customer")
 @Getter
 @Setter
+@ToString
 public class Customer extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customer_seq_gen")

@@ -20,6 +20,11 @@ public class GenericApiResponse extends BaseAppResponse {
         this.data = data;
     }
 
+    public GenericApiResponse(String message, String status) {
+        this.message = message;
+        this.status = status;
+    }
+
     public GenericApiResponse(String uniqueId, String message, String status, Object data) {
         this.uniqueId = uniqueId;
         this.message = message;

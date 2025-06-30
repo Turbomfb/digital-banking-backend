@@ -1,6 +1,8 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.savingsaccount.api;
 
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.savingsaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.savingsaccount.domain.request.StatementRequest;
 import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountStatementService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,11 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
@@ -29,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
 
+import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
+
 @RequestMapping("api/v1/savings-accounts/{savingsId}/transactions")
 @RestController
 @RequiredArgsConstructor
@@ -36,6 +36,16 @@ import java.time.LocalDate;
 public class SavingsAccountTransactionApiResource {
 	private final SavingsAccountTransactionService savingsAccountTransactionService;
 	private final SavingsAccountStatementService statementService;
+
+	@PostMapping
+	public ResponseEntity<GenericApiResponse> processTransactionCommand(
+			@RequestBody SavingsAccountTransactionRequest request,
+			@RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command,
+			@PathVariable String savingsId
+	) {
+		request.setSavingsId(savingsId);
+		return ResponseEntity.ok(savingsAccountTransactionService.processTransactionCommand(command, request));
+	}
 
 	@GetMapping
 	public ResponseEntity<FineractPageResponse<SavingsAccountTransactionData>> retrieveSavingsAccountTransactions(

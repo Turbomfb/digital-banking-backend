@@ -1,6 +1,14 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.savingsaccount.service.impl;
 
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.service.ExternalPaymentService;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.service.CustomerService;
+import com.techservices.digitalbanking.savingsaccount.domain.request.SavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.savingsaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
+import com.techservices.digitalbanking.savingsaccount.domain.response.ExternalPaymentTransactionOtpVerificationResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -21,14 +29,19 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 
+import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
+import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.TransactionUtil.*;
 import static com.techservices.digitalbanking.core.util.TransactionUtil.UNDO;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SavingsAccountTransactionServiceImpl implements SavingsAccountTransactionService {
 	private final AccountTransactionService accountTransactionService;
 	private final SavingsAccountService savingsAccountService;
+	private final ExternalPaymentService externalPaymentService;
+	private final CustomerService customerService;
 
 	@Override
 	public PostSavingsAccountTransactionsResponse processTransaction(
@@ -95,5 +108,57 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 				.reduce((first, second) -> second)
 				.map(SavingsAccountTransactionData::getRunningBalance)
 				.orElse(BigDecimal.ZERO);
+	}
+
+	@Override
+	public GenericApiResponse processTransactionCommand(String command, SavingsAccountTransactionRequest request) {
+		if (GENERATE_OTP_COMMAND.equals(command)) {
+			Customer customer = this.validateCustomerAccount(request);
+			request.validateForOtpGeneration();
+			if (!StringUtils.equals(customer.getTransactionPin(), request.getTransactionPin())) {
+				throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.mismatch",
+						"Customer transaction pin is not correct");
+			}
+			ExternalPaymentTransactionOtpGenerationResponse response = externalPaymentService.generateOtp(request);
+			return new GenericApiResponse(
+					response.getMessage(),
+					response.getStatus(),
+					response.getData()
+			);
+		} else if (VERIFY_OTP_COMMAND.equals(command)) {
+			this.validateCustomerAccount(request);
+			request.validateForOtpVerification();
+			ExternalPaymentTransactionOtpVerificationResponse response = externalPaymentService.verifyOtp(request);
+			return new GenericApiResponse(
+					response.getMessage(),
+					response.getStatus(),
+					response.getData()
+			);
+		}
+		return null;
+	}
+
+	private Customer validateCustomerAccount(SavingsAccountTransactionRequest request) {
+		Customer customer = customerService.getCustomerById(request.getCustomerId());
+		if (!customer.isTransactionPinSet()) {
+			log.error("Customer with ID {} does not have a transaction pin set", request.getCustomerId());
+			throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.not.set",
+					"Customer transaction pin is not set. Please set a transaction pin before proceeding.");
+		}
+		log.info("Validating customer account for savings transaction: {}", customer);
+		if (!StringUtils.equals(customer.getAccountId(), request.getSavingsId())) {
+			log.error("Customer account ID {} does not match savings account ID {}",
+					customer.getAccountId(), request.getSavingsId());
+			throw new AbstractPlatformDomainRuleException("error.msg.customer.account.mismatch",
+					"Customer account does not match the savings account");
+		}
+		GetSavingsAccountsAccountIdResponse savingsAccount = savingsAccountService.retrieveSavingsAccountById(request.getSavingsId());
+		if (savingsAccount.getSummary().getAvailableBalance().compareTo(request.getAmount()) < 0) {
+			log.error("Insufficient funds: Available balance {} is less than requested amount {}",
+					savingsAccount.getSummary().getAvailableBalance(), request.getAmount());
+			throw new AbstractPlatformDomainRuleException("error.msg.insufficient.funds",
+					"Insufficient funds. Available balance is less than the requested amount.");
+		}
+		return customer;
 	}
 }
