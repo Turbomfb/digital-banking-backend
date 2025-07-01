@@ -1,6 +1,7 @@
 package com.techservices.digitalbanking.core.configuration.resttemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import lombok.extern.slf4j.Slf4j;
@@ -56,5 +57,31 @@ public class ApiService {
         log.info("Received response from external API: {}", new ObjectMapper().writeValueAsString(responseEntity));
 
         return responseEntity.getBody();
+    }
+
+    public <T> T callExternalApi(String url, TypeReference<T> typeReference, HttpMethod method, Object requestPayload, HttpHeaders headers) throws JsonProcessingException {
+        log.info("Calling external API with details: URL={}, Method={}, Payload={}", url, method, requestPayload);
+        ResponseEntity<String> responseEntity;
+
+        HttpEntity<Object> entity = headers != null ? new HttpEntity<>(requestPayload, headers) : new HttpEntity<>(requestPayload);
+
+        if (HttpMethod.GET.equals(method) || HttpMethod.POST.equals(method)) {
+            responseEntity = restTemplate.exchange(url, method, entity, String.class);
+        } else if (HttpMethod.PUT.equals(method) || HttpMethod.DELETE.equals(method)) {
+            restTemplate.exchange(url, method, entity, Void.class);
+            return null;
+        } else {
+            log.error("Unsupported HTTP method: {}", method);
+            throw new PlatformServiceException("HTTP method not supported: " + method);
+        }
+
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            log.info("External API call successful: {}", responseEntity.getBody());
+        } else {
+            log.error("External API call failed with status code: {}", responseEntity.getBody());
+            throw new PlatformServiceException("External API call failed: " + responseEntity.getBody());
+        }
+
+        return new ObjectMapper().readValue(responseEntity.getBody(), typeReference);
     }
 }

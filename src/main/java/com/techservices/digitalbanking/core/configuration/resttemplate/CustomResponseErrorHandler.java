@@ -1,8 +1,9 @@
 package com.techservices.digitalbanking.core.configuration.resttemplate;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
-import com.techservices.digitalbanking.core.exception.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.ResponseErrorHandler;
@@ -18,24 +19,41 @@ public class CustomResponseErrorHandler implements ResponseErrorHandler {
         this.objectMapper = objectMapper;
     }
 
+
     @Override
     public boolean hasError(ClientHttpResponse response) throws IOException {
         return response.getStatusCode().isError();
     }
 
-    @Override
     public void handleError(ClientHttpResponse response) {
         String errorBody = null;
-        ErrorResponse errorResponse;
         try {
             errorBody = new String(response.getBody().readAllBytes());
             log.error("Error response body: {}", errorBody);
-            errorResponse = objectMapper.readValue(errorBody, ErrorResponse.class);
-        } catch (Exception e) {
-            log.error("Failed to parse error response: {}", e.getMessage());
-            throw new PlatformServiceException("error.parsing.error.response", "Failed to parse error response", e);
+
+            if (isValidJson(errorBody)) {
+                ErrorResponse errorResponse = objectMapper.readValue(errorBody, ErrorResponse.class);
+                String message = errorResponse.getMessage() != null
+                        ? errorResponse.getMessage()
+                        : errorResponse.getStatusMessage() != null
+                        ? errorResponse.getStatusMessage()
+                        : "An error occurred while processing the request";
+                throw new PlatformServiceException("error.from.external.service", message, errorResponse);
+            } else {
+                throw new PlatformServiceException("error.from.external.service", errorBody);
+            }
+        } catch (IOException e) {
+            throw new PlatformServiceException("error.from.external.service", e.getMessage());
         }
-        String message = errorResponse.getMessage() != null ? errorResponse.getMessage() : errorResponse.getStatusMessage() != null ? errorResponse.getStatusMessage() : "An error occurred while processing the request";
-        throw new PlatformServiceException("error.from.external.service", message, errorResponse);
+    }
+
+
+        private boolean isValidJson(String input) {
+        try {
+            objectMapper.readTree(input);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

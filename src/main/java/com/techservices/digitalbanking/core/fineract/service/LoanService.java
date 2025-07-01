@@ -61,45 +61,6 @@ public class LoanService {
 		postLoanApplicationRequest.setDateFormat(DEFAULT_DATE_FORMAT);
 		postLoanApplicationRequest.setSubmittedOnDate(getCurrentDate());
 
-		postLoanApplicationRequest.setClientId(loanApplicationRequest.getClientId());
-		postLoanApplicationRequest.setProductId(loanApplicationRequest.getProductId());
-		postLoanApplicationRequest.setPrincipal(loanApplicationRequest.getPrincipal());
-		postLoanApplicationRequest.setLoanTermFrequency(loanApplicationRequest.getLoanTermFrequency());
-		postLoanApplicationRequest.setLoanTermFrequencyType(loanApplicationRequest.getLoanTermFrequencyType());
-		postLoanApplicationRequest.setLoanType(loanApplicationRequest.getLoanType());
-		postLoanApplicationRequest.setNumberOfRepayments(loanApplicationRequest.getNumberOfRepayments());
-		postLoanApplicationRequest.setRepaymentEvery(loanApplicationRequest.getRepaymentEvery());
-		postLoanApplicationRequest.setRepaymentFrequencyType(loanApplicationRequest.getRepaymentFrequencyType());
-		postLoanApplicationRequest.setInterestRatePerPeriod(loanApplicationRequest.getInterestRatePerPeriod());
-		postLoanApplicationRequest.setAmortizationType(loanApplicationRequest.getAmortizationType());
-		postLoanApplicationRequest.setInterestType(loanApplicationRequest.getInterestType());
-		postLoanApplicationRequest
-				.setInterestCalculationPeriodType(loanApplicationRequest.getInterestCalculationPeriodType());
-		postLoanApplicationRequest
-				.setTransactionProcessingStrategyCode(loanApplicationRequest.getTransactionProcessingStrategyCode());
-		postLoanApplicationRequest.setExpectedDisbursementDate(loanApplicationRequest.getExpectedDisbursementDate());
-
-		postLoanApplicationRequest.setLinkAccountId(loanApplicationRequest.getLinkAccountId());
-		postLoanApplicationRequest.setFixedEmiAmount(loanApplicationRequest.getFixedEmiAmount());
-		postLoanApplicationRequest.setMaxOutstandingLoanBalance(loanApplicationRequest.getMaxOutstandingLoanBalance());
-		postLoanApplicationRequest.setDaysInYearType(loanApplicationRequest.getDaysInYearType());
-
-		PostLoanApplicationDisbursementData disbursementData = new PostLoanApplicationDisbursementData();
-		disbursementData.setPrincipal(loanApplicationRequest.getPrincipal());
-		disbursementData.setApprovedPrincipal(loanApplicationRequest.getApprovedPrincipal());
-		disbursementData.setExpectedDisbursementDate(loanApplicationRequest.getExpectedDisbursementDate());
-		postLoanApplicationRequest.setDisbursementData(Collections.singletonList(disbursementData));
-
-		postLoanApplicationRequest.setExternalId(loanApplicationRequest.getExternalId());
-		postLoanApplicationRequest
-				.setRepaymentsStartingFromDate(loanApplicationRequest.getRepaymentsStartingFromDate());
-		postLoanApplicationRequest.setCreateStandingInstructionAtDisbursement(
-				loanApplicationRequest.isCreateStandingInstructionAtDisbursement());
-		postLoanApplicationRequest
-				.setEnableInstallmentLevelDelinquency(loanApplicationRequest.isEnableInstallmentLevelDelinquency());
-		postLoanApplicationRequest.setCharges(loanApplicationRequest.getCharges());
-		postLoanApplicationRequest.setCollateral(loanApplicationRequest.getCollateral());
-
 		return postLoanApplicationRequest;
 	}
 

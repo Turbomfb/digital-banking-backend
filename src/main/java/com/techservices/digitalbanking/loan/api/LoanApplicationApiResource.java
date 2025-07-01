@@ -1,6 +1,9 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.loan.api;
 
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,22 +31,42 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RequestMapping("api/v1/loans")
+@RequestMapping("api/v1/loans/{customerId}")
 @RestController
 @RequiredArgsConstructor
 public class LoanApplicationApiResource {
 
 	private final LoanApplicationService loanService;
 
+	@Operation(summary = "Retrieve Customer Loan offers")
+	@GetMapping("offers")
+	public ResponseEntity<BasePageResponse<LoanOfferResponse>> retrieveCustomerLoanOffers(@PathVariable Long customerId) {
+		BasePageResponse<LoanOfferResponse> loanOfferResponseBasePageResponse = loanService.retrieveCustomerLoanOffers(customerId);
+
+		return ResponseEntity.ok(loanOfferResponseBasePageResponse);
+	}
+
+
+	@Operation(summary = "Apply for a loan")
+	@PostMapping("application")
+	public ResponseEntity<GenericApiResponse> processLoanApplication(
+			@PathVariable Long customerId,
+			@RequestBody @Valid LoanApplicationRequest loanApplicationRequest
+	) {
+		GenericApiResponse genericApiResponse = loanService.processLoanApplication(customerId, loanApplicationRequest);
+
+		return ResponseEntity.ok(genericApiResponse);
+	}
+
 	@Operation(summary = "Retrieve a Loan by ID")
 	@GetMapping("{loanId}")
 	public ResponseEntity<GetLoansLoanIdResponse> retrieveLoanById(@PathVariable Long loanId,
-			@Valid @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
-			@Valid @RequestParam(value = "associations", required = false, defaultValue = "all") String associations,
-			@Valid @RequestParam(value = "exclude", required = false, defaultValue = "transactions") String exclude,
-			@Valid @RequestParam(value = "fields", required = false) String fields) {
+																   @Valid @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
+																   @Valid @RequestParam(value = "associations", required = false, defaultValue = "all") String associations,
+																   @Valid @RequestParam(value = "exclude", required = false, defaultValue = "transactions") String exclude,
+																   @Valid @RequestParam(value = "fields", required = false) String fields, @PathVariable Long customerId) {
 		GetLoansLoanIdResponse getLoansLoanIdResponse = loanService.retrieveLoanById(loanId, staffInSelectedOfficeOnly,
-				associations, exclude, fields);
+				associations, exclude, fields, customerId);
 
 		return ResponseEntity.ok(getLoansLoanIdResponse);
 	}
@@ -64,22 +87,10 @@ public class LoanApplicationApiResource {
 		return ResponseEntity.ok(getLoansResponse);
 	}
 
-	@Operation(summary = "Retrieve a loan template")
-	@GetMapping("/template")
-	public ResponseEntity<GetLoanTemplateResponse> retrieveLoanTemplate(
-			@Valid @RequestParam(value = "templateType", required = false) String templateType,
-			@Valid @RequestParam(value = "clientId", required = false) Long clientId,
-			@Valid @RequestParam(value = "productId", required = false) Long productId) {
-		GetLoanTemplateResponse getLoanTemplateResponse = loanService.retrieveLoanTemplate(templateType, clientId,
-				productId);
-
-		return ResponseEntity.ok(getLoanTemplateResponse);
-	}
-
 	@Operation(summary = "Retrieve loan transactions")
 	@GetMapping("{loanId}/transactions")
 	public ResponseEntity<FineractPageResponse<LoanTransactionResponse>> retrieveLoanTransactions(
-			@Valid @PathVariable(value = "loanId") Long loanId) {
+			@Valid @PathVariable(value = "loanId") Long loanId, @PathVariable String customerId) {
 		FineractPageResponse<LoanTransactionResponse> transactions = loanService.retrieveLoanTransactions(loanId);
 
 		return ResponseEntity.ok(transactions);
@@ -89,8 +100,8 @@ public class LoanApplicationApiResource {
 	@GetMapping("{loanId}/transactions/{transactionId}")
 	public ResponseEntity<LoanTransactionResponse> retrieveLoanTransactionDetails(
 			@Valid @PathVariable(value = "loanId") Long loanId,
-			@Valid @PathVariable(value = "transactionId") Long transactionId
-	) {
+			@Valid @PathVariable(value = "transactionId") Long transactionId,
+			@PathVariable String customerId) {
 		LoanTransactionResponse transaction = loanService.retrieveLoanTransactionDetails(loanId, transactionId);
 
 		return ResponseEntity.ok(transaction);

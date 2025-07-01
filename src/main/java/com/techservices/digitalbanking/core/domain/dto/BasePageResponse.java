@@ -31,6 +31,9 @@ public class BasePageResponse<T> {
         BasePageResponse<T> response = new BasePageResponse<>();
         response.setTotalFilteredItems((long) pagedData.size());
         response.setData(pagedData);
+        response.setPageNumber(1L);
+        response.setPageSize((long) pagedData.size());
+        response.setRowSize((long) pagedData.size());
         return response;
     }
 }

@@ -1,6 +1,12 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.loan.service.impl;
 
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.service.ExternalLoanService;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.service.CustomerService;
+import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
@@ -22,11 +28,15 @@ import com.techservices.digitalbanking.loan.service.LoanApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class LoanApplicationServiceImpl implements LoanApplicationService {
 
 	private final LoanService loanService;
+	private final CustomerService customerService;
+	private final ExternalLoanService externalLoanService;
 
 	@Override
 	public PostLoansResponse calculateLoanScheduleOrSubmitLoanApplication(LoanApplicationRequest loanApplicationRequest,
@@ -36,7 +46,7 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 
 	@Override
 	public GetLoansLoanIdResponse retrieveLoanById(Long loanId, Boolean staffInSelectedOfficeOnly, String associations,
-			String exclude, String fields) {
+												   String exclude, String fields, Long customerId) {
 		return loanService.retrieveLoanById(loanId, staffInSelectedOfficeOnly, associations, exclude, fields);
 	}
 
@@ -73,6 +83,21 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	@Override
 	public LoanTransactionResponse retrieveLoanTransactionDetails(Long loanId, Long transactionId) {
 		return loanService.retrieveLoanTransactionDetails(loanId, transactionId);
+	}
+
+	@Override
+	public BasePageResponse<LoanOfferResponse> retrieveCustomerLoanOffers(Long customerId) {
+		Customer customer = customerService.getCustomerById(customerId);
+		List<LoanOfferResponse> loanOffers = this.externalLoanService.retrieveCustomerLoanOffers(customer.getPhoneNumber());
+		return BasePageResponse.instance(loanOffers);
+	}
+
+	@Override
+	public GenericApiResponse processLoanApplication(Long customerId, LoanApplicationRequest loanApplicationRequest) {
+		Customer customer = customerService.getCustomerById(customerId);
+		loanApplicationRequest.setAcceptOffer("Y");
+		loanApplicationRequest.setMsisdn(customer.getPhoneNumber());
+		return this.externalLoanService.processLoanApplication(loanApplicationRequest);
 	}
 
 	@Override

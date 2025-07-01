@@ -14,6 +14,9 @@ public class GenericApiResponse extends BaseAppResponse {
     private String status;
     private Object data;
 
+    public GenericApiResponse() {
+    }
+
     public GenericApiResponse(String message, String status, Object data) {
         this.message = message;
         this.status = status;

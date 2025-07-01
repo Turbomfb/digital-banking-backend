@@ -27,4 +27,7 @@ public class SystemProperty {
 
 	@Value("${application.identity.verification.threshold}")
 	private Long identityVerificationThreshold;
+
+	@Value("${payinvert.loan.integration.url}")
+	private String payinvertLoanIntegrationUrl;
 }
