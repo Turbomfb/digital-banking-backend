@@ -6,6 +6,7 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.service.ExternalLoanService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
+import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import org.springframework.stereotype.Service;
 
@@ -98,6 +99,11 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 		loanApplicationRequest.setAcceptOffer("Y");
 		loanApplicationRequest.setMsisdn(customer.getPhoneNumber());
 		return this.externalLoanService.processLoanApplication(loanApplicationRequest);
+	}
+
+	@Override
+	public LoanDashboardResponse retrieveCustomerLoanDashboard(Long customerId) {
+		return null;
 	}
 
 	@Override

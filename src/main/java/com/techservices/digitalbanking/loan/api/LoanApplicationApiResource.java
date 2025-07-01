@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.loan.api;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -56,6 +57,14 @@ public class LoanApplicationApiResource {
 		GenericApiResponse genericApiResponse = loanService.processLoanApplication(customerId, loanApplicationRequest);
 
 		return ResponseEntity.ok(genericApiResponse);
+	}
+
+	@Operation(summary = "Retrieve Customer Loan Dashboard")
+	@GetMapping("dashboard")
+	public ResponseEntity<LoanDashboardResponse> retrieveCustomerLoanDashboard(@PathVariable Long customerId) {
+		LoanDashboardResponse loanDashboardResponse = loanService.retrieveCustomerLoanDashboard(customerId);
+
+		return ResponseEntity.ok(loanDashboardResponse);
 	}
 
 	@Operation(summary = "Retrieve a Loan by ID")

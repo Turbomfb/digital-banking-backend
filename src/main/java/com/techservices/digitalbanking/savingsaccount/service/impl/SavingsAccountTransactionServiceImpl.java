@@ -142,18 +142,14 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 
 	private Customer validateCustomerAccount(SavingsAccountTransactionRequest request, Long customerId) {
 		Customer customer = customerService.getCustomerById(customerId);
+		request.setSavingsId(customer.getAccountId());
 		if (!customer.isTransactionPinSet()) {
 			log.error("Customer with ID {} does not have a transaction pin set", customerId);
 			throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.not.set",
 					"Customer transaction pin is not set. Please set a transaction pin before proceeding.");
 		}
 		log.info("Validating customer account for savings transaction: {}", customer);
-		if (!StringUtils.equals(customer.getAccountId(), request.getSavingsId())) {
-			log.error("Customer account ID {} does not match savings account ID {}",
-					customer.getAccountId(), request.getSavingsId());
-			throw new AbstractPlatformDomainRuleException("error.msg.customer.account.mismatch",
-					"Customer account does not match the savings account");
-		}
+
 		GetSavingsAccountsAccountIdResponse savingsAccount = savingsAccountService.retrieveSavingsAccountById(request.getSavingsId());
 		if (savingsAccount.getSummary().getAvailableBalance().compareTo(request.getAmount()) < 0) {
 			log.error("Insufficient funds: Available balance {} is less than requested amount {}",

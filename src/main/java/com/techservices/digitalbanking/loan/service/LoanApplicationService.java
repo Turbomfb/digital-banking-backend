@@ -17,6 +17,7 @@ import com.techservices.digitalbanking.core.fineract.model.response.PostLoansRes
 import com.techservices.digitalbanking.loan.domain.request.LoanApplicationRequest;
 import com.techservices.digitalbanking.loan.domain.request.LoanRepaymentRequest;
 
+import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import jakarta.validation.Valid;
 
@@ -51,4 +52,6 @@ public interface LoanApplicationService {
 	BasePageResponse<LoanOfferResponse> retrieveCustomerLoanOffers(Long customerId);
 
 	GenericApiResponse processLoanApplication(Long customerId, @Valid LoanApplicationRequest loanApplicationRequest);
+
+	LoanDashboardResponse retrieveCustomerLoanDashboard(Long customerId);
 }
