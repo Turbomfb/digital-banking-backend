@@ -29,7 +29,10 @@ import com.techservices.digitalbanking.loan.service.LoanApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,8 +56,8 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 
 	@Override
 	public GetLoansResponse retrieveAllLoans(String sqlSearch, String externalId, Integer offset, Integer limit,
-			String orderBy, String sortOrder, String accountNo) {
-		return loanService.retrieveAllLoans(sqlSearch, externalId, offset, limit, orderBy, sortOrder, accountNo);
+											 String orderBy, String sortOrder, String accountNo, String clientId, String status) {
+		return loanService.retrieveAllLoans(sqlSearch, externalId, offset, limit, orderBy, sortOrder, accountNo, clientId, status);
 	}
 
 	@Override
@@ -103,7 +106,21 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 
 	@Override
 	public LoanDashboardResponse retrieveCustomerLoanDashboard(Long customerId) {
-		return null;
+		Customer customer = customerService.getCustomerById(customerId);
+		GetLoansResponse customerLoans = loanService.retrieveAllLoans(null, null, null, null, null, null, null, customer.getExternalId(), null);
+		return LoanDashboardResponse.builder()
+				.activeLoanBalance(customerLoans.getActiveLoanBalance())
+				.totalExpectedRepayment(customerLoans.getTotalExpectedRepayment())
+				.totalRepaid(customerLoans.getTotalRepayment())
+				.activeLoanCount(customerLoans.getActiveLoanCount())
+				.pendingLoanCount(customerLoans.getPendingLoanCount())
+				.liquidatedLoanCount(customerLoans.getLiquidatedLoanCount())
+				.loans(
+						customerLoans.getPageItems().stream()
+								.filter(loan -> loan.getStatus().getId() != null && (loan.getStatus().getId() <= 300 || loan.getStatus().getId() >= 600))
+								.collect(Collectors.toList())
+				)
+				.build();
 	}
 
 	@Override

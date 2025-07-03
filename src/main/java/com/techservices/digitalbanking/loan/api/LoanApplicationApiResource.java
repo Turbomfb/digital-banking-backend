@@ -32,7 +32,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RequestMapping("api/v1/loans/{customerId}")
+@RequestMapping("api/v1/customers/{customerId}/loans")
 @RestController
 @RequiredArgsConstructor
 public class LoanApplicationApiResource {
@@ -89,9 +89,13 @@ public class LoanApplicationApiResource {
 			@Valid @RequestParam(value = "limit", required = false) Integer limit,
 			@Valid @RequestParam(value = "orderBy", required = false) String orderBy,
 			@Valid @RequestParam(value = "sortOrder", required = false) String sortOrder,
-			@Valid @RequestParam(value = "accountNo", required = false) String accountNo) {
+			@Valid @RequestParam(value = "accountNo", required = false) String accountNo,
+			@Valid @RequestParam(value = "clientId", required = false) String clientId,
+			@Valid @RequestParam(value = "status", required = false) String status,
+			@PathVariable String customerId
+	) {
 		GetLoansResponse getLoansResponse = loanService.retrieveAllLoans(sqlSearch, externalId, offset, limit, orderBy,
-				sortOrder, accountNo);
+				sortOrder, accountNo, clientId, status);
 
 		return ResponseEntity.ok(getLoansResponse);
 	}

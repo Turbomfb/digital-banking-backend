@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
@@ -13,6 +14,7 @@ import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 
 /** GetLoansLoanIdRepaymentSchedule */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
 public class GetLoansLoanIdRepaymentSchedule {
 

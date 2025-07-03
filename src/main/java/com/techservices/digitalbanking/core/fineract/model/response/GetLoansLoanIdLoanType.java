@@ -3,13 +3,17 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import lombok.Setter;
 
 /** GetLoansLoanIdLoanType */
+@Setter
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GetLoansLoanIdLoanType {
 
 	private String code;
@@ -34,11 +38,7 @@ public class GetLoansLoanIdLoanType {
 		return code;
 	}
 
-	public void setCode(String code) {
-		this.code = code;
-	}
-
-	public GetLoansLoanIdLoanType description(String description) {
+    public GetLoansLoanIdLoanType description(String description) {
 		this.description = description;
 		return this;
 	}
@@ -54,11 +54,7 @@ public class GetLoansLoanIdLoanType {
 		return description;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public GetLoansLoanIdLoanType id(Integer id) {
+    public GetLoansLoanIdLoanType id(Integer id) {
 		this.id = id;
 		return this;
 	}
@@ -74,11 +70,7 @@ public class GetLoansLoanIdLoanType {
 		return id;
 	}
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	@Override
+    @Override
 	public boolean equals(Object o) {
 		if (this == o) {
 			return true;

@@ -29,7 +29,7 @@ public interface LoanApplicationService {
 											String exclude, String fields, Long customerId);
 
 	GetLoansResponse retrieveAllLoans(String sqlSearch, String externalId, Integer offset, Integer limit,
-			String orderBy, String sortOrder, String accountNo);
+									  String orderBy, String sortOrder, String accountNo, @Valid String clientId, @Valid String status);
 
 	PostLoansLoanIdResponse processLoanCommand(Long loanId, PostLoansLoanIdRequest postLoansLoanIdRequest,
 			@Valid String command);

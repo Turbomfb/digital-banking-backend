@@ -4,11 +4,13 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LoanTransactionResponse {
 
 	private Long id;
@@ -36,6 +38,7 @@ public class LoanTransactionResponse {
 
 	@Getter
 	@Setter
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class TransactionType {
 		private Integer id;
 		private String code;
@@ -70,10 +73,12 @@ public class LoanTransactionResponse {
 		private Boolean reAmortize;
 		private Boolean accrualActivity;
 		private Boolean interestRefund;
+		private Boolean accrualAdjustment;
 	}
 
 	@Getter
 	@Setter
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Currency {
 		private String code;
 		private String name;

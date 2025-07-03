@@ -1,9 +1,13 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.fineract.model.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,6 +17,9 @@ import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 
 /** GetLoansLoanIdRepaymentPeriod */
+@Setter
+@Getter
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
 public class GetLoansLoanIdRepaymentPeriod {
 
@@ -63,31 +70,32 @@ public class GetLoansLoanIdRepaymentPeriod {
 
 	private Integer period;
 
-	private Double principalDue;
+	private BigDecimal principalDue;
 
-	private Double principalLoanBalanceOutstanding;
+	private BigDecimal principalLoanBalanceOutstanding;
 
-	private Double principalOriginalDue;
+	private BigDecimal principalOriginalDue;
 
-	private Double principalOutstanding;
+	private BigDecimal principalOutstanding;
+	private BigDecimal principalDisbursed;
 
-	private Double principalPaid;
+	private BigDecimal principalPaid;
 
 	private Long principalWrittenOff;
 
 	private Long totalActualCostOfLoanForPeriod;
 
-	private Double totalDueForPeriod;
+	private BigDecimal totalDueForPeriod;
 
-	private Double totalInstallmentAmountForPeriod;
+	private BigDecimal totalInstallmentAmountForPeriod;
 
-	private Double totalOriginalDueForPeriod;
+	private BigDecimal totalOriginalDueForPeriod;
 
-	private Double totalOutstandingForPeriod;
+	private BigDecimal totalOutstandingForPeriod;
 
-	private Double totalPaidForPeriod;
+	private BigDecimal totalPaidForPeriod;
 
-	private Double totalPaidInAdvanceForPeriod;
+	private BigDecimal totalPaidInAdvanceForPeriod;
 
 	private Long totalPaidLateForPeriod;
 
@@ -111,11 +119,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return complete;
 	}
 
-	public void setComplete(Boolean complete) {
-		this.complete = complete;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod daysInPeriod(Long daysInPeriod) {
+    public GetLoansLoanIdRepaymentPeriod daysInPeriod(Long daysInPeriod) {
 		this.daysInPeriod = daysInPeriod;
 		return this;
 	}
@@ -131,11 +135,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return daysInPeriod;
 	}
 
-	public void setDaysInPeriod(Long daysInPeriod) {
-		this.daysInPeriod = daysInPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod dueDate(LocalDate dueDate) {
+    public GetLoansLoanIdRepaymentPeriod dueDate(LocalDate dueDate) {
 		this.dueDate = dueDate;
 		return this;
 	}
@@ -152,11 +152,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return dueDate;
 	}
 
-	public void setDueDate(LocalDate dueDate) {
-		this.dueDate = dueDate;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod feeChargesDue(Long feeChargesDue) {
+    public GetLoansLoanIdRepaymentPeriod feeChargesDue(Long feeChargesDue) {
 		this.feeChargesDue = feeChargesDue;
 		return this;
 	}
@@ -172,11 +168,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return feeChargesDue;
 	}
 
-	public void setFeeChargesDue(Long feeChargesDue) {
-		this.feeChargesDue = feeChargesDue;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod feeChargesOutstanding(Long feeChargesOutstanding) {
+    public GetLoansLoanIdRepaymentPeriod feeChargesOutstanding(Long feeChargesOutstanding) {
 		this.feeChargesOutstanding = feeChargesOutstanding;
 		return this;
 	}
@@ -192,11 +184,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return feeChargesOutstanding;
 	}
 
-	public void setFeeChargesOutstanding(Long feeChargesOutstanding) {
-		this.feeChargesOutstanding = feeChargesOutstanding;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod feeChargesPaid(Long feeChargesPaid) {
+    public GetLoansLoanIdRepaymentPeriod feeChargesPaid(Long feeChargesPaid) {
 		this.feeChargesPaid = feeChargesPaid;
 		return this;
 	}
@@ -212,11 +200,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return feeChargesPaid;
 	}
 
-	public void setFeeChargesPaid(Long feeChargesPaid) {
-		this.feeChargesPaid = feeChargesPaid;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod feeChargesWaived(Long feeChargesWaived) {
+    public GetLoansLoanIdRepaymentPeriod feeChargesWaived(Long feeChargesWaived) {
 		this.feeChargesWaived = feeChargesWaived;
 		return this;
 	}
@@ -232,11 +216,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return feeChargesWaived;
 	}
 
-	public void setFeeChargesWaived(Long feeChargesWaived) {
-		this.feeChargesWaived = feeChargesWaived;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod feeChargesWrittenOff(Long feeChargesWrittenOff) {
+    public GetLoansLoanIdRepaymentPeriod feeChargesWrittenOff(Long feeChargesWrittenOff) {
 		this.feeChargesWrittenOff = feeChargesWrittenOff;
 		return this;
 	}
@@ -252,11 +232,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return feeChargesWrittenOff;
 	}
 
-	public void setFeeChargesWrittenOff(Long feeChargesWrittenOff) {
-		this.feeChargesWrittenOff = feeChargesWrittenOff;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod fromDate(LocalDate fromDate) {
+    public GetLoansLoanIdRepaymentPeriod fromDate(LocalDate fromDate) {
 		this.fromDate = fromDate;
 		return this;
 	}
@@ -273,11 +249,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return fromDate;
 	}
 
-	public void setFromDate(LocalDate fromDate) {
-		this.fromDate = fromDate;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod interestDue(Long interestDue) {
+    public GetLoansLoanIdRepaymentPeriod interestDue(Long interestDue) {
 		this.interestDue = interestDue;
 		return this;
 	}
@@ -293,11 +265,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return interestDue;
 	}
 
-	public void setInterestDue(Long interestDue) {
-		this.interestDue = interestDue;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod interestOriginalDue(Long interestOriginalDue) {
+    public GetLoansLoanIdRepaymentPeriod interestOriginalDue(Long interestOriginalDue) {
 		this.interestOriginalDue = interestOriginalDue;
 		return this;
 	}
@@ -313,11 +281,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return interestOriginalDue;
 	}
 
-	public void setInterestOriginalDue(Long interestOriginalDue) {
-		this.interestOriginalDue = interestOriginalDue;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod interestOutstanding(Long interestOutstanding) {
+    public GetLoansLoanIdRepaymentPeriod interestOutstanding(Long interestOutstanding) {
 		this.interestOutstanding = interestOutstanding;
 		return this;
 	}
@@ -333,11 +297,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return interestOutstanding;
 	}
 
-	public void setInterestOutstanding(Long interestOutstanding) {
-		this.interestOutstanding = interestOutstanding;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod interestPaid(Long interestPaid) {
+    public GetLoansLoanIdRepaymentPeriod interestPaid(Long interestPaid) {
 		this.interestPaid = interestPaid;
 		return this;
 	}
@@ -353,11 +313,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return interestPaid;
 	}
 
-	public void setInterestPaid(Long interestPaid) {
-		this.interestPaid = interestPaid;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod interestWaived(Long interestWaived) {
+    public GetLoansLoanIdRepaymentPeriod interestWaived(Long interestWaived) {
 		this.interestWaived = interestWaived;
 		return this;
 	}
@@ -373,11 +329,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return interestWaived;
 	}
 
-	public void setInterestWaived(Long interestWaived) {
-		this.interestWaived = interestWaived;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod interestWrittenOff(Long interestWrittenOff) {
+    public GetLoansLoanIdRepaymentPeriod interestWrittenOff(Long interestWrittenOff) {
 		this.interestWrittenOff = interestWrittenOff;
 		return this;
 	}
@@ -393,11 +345,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return interestWrittenOff;
 	}
 
-	public void setInterestWrittenOff(Long interestWrittenOff) {
-		this.interestWrittenOff = interestWrittenOff;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod obligationsMetOnDate(LocalDate obligationsMetOnDate) {
+    public GetLoansLoanIdRepaymentPeriod obligationsMetOnDate(LocalDate obligationsMetOnDate) {
 		this.obligationsMetOnDate = obligationsMetOnDate;
 		return this;
 	}
@@ -414,11 +362,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return obligationsMetOnDate;
 	}
 
-	public void setObligationsMetOnDate(LocalDate obligationsMetOnDate) {
-		this.obligationsMetOnDate = obligationsMetOnDate;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod penaltyChargesDue(Long penaltyChargesDue) {
+    public GetLoansLoanIdRepaymentPeriod penaltyChargesDue(Long penaltyChargesDue) {
 		this.penaltyChargesDue = penaltyChargesDue;
 		return this;
 	}
@@ -434,11 +378,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return penaltyChargesDue;
 	}
 
-	public void setPenaltyChargesDue(Long penaltyChargesDue) {
-		this.penaltyChargesDue = penaltyChargesDue;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod penaltyChargesOutstanding(Long penaltyChargesOutstanding) {
+    public GetLoansLoanIdRepaymentPeriod penaltyChargesOutstanding(Long penaltyChargesOutstanding) {
 		this.penaltyChargesOutstanding = penaltyChargesOutstanding;
 		return this;
 	}
@@ -454,11 +394,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return penaltyChargesOutstanding;
 	}
 
-	public void setPenaltyChargesOutstanding(Long penaltyChargesOutstanding) {
-		this.penaltyChargesOutstanding = penaltyChargesOutstanding;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod penaltyChargesPaid(Long penaltyChargesPaid) {
+    public GetLoansLoanIdRepaymentPeriod penaltyChargesPaid(Long penaltyChargesPaid) {
 		this.penaltyChargesPaid = penaltyChargesPaid;
 		return this;
 	}
@@ -474,11 +410,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return penaltyChargesPaid;
 	}
 
-	public void setPenaltyChargesPaid(Long penaltyChargesPaid) {
-		this.penaltyChargesPaid = penaltyChargesPaid;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod penaltyChargesWaived(Long penaltyChargesWaived) {
+    public GetLoansLoanIdRepaymentPeriod penaltyChargesWaived(Long penaltyChargesWaived) {
 		this.penaltyChargesWaived = penaltyChargesWaived;
 		return this;
 	}
@@ -494,11 +426,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return penaltyChargesWaived;
 	}
 
-	public void setPenaltyChargesWaived(Long penaltyChargesWaived) {
-		this.penaltyChargesWaived = penaltyChargesWaived;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod penaltyChargesWrittenOff(Long penaltyChargesWrittenOff) {
+    public GetLoansLoanIdRepaymentPeriod penaltyChargesWrittenOff(Long penaltyChargesWrittenOff) {
 		this.penaltyChargesWrittenOff = penaltyChargesWrittenOff;
 		return this;
 	}
@@ -514,11 +442,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return penaltyChargesWrittenOff;
 	}
 
-	public void setPenaltyChargesWrittenOff(Long penaltyChargesWrittenOff) {
-		this.penaltyChargesWrittenOff = penaltyChargesWrittenOff;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod period(Integer period) {
+    public GetLoansLoanIdRepaymentPeriod period(Integer period) {
 		this.period = period;
 		return this;
 	}
@@ -534,11 +458,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return period;
 	}
 
-	public void setPeriod(Integer period) {
-		this.period = period;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod principalDue(Double principalDue) {
+    public GetLoansLoanIdRepaymentPeriod principalDue(BigDecimal principalDue) {
 		this.principalDue = principalDue;
 		return this;
 	}
@@ -550,15 +470,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "principalDue", example = "200.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("principalDue")
-	public Double getPrincipalDue() {
+	public BigDecimal getPrincipalDue() {
 		return principalDue;
 	}
 
-	public void setPrincipalDue(Double principalDue) {
-		this.principalDue = principalDue;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod principalLoanBalanceOutstanding(Double principalLoanBalanceOutstanding) {
+    public GetLoansLoanIdRepaymentPeriod principalLoanBalanceOutstanding(BigDecimal principalLoanBalanceOutstanding) {
 		this.principalLoanBalanceOutstanding = principalLoanBalanceOutstanding;
 		return this;
 	}
@@ -570,15 +486,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "principalLoanBalanceOutstanding", example = "20.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("principalLoanBalanceOutstanding")
-	public Double getPrincipalLoanBalanceOutstanding() {
+	public BigDecimal getPrincipalLoanBalanceOutstanding() {
 		return principalLoanBalanceOutstanding;
 	}
 
-	public void setPrincipalLoanBalanceOutstanding(Double principalLoanBalanceOutstanding) {
-		this.principalLoanBalanceOutstanding = principalLoanBalanceOutstanding;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod principalOriginalDue(Double principalOriginalDue) {
+    public GetLoansLoanIdRepaymentPeriod principalOriginalDue(BigDecimal principalOriginalDue) {
 		this.principalOriginalDue = principalOriginalDue;
 		return this;
 	}
@@ -590,15 +502,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "principalOriginalDue", example = "200.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("principalOriginalDue")
-	public Double getPrincipalOriginalDue() {
+	public BigDecimal getPrincipalOriginalDue() {
 		return principalOriginalDue;
 	}
 
-	public void setPrincipalOriginalDue(Double principalOriginalDue) {
-		this.principalOriginalDue = principalOriginalDue;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod principalOutstanding(Double principalOutstanding) {
+    public GetLoansLoanIdRepaymentPeriod principalOutstanding(BigDecimal principalOutstanding) {
 		this.principalOutstanding = principalOutstanding;
 		return this;
 	}
@@ -610,15 +518,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "principalOutstanding", example = "20.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("principalOutstanding")
-	public Double getPrincipalOutstanding() {
+	public BigDecimal getPrincipalOutstanding() {
 		return principalOutstanding;
 	}
 
-	public void setPrincipalOutstanding(Double principalOutstanding) {
-		this.principalOutstanding = principalOutstanding;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod principalPaid(Double principalPaid) {
+    public GetLoansLoanIdRepaymentPeriod principalPaid(BigDecimal principalPaid) {
 		this.principalPaid = principalPaid;
 		return this;
 	}
@@ -630,15 +534,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "principalPaid", example = "200.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("principalPaid")
-	public Double getPrincipalPaid() {
+	public BigDecimal getPrincipalPaid() {
 		return principalPaid;
 	}
 
-	public void setPrincipalPaid(Double principalPaid) {
-		this.principalPaid = principalPaid;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod principalWrittenOff(Long principalWrittenOff) {
+    public GetLoansLoanIdRepaymentPeriod principalWrittenOff(Long principalWrittenOff) {
 		this.principalWrittenOff = principalWrittenOff;
 		return this;
 	}
@@ -654,11 +554,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return principalWrittenOff;
 	}
 
-	public void setPrincipalWrittenOff(Long principalWrittenOff) {
-		this.principalWrittenOff = principalWrittenOff;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalActualCostOfLoanForPeriod(Long totalActualCostOfLoanForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalActualCostOfLoanForPeriod(Long totalActualCostOfLoanForPeriod) {
 		this.totalActualCostOfLoanForPeriod = totalActualCostOfLoanForPeriod;
 		return this;
 	}
@@ -674,11 +570,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return totalActualCostOfLoanForPeriod;
 	}
 
-	public void setTotalActualCostOfLoanForPeriod(Long totalActualCostOfLoanForPeriod) {
-		this.totalActualCostOfLoanForPeriod = totalActualCostOfLoanForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalDueForPeriod(Double totalDueForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalDueForPeriod(BigDecimal totalDueForPeriod) {
 		this.totalDueForPeriod = totalDueForPeriod;
 		return this;
 	}
@@ -690,15 +582,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "totalDueForPeriod", example = "20.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("totalDueForPeriod")
-	public Double getTotalDueForPeriod() {
+	public BigDecimal getTotalDueForPeriod() {
 		return totalDueForPeriod;
 	}
 
-	public void setTotalDueForPeriod(Double totalDueForPeriod) {
-		this.totalDueForPeriod = totalDueForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalInstallmentAmountForPeriod(Double totalInstallmentAmountForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalInstallmentAmountForPeriod(BigDecimal totalInstallmentAmountForPeriod) {
 		this.totalInstallmentAmountForPeriod = totalInstallmentAmountForPeriod;
 		return this;
 	}
@@ -710,15 +598,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "totalInstallmentAmountForPeriod", example = "200.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("totalInstallmentAmountForPeriod")
-	public Double getTotalInstallmentAmountForPeriod() {
+	public BigDecimal getTotalInstallmentAmountForPeriod() {
 		return totalInstallmentAmountForPeriod;
 	}
 
-	public void setTotalInstallmentAmountForPeriod(Double totalInstallmentAmountForPeriod) {
-		this.totalInstallmentAmountForPeriod = totalInstallmentAmountForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalOriginalDueForPeriod(Double totalOriginalDueForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalOriginalDueForPeriod(BigDecimal totalOriginalDueForPeriod) {
 		this.totalOriginalDueForPeriod = totalOriginalDueForPeriod;
 		return this;
 	}
@@ -730,15 +614,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "totalOriginalDueForPeriod", example = "20.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("totalOriginalDueForPeriod")
-	public Double getTotalOriginalDueForPeriod() {
+	public BigDecimal getTotalOriginalDueForPeriod() {
 		return totalOriginalDueForPeriod;
 	}
 
-	public void setTotalOriginalDueForPeriod(Double totalOriginalDueForPeriod) {
-		this.totalOriginalDueForPeriod = totalOriginalDueForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalOutstandingForPeriod(Double totalOutstandingForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalOutstandingForPeriod(BigDecimal totalOutstandingForPeriod) {
 		this.totalOutstandingForPeriod = totalOutstandingForPeriod;
 		return this;
 	}
@@ -750,15 +630,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "totalOutstandingForPeriod", example = "200.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("totalOutstandingForPeriod")
-	public Double getTotalOutstandingForPeriod() {
+	public BigDecimal getTotalOutstandingForPeriod() {
 		return totalOutstandingForPeriod;
 	}
 
-	public void setTotalOutstandingForPeriod(Double totalOutstandingForPeriod) {
-		this.totalOutstandingForPeriod = totalOutstandingForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalPaidForPeriod(Double totalPaidForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalPaidForPeriod(BigDecimal totalPaidForPeriod) {
 		this.totalPaidForPeriod = totalPaidForPeriod;
 		return this;
 	}
@@ -770,15 +646,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "totalPaidForPeriod", example = "20.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("totalPaidForPeriod")
-	public Double getTotalPaidForPeriod() {
+	public BigDecimal getTotalPaidForPeriod() {
 		return totalPaidForPeriod;
 	}
 
-	public void setTotalPaidForPeriod(Double totalPaidForPeriod) {
-		this.totalPaidForPeriod = totalPaidForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalPaidInAdvanceForPeriod(Double totalPaidInAdvanceForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalPaidInAdvanceForPeriod(BigDecimal totalPaidInAdvanceForPeriod) {
 		this.totalPaidInAdvanceForPeriod = totalPaidInAdvanceForPeriod;
 		return this;
 	}
@@ -790,15 +662,11 @@ public class GetLoansLoanIdRepaymentPeriod {
 	 */
 	@Schema(name = "totalPaidInAdvanceForPeriod", example = "20.0", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
 	@JsonProperty("totalPaidInAdvanceForPeriod")
-	public Double getTotalPaidInAdvanceForPeriod() {
+	public BigDecimal getTotalPaidInAdvanceForPeriod() {
 		return totalPaidInAdvanceForPeriod;
 	}
 
-	public void setTotalPaidInAdvanceForPeriod(Double totalPaidInAdvanceForPeriod) {
-		this.totalPaidInAdvanceForPeriod = totalPaidInAdvanceForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalPaidLateForPeriod(Long totalPaidLateForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalPaidLateForPeriod(Long totalPaidLateForPeriod) {
 		this.totalPaidLateForPeriod = totalPaidLateForPeriod;
 		return this;
 	}
@@ -814,11 +682,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return totalPaidLateForPeriod;
 	}
 
-	public void setTotalPaidLateForPeriod(Long totalPaidLateForPeriod) {
-		this.totalPaidLateForPeriod = totalPaidLateForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalWaivedForPeriod(Long totalWaivedForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalWaivedForPeriod(Long totalWaivedForPeriod) {
 		this.totalWaivedForPeriod = totalWaivedForPeriod;
 		return this;
 	}
@@ -834,11 +698,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return totalWaivedForPeriod;
 	}
 
-	public void setTotalWaivedForPeriod(Long totalWaivedForPeriod) {
-		this.totalWaivedForPeriod = totalWaivedForPeriod;
-	}
-
-	public GetLoansLoanIdRepaymentPeriod totalWrittenOffForPeriod(Long totalWrittenOffForPeriod) {
+    public GetLoansLoanIdRepaymentPeriod totalWrittenOffForPeriod(Long totalWrittenOffForPeriod) {
 		this.totalWrittenOffForPeriod = totalWrittenOffForPeriod;
 		return this;
 	}
@@ -854,11 +714,7 @@ public class GetLoansLoanIdRepaymentPeriod {
 		return totalWrittenOffForPeriod;
 	}
 
-	public void setTotalWrittenOffForPeriod(Long totalWrittenOffForPeriod) {
-		this.totalWrittenOffForPeriod = totalWrittenOffForPeriod;
-	}
-
-	@Override
+    @Override
 	public boolean equals(Object o) {
 		if (this == o) {
 			return true;

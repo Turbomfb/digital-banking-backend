@@ -3,12 +3,16 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import lombok.Setter;
 
 /** GetLoansLoanIdTermPeriodFrequencyType */
+@Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
 public class GetLoansLoanIdTermPeriodFrequencyType {
 
@@ -34,11 +38,7 @@ public class GetLoansLoanIdTermPeriodFrequencyType {
 		return code;
 	}
 
-	public void setCode(String code) {
-		this.code = code;
-	}
-
-	public GetLoansLoanIdTermPeriodFrequencyType description(String description) {
+    public GetLoansLoanIdTermPeriodFrequencyType description(String description) {
 		this.description = description;
 		return this;
 	}
@@ -54,11 +54,7 @@ public class GetLoansLoanIdTermPeriodFrequencyType {
 		return description;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public GetLoansLoanIdTermPeriodFrequencyType id(Integer id) {
+    public GetLoansLoanIdTermPeriodFrequencyType id(Integer id) {
 		this.id = id;
 		return this;
 	}
@@ -74,11 +70,7 @@ public class GetLoansLoanIdTermPeriodFrequencyType {
 		return id;
 	}
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	@Override
+    @Override
 	public boolean equals(Object o) {
 		if (this == o) {
 			return true;

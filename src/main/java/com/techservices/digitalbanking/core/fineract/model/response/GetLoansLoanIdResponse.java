@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Getter;
@@ -13,9 +14,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GetLoansLoanIdResponse {
 
+
+	private Long id;
 	private Long accountNo;
+	private String externalId;
 
 	private GetLoansLoanIdAmortizationType amortizationType;
 
@@ -32,8 +37,6 @@ public class GetLoansLoanIdResponse {
 	private GetLoansLoanIdCurrency currency;
 
 	private BigDecimal fixedPrincipalPercentagePerInstallment;
-
-	private Long id;
 
 	private GetLoansLoanIdInterestCalculationPeriodType interestCalculationPeriodType;
 

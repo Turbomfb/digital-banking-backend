@@ -497,31 +497,29 @@ public interface LoansApi {
 	 * loans?offset&#x3D;10&amp;limit&#x3D;50
 	 * loans?orderBy&#x3D;accountNo&amp;sortOrder&#x3D;DESC
 	 *
-	 * @param sqlSearch
-	 *            sqlSearch (optional)
-	 * @param externalId
-	 *            externalId (optional)
-	 * @param offset
-	 *            offset (optional)
-	 * @param limit
-	 *            limit (optional)
-	 * @param orderBy
-	 *            orderBy (optional)
-	 * @param sortOrder
-	 *            sortOrder (optional)
-	 * @param accountNo
-	 *            accountNo (optional)
+	 * @param sqlSearch  sqlSearch (optional)
+	 * @param externalId externalId (optional)
+	 * @param offset     offset (optional)
+	 * @param limit      limit (optional)
+	 * @param orderBy    orderBy (optional)
+	 * @param sortOrder  sortOrder (optional)
+	 * @param accountNo  accountNo (optional)
+	 * @param clientId
+	 * @param status
 	 * @return OK (status code 200)
 	 */
 	@RequestMapping(method = RequestMethod.GET, value = "/loans", produces = {"application/json"})
 	@ResponseStatus(HttpStatus.OK)
 	GetLoansResponse retrieveAll36(@Valid @RequestParam(value = "sqlSearch", required = false) String sqlSearch,
-			@Valid @RequestParam(value = "externalId", required = false) String externalId,
-			@Valid @RequestParam(value = "offset", required = false) Integer offset,
-			@Valid @RequestParam(value = "limit", required = false) Integer limit,
-			@Valid @RequestParam(value = "orderBy", required = false) String orderBy,
-			@Valid @RequestParam(value = "sortOrder", required = false) String sortOrder,
-			@Valid @RequestParam(value = "accountNo", required = false) String accountNo);
+								   @Valid @RequestParam(value = "externalId", required = false) String externalId,
+								   @Valid @RequestParam(value = "offset", required = false) Integer offset,
+								   @Valid @RequestParam(value = "limit", required = false) Integer limit,
+								   @Valid @RequestParam(value = "orderBy", required = false) String orderBy,
+								   @Valid @RequestParam(value = "sortOrder", required = false) String sortOrder,
+								   @Valid @RequestParam(value = "accountNo", required = false) String accountNo,
+								   @Valid @RequestParam(value = "clientId", required = false) String clientId,
+								   @Valid @RequestParam(value = "status", required = false) String status
+	);
 
 	/**
 	 * GET /loans/{loanId}/charges : List Loan Charges It lists all the Loan Charges

@@ -3,18 +3,24 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import lombok.Getter;
+import lombok.Setter;
 
 /** GetLoansLoanIdStatus */
+@Getter
+@Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
 public class GetLoansLoanIdStatus {
 
-	private Boolean active;
+	private boolean active;
 
-	private Boolean closed;
+	private boolean closed;
 
 	private Boolean closedObligationsMet;
 
@@ -30,53 +36,17 @@ public class GetLoansLoanIdStatus {
 
 	private Boolean overpaid;
 
-	private Boolean pendingApproval;
+	private boolean pendingApproval;
 
-	private Boolean waitingForDisbursal;
+	private boolean waitingForDisbursal;
 
 	public GetLoansLoanIdStatus active(Boolean active) {
 		this.active = active;
 		return this;
 	}
 
-	/**
-	 * Get active
-	 *
-	 * @return active
-	 */
-	@Schema(name = "active", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("active")
-	public Boolean getActive() {
-		return active;
-	}
-
 	public void setActive(Boolean active) {
 		this.active = active;
-	}
-
-	public GetLoansLoanIdStatus closed(Boolean closed) {
-		this.closed = closed;
-		return this;
-	}
-
-	/**
-	 * Get closed
-	 *
-	 * @return closed
-	 */
-	@Schema(name = "closed", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("closed")
-	public Boolean getClosed() {
-		return closed;
-	}
-
-	public void setClosed(Boolean closed) {
-		this.closed = closed;
-	}
-
-	public GetLoansLoanIdStatus closedObligationsMet(Boolean closedObligationsMet) {
-		this.closedObligationsMet = closedObligationsMet;
-		return this;
 	}
 
 	/**
@@ -217,37 +187,6 @@ public class GetLoansLoanIdStatus {
 	public GetLoansLoanIdStatus pendingApproval(Boolean pendingApproval) {
 		this.pendingApproval = pendingApproval;
 		return this;
-	}
-
-	/**
-	 * Get pendingApproval
-	 *
-	 * @return pendingApproval
-	 */
-	@Schema(name = "pendingApproval", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("pendingApproval")
-	public Boolean getPendingApproval() {
-		return pendingApproval;
-	}
-
-	public void setPendingApproval(Boolean pendingApproval) {
-		this.pendingApproval = pendingApproval;
-	}
-
-	public GetLoansLoanIdStatus waitingForDisbursal(Boolean waitingForDisbursal) {
-		this.waitingForDisbursal = waitingForDisbursal;
-		return this;
-	}
-
-	/**
-	 * Get waitingForDisbursal
-	 *
-	 * @return waitingForDisbursal
-	 */
-	@Schema(name = "waitingForDisbursal", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("waitingForDisbursal")
-	public Boolean getWaitingForDisbursal() {
-		return waitingForDisbursal;
 	}
 
 	public void setWaitingForDisbursal(Boolean waitingForDisbursal) {

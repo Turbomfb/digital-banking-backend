@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.techservices.digitalbanking.core.fineract.api.LoansApiClient;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.request.LoanRescheduleRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PostLoanApplicationDisbursementData;
 import com.techservices.digitalbanking.core.fineract.model.request.PostLoanApplicationRequest;
 import com.techservices.digitalbanking.core.fineract.model.request.PostLoanProductsRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsProductIdResponse;
@@ -78,10 +77,10 @@ public class LoanService {
 	}
 
 	public GetLoansResponse retrieveAllLoans(String sqlSearch, String externalId, Integer offset, Integer limit,
-			String orderBy, String sortOrder, String accountNo) {
+											 String orderBy, String sortOrder, String accountNo, String clientId, String status) {
 		offset = offset == null ? 0 : offset;
 		limit = limit == null ? 20 : limit;
-		return loansApiClient.retrieveAll36(sqlSearch, externalId, offset, limit, orderBy, sortOrder, accountNo);
+		return loansApiClient.retrieveAll36(sqlSearch, externalId, offset, limit, orderBy, sortOrder, accountNo, clientId, status);
 	}
 
 	public PostLoansLoanIdResponse processLoanCommand(Long loanId, PostLoansLoanIdRequest postLoansLoanIdRequest,
