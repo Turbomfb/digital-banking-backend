@@ -30,4 +30,7 @@ public class SystemProperty {
 
 	@Value("${payinvert.loan.integration.url}")
 	private String payinvertLoanIntegrationUrl;
+
+	@Value("${payinvert.loan.integration.api-key}")
+	private String payinvertLoanIntegrationApiKey;
 }

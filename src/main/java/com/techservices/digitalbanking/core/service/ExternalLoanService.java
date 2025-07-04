@@ -36,7 +36,8 @@ public class ExternalLoanService {
     public List<LoanOfferResponse> retrieveCustomerLoanOffers(String phoneNumber) {
         String url = systemProperty.getPayinvertLoanIntegrationUrl() + LOAN_OFFER_URL + phoneNumber;
         try {
-            return apiService.callExternalApi(url, new TypeReference<>() {}, HttpMethod.GET, null, null);
+            HttpHeaders headers = this.getHeaders();
+            return apiService.callExternalApi(url, new TypeReference<>() {}, HttpMethod.GET, null, headers);
         } catch (PlatformServiceException e) {
             log.error(e.getMessage());
             throw new ValidationException("external.payment.service.error", e.getDefaultUserMessage());
@@ -45,10 +46,17 @@ public class ExternalLoanService {
         }
     }
 
+    private HttpHeaders getHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-API-KEY", systemProperty.getPayinvertLoanIntegrationApiKey());
+        return headers;
+    }
+
     public GenericApiResponse processLoanApplication(LoanApplicationRequest loanApplicationRequest) {
         String url = systemProperty.getPayinvertLoanIntegrationUrl() + LOAN_APPLICATION_URL;
         try {
-            return apiService.callExternalApi(url, GenericApiResponse.class, HttpMethod.POST, loanApplicationRequest, null);
+            HttpHeaders headers = this.getHeaders();
+            return apiService.callExternalApi(url, GenericApiResponse.class, HttpMethod.POST, loanApplicationRequest, headers);
         } catch (PlatformServiceException e) {
             log.error(e.getMessage());
             throw new ValidationException("external.payment.service.error", e.getDefaultUserMessage());
