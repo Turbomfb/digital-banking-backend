@@ -26,12 +26,15 @@ import com.techservices.digitalbanking.authentication.domain.response.Authentica
 import com.techservices.digitalbanking.authentication.service.AuthenticationService;
 import com.techservices.digitalbanking.core.configuration.security.JwtUtil;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.enums.NotificationChannel;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.domain.model.AppUser;
 import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
+import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
@@ -131,9 +134,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command) {
         if (StringUtils.equals(GENERATE_OTP_COMMAND, command)){
             Customer foundCustomer = getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber());
-
-            OtpDto otpDto = this.redisService.generateOtpRequest(foundCustomer, OtpType.FORGOT_PASSWORD);
-            return new GenericApiResponse(otpDto.getUniqueId(), "OTP sent successfully", "success", null);
+            NotificationRequestDto notificationRequestDto = new NotificationRequestDto(passwordMgtRequest.getPhoneNumber(), passwordMgtRequest.getEmailAddress());
+            boolean isPhoneNumberPresent = StringUtils.isNotBlank(passwordMgtRequest.getPhoneNumber());
+            OtpDto otpDto = this.redisService.generateOtpRequest(foundCustomer, OtpType.FORGOT_PASSWORD, notificationRequestDto);
+            return new GenericApiResponse(otpDto.getUniqueId(), "We sent a code to "+ (isPhoneNumberPresent ? AppUtil.maskPhoneNumber(passwordMgtRequest.getPhoneNumber()) : AppUtil.maskEmailAddress(passwordMgtRequest.getEmailAddress())), "success", null);
         } else if (StringUtils.equals(VERIFY_OTP_COMMAND, command)) {
             if (StringUtils.isBlank(passwordMgtRequest.getOtp())){
                 throw new ValidationException("Invalid.data.provided", "otp must be provided");

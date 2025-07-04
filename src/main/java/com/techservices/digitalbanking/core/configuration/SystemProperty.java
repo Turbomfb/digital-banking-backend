@@ -33,4 +33,13 @@ public class SystemProperty {
 
 	@Value("${payinvert.loan.integration.api-key}")
 	private String payinvertLoanIntegrationApiKey;
+
+	@Value("${sms.notification.service.url}")
+	private String smsNotificationServiceUrl;
+
+	@Value("${sms.notification.service.api-key}")
+	private String smsNotificationServiceApiKey;
+
+	@Value("${sms.notification.service.sender-id}")
+	private String smsNotificationServiceSenderId;
 }

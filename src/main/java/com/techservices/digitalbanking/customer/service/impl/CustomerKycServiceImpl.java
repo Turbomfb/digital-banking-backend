@@ -4,9 +4,11 @@ package com.techservices.digitalbanking.customer.service.impl;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
+import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
+import com.techservices.digitalbanking.core.domain.enums.NotificationChannel;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
@@ -19,6 +21,7 @@ import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
+import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
@@ -62,8 +65,9 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
 		boolean isIdentityDataRetrieved = verificationResponse != null && GENERATE_OTP_COMMAND.equalsIgnoreCase(command);
 		if (isIdentityDataRetrieved) {
-			OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE);
-			return new GenericApiResponse(otpDto.getUniqueId(), "OTP sent successfully", "success", null);
+			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse.getData().getMobile(), verificationResponse.getData().getEmail());
+			OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto);
+			return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(verificationResponse.getData().getMobile())+" and "+AppUtil.maskEmailAddress(verificationResponse.getData().getEmail()), "success", null);
 		}
 		CustomerKycTier customerKycTier = this.getCustomerKycTier(foundCustomer);
 		if (!foundCustomer.isActive()) {

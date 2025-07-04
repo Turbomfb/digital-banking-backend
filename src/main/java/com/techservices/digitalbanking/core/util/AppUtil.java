@@ -1,6 +1,8 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.StringJoiner;
 
 public class AppUtil {
@@ -30,6 +32,14 @@ public class AppUtil {
 			}
 		}
 		return joiner.toString().replaceAll("\\s+$", "");
+	}
+
+	public static String maskPhoneNumber(String phoneNumber) {
+		return StringUtils.isNotBlank(phoneNumber) ? phoneNumber.replaceAll("(\\d{3})\\d+(\\d{2})", "$1*****$2") : null;
+	}
+
+	public static String maskEmailAddress(String emailAddress) {
+		return StringUtils.isNotBlank(emailAddress) ? emailAddress.replaceAll("(?<=.{3}).(?=.*@)", "*") : null;
 	}
 
 	public static boolean isDynamicVirtualAccountDynamic(String accountNumber) {

@@ -20,10 +20,13 @@
  */ 
 package com.techservices.digitalbanking.core.redis.service;
 
+import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.enums.NotificationChannel;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.configuration.RedisProperty;
+import com.techservices.digitalbanking.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class RedisService {
     private final RedisProperty redisProperty;
+    private final NotificationService notificationService;
 
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -84,7 +88,7 @@ public class RedisService {
                 && otpDto.getOtpType().equals(otpType);
     }
 
-    public OtpDto generateOtpRequest(Object request, OtpType otpType) {
+    public OtpDto generateOtpRequest(Object request, OtpType otpType, NotificationRequestDto notificationRequestDto) {
         OtpDto otpDto = new OtpDto();
         String uniqueId = UUID.randomUUID().toString();
         otpDto.setUniqueId(uniqueId);
@@ -93,6 +97,24 @@ public class RedisService {
         otpDto.setOtp(String.valueOf(otp));
         otpDto.setData(request);
         this.save(otpDto.getUniqueId(), otpDto);
+        log.info("Sending OTP notification for uniqueId: {}", notificationRequestDto);
+        if (notificationRequestDto != null) {
+            String message = switch (otpType) {
+                case ONBOARDING -> "Welcome to our platform! Your OTP for onboarding is: " + otpDto.getOtp();
+                case KYC_UPGRADE -> "Your OTP for upgrading your KYC is: " + otpDto.getOtp();
+                case FORGOT_PASSWORD -> "You requested a password reset. Your OTP is: " + otpDto.getOtp();
+            };
+            if (notificationRequestDto.getChannel() != null) {
+                if (notificationRequestDto.getChannel().equals(NotificationChannel.SMS)){
+                    notificationService.sendSms(notificationRequestDto.getPhoneNumber(), message);
+                } else if (notificationRequestDto.getChannel().equals(NotificationChannel.EMAIL)){
+//                    Todo: implement email notification
+                } else if (notificationRequestDto.getChannel().equals(NotificationChannel.SMS_AND_EMAIL)) {
+                    notificationService.sendSms(notificationRequestDto.getPhoneNumber(), message);
+//                    Todo: implement email notification
+                }
+            }
+        }
         return otpDto;
     }
 
