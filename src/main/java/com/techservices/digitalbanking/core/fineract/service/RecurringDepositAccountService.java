@@ -42,8 +42,8 @@ public class RecurringDepositAccountService {
 	}
 
 	public GetRecurringDepositAccountsResponse retrieveInvestmentById(Long investmentId,
-			Boolean staffInSelectedOfficeOnly, @Valid String chargeStatus) {
-		return recurringDepositAccountApiClient.retrieveOne(investmentId, staffInSelectedOfficeOnly, null, null);
+																	  Boolean staffInSelectedOfficeOnly, @Valid String chargeStatus, String associations) {
+		return recurringDepositAccountApiClient.retrieveOne(investmentId, staffInSelectedOfficeOnly, null, associations);
 	}
 
 	public PostRecurringDepositAccountsResponse processInvestmentCommand(Long investmentId,

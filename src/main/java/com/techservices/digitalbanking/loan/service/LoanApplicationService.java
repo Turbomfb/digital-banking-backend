@@ -12,7 +12,6 @@ import com.techservices.digitalbanking.core.fineract.model.response.LoanReschedu
 import com.techservices.digitalbanking.core.fineract.model.response.LoanTransactionResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdTransactionsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostLoansResponse;
 import com.techservices.digitalbanking.loan.domain.request.LoanApplicationRequest;
 import com.techservices.digitalbanking.loan.domain.request.LoanRepaymentRequest;
@@ -34,8 +33,8 @@ public interface LoanApplicationService {
 	PostLoansLoanIdResponse processLoanCommand(Long loanId, PostLoansLoanIdRequest postLoansLoanIdRequest,
 			@Valid String command);
 
-	PostLoansLoanIdTransactionsResponse repayLoan(Long loanId,
-			@Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest, String command);
+	GenericApiResponse repayLoan(Long loanId,
+								 @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest, String command, Long customerId);
 
 	GetLoanTemplateResponse retrieveLoanTemplate(@Valid String templateType, @Valid Long clientId,
 			@Valid Long productId);

@@ -119,8 +119,8 @@ public class FixedDepositService {
 	}
 
 	public GetFixedDepositAccountsAccountIdResponse retrieveInvestmentById(Long id, Boolean staffInSelectedOfficeOnly,
-			@Valid String chargeStatus) {
-		return fixeddepositaccountsApiClient.retrieveOne(id, staffInSelectedOfficeOnly, chargeStatus, "all");
+																		   @Valid String chargeStatus, String associations) {
+		return fixeddepositaccountsApiClient.retrieveOne(id, staffInSelectedOfficeOnly, chargeStatus, associations);
 	}
 
 	public Object retrieveTemplate(Long clientId, Long productId) {

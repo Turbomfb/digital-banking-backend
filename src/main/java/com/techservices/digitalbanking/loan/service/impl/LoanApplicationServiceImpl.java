@@ -8,6 +8,7 @@ import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
@@ -29,13 +30,12 @@ import com.techservices.digitalbanking.loan.service.LoanApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LoanApplicationServiceImpl implements LoanApplicationService {
 
 	private final LoanService loanService;
@@ -67,9 +67,15 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	}
 
 	@Override
-	public PostLoansLoanIdTransactionsResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest loanRepaymentRequest,
-			String command) {
-		return loanService.repayLoan(loanId, loanRepaymentRequest, command);
+	public GenericApiResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest loanRepaymentRequest,
+										String command, Long customerId) {
+		customerService.getCustomerById(customerId);
+		PostLoansLoanIdTransactionsResponse response = loanService.repayLoan(loanId, loanRepaymentRequest, command);
+		if (response != null && response.getResourceId() != null) {
+			return new GenericApiResponse("success", "Loan repayment successful");
+		}
+		log.info("Loan repayment failed {}", response);
+		return new GenericApiResponse("error", "Loan repayment failed");
 	}
 
 	@Override

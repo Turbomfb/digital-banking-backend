@@ -27,7 +27,7 @@ public class GetClientsClientIdAccountsResponse {
 	private Set<@Valid GetClientsSavingsAccounts> savingsAccounts = new LinkedHashSet<>();
 
 	public BigDecimal getTotalAccountBalanceFor(AccountType accountType) {
-		return this.getSavingsAccounts()
+		return this.savingsAccounts
 				.stream()
 				.filter(account -> account != null && account.isAccountType(accountType))
 				.map(account -> Optional.ofNullable(account.getAccountBalance()).orElse(BigDecimal.ZERO))
@@ -35,7 +35,7 @@ public class GetClientsClientIdAccountsResponse {
 	}
 
 	public BigDecimal getTotalAccountDepositsFor(AccountType accountType, AccountService accountService) {
-		return this.getSavingsAccounts()
+		return this.savingsAccounts
 				.stream()
 				.filter(account -> account != null && account.isAccountType(accountType))
 				.map(account -> Optional.ofNullable(account.getTotalDeposits(accountService)).orElse(BigDecimal.ZERO))
@@ -43,7 +43,7 @@ public class GetClientsClientIdAccountsResponse {
 	}
 
 	public BigDecimal getTotalAccountWithdrawalsFor(AccountType accountType, AccountService accountService) {
-		return this.getSavingsAccounts()
+		return this.savingsAccounts
 				.stream()
 				.filter(account -> account != null && account.isAccountType(accountType))
 				.map(account -> Optional.ofNullable(account.getTotalWithdrawals(accountService)).orElse(BigDecimal.ZERO))
@@ -51,7 +51,7 @@ public class GetClientsClientIdAccountsResponse {
 	}
 
 	public BigDecimal getTotalAccountInterestsFor(AccountType accountType, AccountService accountService) {
-		return this.getSavingsAccounts()
+		return this.savingsAccounts
 				.stream()
 				.filter(account -> account != null && account.isAccountType(accountType))
 				.map(account -> Optional.ofNullable(account.getTotalInterests(accountService)).orElse(BigDecimal.ZERO))
@@ -59,7 +59,7 @@ public class GetClientsClientIdAccountsResponse {
 	}
 
 	public Long getTotalActivePlanFor(AccountType accountType, AccountService accountService) {
-		return this.getSavingsAccounts()
+		return this.savingsAccounts
 				.stream()
 				.filter(account -> account != null && account.isAccountType(accountType))
 				.count();

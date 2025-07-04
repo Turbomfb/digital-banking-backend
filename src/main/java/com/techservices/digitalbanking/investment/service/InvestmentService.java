@@ -1,6 +1,8 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.investment.service;
 
+import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.*;
 import com.techservices.digitalbanking.fixeddeposit.domain.request.FixedDepositCommandRequest;
 import com.techservices.digitalbanking.investment.domain.request.FixedDepositApplicationRequest;
@@ -17,8 +19,13 @@ public interface InvestmentService {
 	GetFixedDepositAccountsResponse retrieveAllInvestments(Boolean paged, Integer offset, Integer limit,
 														   String orderBy, String sortOrder);
 
-	GetFixedDepositAccountsAccountIdResponse retrieveInvestmentById(Long id, Boolean staffInSelectedOfficeOnly,
-																	@Valid String chargeStatus);
+	BaseAppResponse retrieveInvestmentById(Long id, Boolean staffInSelectedOfficeOnly,
+										   @Valid String chargeStatus, String investmentType, Long customerId);
 
 	Object retrieveTemplate(Long clientId, Long productId);
+
+	BasePageResponse<GetClientsSavingsAccounts> retrieveAllCustomerInvestments(Long customerId, String investmentType);
+
+	Object retrieveInvestmentTransactionsById(Long id, Boolean staffInSelectedOfficeOnly, @Valid String chargeStatus, String investmentType, Long customerId);
+
 }

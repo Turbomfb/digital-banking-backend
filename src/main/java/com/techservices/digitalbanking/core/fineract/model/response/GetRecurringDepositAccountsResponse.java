@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -16,7 +17,7 @@ import lombok.Setter;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GetRecurringDepositAccountsResponse {
+public class GetRecurringDepositAccountsResponse extends BaseAppResponse {
 	private Long accountNo;
 
 	private Integer clientId;

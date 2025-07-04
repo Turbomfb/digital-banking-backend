@@ -41,7 +41,7 @@ public class FixedDepositInvestmentServiceImpl implements FixedDepositInvestment
 	@Override
 	public GetFixedDepositAccountsAccountIdResponse retrieveInvestmentById(Long id, Boolean staffInSelectedOfficeOnly,
 			@Valid String chargeStatus) {
-		return fixedDepositService.retrieveInvestmentById(id, staffInSelectedOfficeOnly, chargeStatus);
+		return fixedDepositService.retrieveInvestmentById(id, staffInSelectedOfficeOnly, chargeStatus, null);
 	}
 
 	@Override

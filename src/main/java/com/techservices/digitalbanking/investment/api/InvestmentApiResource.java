@@ -1,6 +1,9 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.investment.api;
 
+import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.fineract.model.response.GetClientsSavingsAccounts;
 import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsResponse;
 import org.springframework.http.ResponseEntity;
@@ -16,25 +19,47 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RequestMapping("api/v1/investments")
+@RequestMapping("api/v1/customers/{customerId}/investments")
 @RestController
 @RequiredArgsConstructor
 public class InvestmentApiResource {
 	private final InvestmentService investmentService;
 
-	@Operation(summary = "Retrieve an Investment")
-	@GetMapping("{id}")
-	public ResponseEntity<GetFixedDepositAccountsAccountIdResponse> retrieveInvestmentById(@PathVariable Long id,
-																						   @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
-																						   @Valid @RequestParam(value = "chargeStatus", required = false, defaultValue = "all") String chargeStatus) {
-		GetFixedDepositAccountsAccountIdResponse investment = investmentService.retrieveInvestmentById(id,
-				staffInSelectedOfficeOnly, chargeStatus);
+	@Operation(summary = "Retrieve Customer's Investments")
+	@GetMapping()
+	public ResponseEntity<BasePageResponse<GetClientsSavingsAccounts>> retrieveAllCustomerInvestments(
+			@PathVariable Long customerId,
+			@RequestParam(required = false) String investmentType
+	) {
+		BasePageResponse<GetClientsSavingsAccounts> investment = investmentService.retrieveAllCustomerInvestments(customerId, investmentType);
 		return ResponseEntity.ok(investment);
 	}
 
-	@GetMapping("/template")
-	public ResponseEntity<Object> retrieveInvestmentTemplate(@RequestParam Long clientId,
-			@RequestParam Long productId) {
-		return ResponseEntity.ok(investmentService.retrieveTemplate(clientId, productId));
+	@Operation(summary = "Retrieve an Investment")
+	@GetMapping("{id}")
+	public ResponseEntity<BaseAppResponse> retrieveInvestmentById(
+			@PathVariable Long id,
+			@RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
+			@Valid @RequestParam(value = "chargeStatus", required = false, defaultValue = "all") String chargeStatus,
+			@PathVariable Long customerId,
+			@RequestParam(required = false) String investmentType
+	) {
+		BaseAppResponse investment = investmentService.retrieveInvestmentById(id,
+				staffInSelectedOfficeOnly, chargeStatus, investmentType, customerId);
+		return ResponseEntity.ok(investment);
+	}
+
+	@Operation(summary = "Retrieve an Investment Transactions")
+	@GetMapping("{id}/transactions")
+	public ResponseEntity<Object> retrieveInvestmentTransactionsById(
+			@PathVariable Long id,
+			@RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
+			@Valid @RequestParam(value = "chargeStatus", required = false, defaultValue = "all") String chargeStatus,
+			@PathVariable Long customerId,
+			@RequestParam(required = false) String investmentType
+	) {
+		Object investment = investmentService.retrieveInvestmentTransactionsById(id,
+				staffInSelectedOfficeOnly, chargeStatus, investmentType, customerId);
+		return ResponseEntity.ok(investment);
 	}
 }

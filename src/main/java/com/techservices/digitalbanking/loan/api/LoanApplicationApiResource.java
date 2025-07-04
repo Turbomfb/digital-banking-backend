@@ -6,7 +6,6 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,14 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanTemplateResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetLoansResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.LoanTransactionResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansLoanIdTransactionsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansResponse;
 import com.techservices.digitalbanking.loan.domain.request.LoanApplicationRequest;
 import com.techservices.digitalbanking.loan.domain.request.LoanRepaymentRequest;
 import com.techservices.digitalbanking.loan.service.LoanApplicationService;
@@ -118,5 +112,15 @@ public class LoanApplicationApiResource {
 		LoanTransactionResponse transaction = loanService.retrieveLoanTransactionDetails(loanId, transactionId);
 
 		return ResponseEntity.ok(transaction);
+	}
+
+	@Operation(summary = "Repay a loan")
+	@PostMapping("{loanId}/repayment")
+	public GenericApiResponse repayLoan(
+		@PathVariable Long loanId,
+		@RequestBody @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest,
+		@RequestParam(required = false, defaultValue = "repayment") String command,
+		@PathVariable Long customerId) {
+		return loanService.repayLoan(loanId, postLoansLoanIdTransactionsRequest, command, customerId);
 	}
 }
