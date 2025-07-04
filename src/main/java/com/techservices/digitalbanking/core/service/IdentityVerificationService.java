@@ -32,9 +32,13 @@ public class IdentityVerificationService {
     private static final String BVN_DETAIL = "bvn-detail";
 
     public IdentityVerificationResponse retrieveBvnData(String bvn) {
+        log.info("Retrieving BVN data for: {}", bvn);
+
         String url = buildUrl(BVN_DETAIL, bvn);
         return fetchIdentityVerificationResponse(url, bvn);
     }
+
+
 
     public CustomerIdentityVerificationResponse verifyBvn(String bvn, IdentityVerificationRequest customerData) {
         GetClientsClientIdResponse client = clientService.getCustomerByBvn(bvn);

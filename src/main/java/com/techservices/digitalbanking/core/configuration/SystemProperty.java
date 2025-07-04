@@ -42,4 +42,10 @@ public class SystemProperty {
 
 	@Value("${sms.notification.service.sender-id}")
 	private String smsNotificationServiceSenderId;
+
+	@Value("${bank.data.service.url}")
+	private String bankDataServiceUrl;
+
+	@Value("${bank.data.service.api-key}")
+	private String bankDataServiceApiKey;
 }

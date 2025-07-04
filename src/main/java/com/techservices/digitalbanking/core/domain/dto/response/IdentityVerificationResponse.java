@@ -18,6 +18,7 @@ public class IdentityVerificationResponse {
     private boolean success;
     private String statusMessage;
     private String statusCode;
+    private String message;
 
     public static IdentityVerificationResponse parse(GetClientsClientIdResponse client) {
         IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
