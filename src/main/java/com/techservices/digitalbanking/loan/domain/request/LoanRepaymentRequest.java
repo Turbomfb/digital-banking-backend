@@ -22,4 +22,5 @@ public class LoanRepaymentRequest {
 	private String routingCode;
 	private String receiptNumber;
 	private String bankNumber;
+	private String transactionPin;
 }

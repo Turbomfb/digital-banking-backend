@@ -3,12 +3,14 @@ package com.techservices.digitalbanking.loan.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.service.ExternalLoanService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
@@ -69,7 +71,15 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	@Override
 	public GenericApiResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest loanRepaymentRequest,
 										String command, Long customerId) {
-		customerService.getCustomerById(customerId);
+		if (StringUtils.isBlank(loanRepaymentRequest.getTransactionPin())){
+			throw new ValidationException("validation.msg.loan.repayment.transaction.pin.required",
+					"Transaction PIN is required for loan repayment");
+		}
+		Customer customer = customerService.getCustomerById(customerId);
+		if (!StringUtils.equals(loanRepaymentRequest.getTransactionPin(), customer.getTransactionPin())){
+			throw new ValidationException("validation.msg.loan.repayment.transaction.pin.invalid",
+					"Invalid Transaction PIN provided for loan repayment");
+		}
 		PostLoansLoanIdTransactionsResponse response = loanService.repayLoan(loanId, loanRepaymentRequest, command);
 		if (response != null && response.getResourceId() != null) {
 			return new GenericApiResponse("success", "Loan repayment successful");
