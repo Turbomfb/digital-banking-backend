@@ -18,7 +18,7 @@
  * Techservice Engineering Team
  * Email: engineering@techservice.com
  */ 
-package com.techservices.digitalbanking.core.domain.model;
+package com.techservices.digitalbanking.core.domain.data.model;
 
 import lombok.*;
 import org.springframework.security.authentication.AbstractAuthenticationToken;

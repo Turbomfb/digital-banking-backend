@@ -31,6 +31,7 @@ public class ExternalPaymentService {
         String url = systemProperty.getPayinvertMerchantIntegrationUrl() + PAYMENT_URL + "initiate/new";
         ExternalPaymentTransactionOtpGenerationResponse response = this.processRequest(url, request, ExternalPaymentTransactionOtpGenerationResponse.class);
         if (!response.isSuccessful()){
+            log.error("External payment service error: {}", response);
             throw new ValidationException("external.payment.service.error", response.getMessage());
         }
         return response;
@@ -52,7 +53,7 @@ public class ExternalPaymentService {
             headers.set("Authorization", "Bearer " + generateAccessToken());
             return apiService.callExternalApi(url, responseType, HttpMethod.POST, request, headers);
         } catch (PlatformServiceException e) {
-            log.error(e.getMessage());
+            log.error("Error processing external payment transaction {}", e.toString());
             throw new ValidationException("external.payment.service.error", e.getDefaultUserMessage());
         } catch (JsonProcessingException e) {
             throw new ValidationException("external.payment.service.error", "Error processing external payment transaction", e.getMessage());

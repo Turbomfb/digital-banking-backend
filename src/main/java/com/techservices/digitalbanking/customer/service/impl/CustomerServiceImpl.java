@@ -197,6 +197,7 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	private void validateDuplicateCustomerByPhoneNumber(String phoneNumber) {
+		log.info("Validating duplicate customer phone number: {}", phoneNumber);
 		getCustomerByPhoneNumber(phoneNumber).ifPresent(existingCustomer -> {
 			throw new ValidationException("customer.exist", "Customer with phoneNumber: " + phoneNumber + " already exists.", phoneNumber);
 		});

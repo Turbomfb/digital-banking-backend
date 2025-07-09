@@ -2,8 +2,10 @@
 package com.techservices.digitalbanking.core.exception;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class PlatformServiceException extends RuntimeException {
 
 	private final String globalisationMessageCode;

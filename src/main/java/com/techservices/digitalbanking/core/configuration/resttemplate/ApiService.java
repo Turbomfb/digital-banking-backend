@@ -23,7 +23,7 @@ public class ApiService {
     }
 
     public <T> T callExternalApi(String url, Class<T> responseType, HttpMethod method, Object requestPayload, HttpHeaders headers) throws JsonProcessingException {
-        log.info("Calling external API with details: URL={}, Method={}, Payload={}", url, method, requestPayload);
+        log.info("Calling external API with details: URL={}, Method={}, Payload={}, Headers={}", url, method, requestPayload, headers);
         ResponseEntity<T> responseEntity;
 
         HttpEntity<Object> entity = headers != null ? new HttpEntity<>(requestPayload, headers) : new HttpEntity<>(requestPayload);
@@ -42,6 +42,7 @@ public class ApiService {
             log.error("Unsupported HTTP method: {}", method);
             throw new PlatformServiceException("HTTP method not supported: " + method);
         }
+        log.info("Calling external API returned: {}", responseEntity);
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             log.info("External API call successful: {}", responseEntity.getStatusCode());
         } else if (responseEntity.getStatusCode().is4xxClientError()) {
@@ -74,7 +75,7 @@ public class ApiService {
             log.error("Unsupported HTTP method: {}", method);
             throw new PlatformServiceException("HTTP method not supported: " + method);
         }
-
+        log.info("Calling external API returned: {}", responseEntity);
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             log.info("External API call successful: {}", responseEntity.getBody());
         } else {

@@ -30,6 +30,7 @@ public class CustomResponseErrorHandler implements ResponseErrorHandler {
         try {
             errorBody = new String(response.getBody().readAllBytes());
             log.error("Error response body: {}", errorBody);
+            System.err.println("Error response body: " + errorBody);
 
             if (isValidJson(errorBody)) {
                 ErrorResponse errorResponse = objectMapper.readValue(errorBody, ErrorResponse.class);
@@ -43,6 +44,7 @@ public class CustomResponseErrorHandler implements ResponseErrorHandler {
                 throw new PlatformServiceException("error.from.external.service", errorBody);
             }
         } catch (IOException e) {
+            log.error("Error processing external payment transaction {}", e.toString());
             throw new PlatformServiceException("error.from.external.service", e.getMessage());
         }
     }
@@ -55,5 +57,9 @@ public class CustomResponseErrorHandler implements ResponseErrorHandler {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new String("null"));
     }
 }

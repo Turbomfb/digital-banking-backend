@@ -30,7 +30,7 @@ public class BankDataService {
     private final String pathUrl = "/v2/api/identity/ng/bank-account-number/";
 
     public BankDataResponse retrieveAllBanks() {
-        String url = systemProperty.getBankDataServiceUrl() + pathUrl+"bank-list";
+        String url = systemProperty.getYouverifyIntegrationUrl() + pathUrl+"bank-list";
         try {
             HttpHeaders headers = this.getHeaders();
             return apiService.callExternalApi(url, BankDataResponse.class, HttpMethod.GET, null, headers);
@@ -45,12 +45,12 @@ public class BankDataService {
 
     private HttpHeaders getHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("token", systemProperty.getBankDataServiceApiKey());
+        headers.set("token", systemProperty.getYouverifyIntegrationApiKey());
         return headers;
     }
 
     public NameEnquiryResponse processNameEnquiry(NameEnquiryRequest request) {
-        String url = systemProperty.getBankDataServiceUrl() + pathUrl+"resolve";
+        String url = systemProperty.getYouverifyIntegrationUrl() + pathUrl+"resolve";
         request.setSubjectConsent(true);
         try {
             HttpHeaders headers = this.getHeaders();

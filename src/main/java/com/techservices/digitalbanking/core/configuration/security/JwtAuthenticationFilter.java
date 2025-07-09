@@ -20,7 +20,7 @@
  */ 
 package com.techservices.digitalbanking.core.configuration.security;
 
-import com.techservices.digitalbanking.core.domain.model.AppUser;
+import com.techservices.digitalbanking.core.domain.data.model.AppUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

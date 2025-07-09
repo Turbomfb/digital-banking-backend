@@ -2,10 +2,13 @@ package com.techservices.digitalbanking.core.domain.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.techservices.digitalbanking.core.domain.data.model.IdentityVerificationData;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.time.LocalDate;
 
 @Setter
 @Getter
@@ -31,8 +34,23 @@ public class IdentityVerificationResponse {
         return identityVerificationResponse;
     }
 
+    public static IdentityVerificationResponse parse(IdentityVerificationData identityVerificationData) {
+        IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
+        IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData = new IdentityVerificationResponse.IdentityVerificationResponseData();
+        identityVerificationResponseData.setId(identityVerificationData.getId());
+        identityVerificationResponseData.setFirstName(identityVerificationData.getFirstName());
+        identityVerificationResponseData.setMiddleName(identityVerificationData.getMiddleName());
+        identityVerificationResponseData.setLastName(identityVerificationData.getLastName());
+        identityVerificationResponseData.setMobile(identityVerificationData.getMobile());
+        identityVerificationResponseData.setEmail(identityVerificationData.getEmail());
+        identityVerificationResponse.setData(identityVerificationResponseData);
+        identityVerificationResponse.setSuccess(true);
+        return identityVerificationResponse;
+    }
+
     @Setter
     @Getter
+    @ToString
     public static class IdentityVerificationResponseData {
         private String id;
         private String firstName;
@@ -40,5 +58,10 @@ public class IdentityVerificationResponse {
         private String lastName;
         private String mobile;
         private String email;
+        private String dateOfBirth;
+        private String gender;
+        private String image;
+        private String religion;
+        private String signature;
     }
 }

@@ -121,6 +121,7 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 				throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.mismatch",
 						"Customer transaction pin is not correct");
 			}
+			request.setTransactionPin(null);
 			ExternalPaymentTransactionOtpGenerationResponse response = externalPaymentService.generateOtp(request);
 			return new GenericApiResponse(
 					response.getMessage(),
@@ -142,6 +143,11 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 
 	private Customer validateCustomerAccount(SavingsAccountTransactionRequest request, Long customerId) {
 		Customer customer = customerService.getCustomerById(customerId);
+		if (StringUtils.isBlank(customer.getAccountId())){
+			log.error("Customer with ID {} does not have an account ID", customerId);
+			throw new AbstractPlatformDomainRuleException("error.msg.customer.account.not.found",
+					"Customer account not found. Please ensure the customer has upgraded their kyc.");
+		}
 		request.setSavingsId(customer.getAccountId());
 		if (!customer.isTransactionPinSet()) {
 			log.error("Customer with ID {} does not have a transaction pin set", customerId);

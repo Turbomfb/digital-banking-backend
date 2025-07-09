@@ -20,7 +20,7 @@
  */ 
 package com.techservices.digitalbanking.core.configuration.security;
 
-import com.techservices.digitalbanking.core.domain.model.AppUser;
+import com.techservices.digitalbanking.core.domain.data.model.AppUser;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.AuditorAware;

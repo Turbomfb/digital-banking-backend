@@ -13,8 +13,11 @@ public class SystemProperty {
 	@Value("${spring.profiles.active}")
 	private String activeProfile;
 
-	@Value("${payinvert.integration.url}")
-	private String payinvertIntegrationUrl;
+	@Value("${youverify.integration.url}")
+	private String youverifyIntegrationUrl;
+
+	@Value("${youverify.integration.api-key}")
+	private String youverifyIntegrationApiKey;
 
 	@Value("${payinvert.merchant.integration.url}")
 	private String payinvertMerchantIntegrationUrl;
@@ -42,10 +45,4 @@ public class SystemProperty {
 
 	@Value("${sms.notification.service.sender-id}")
 	private String smsNotificationServiceSenderId;
-
-	@Value("${bank.data.service.url}")
-	private String bankDataServiceUrl;
-
-	@Value("${bank.data.service.api-key}")
-	private String bankDataServiceApiKey;
 }

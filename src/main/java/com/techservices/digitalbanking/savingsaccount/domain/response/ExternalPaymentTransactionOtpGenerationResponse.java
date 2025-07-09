@@ -8,12 +8,14 @@ import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 
 @Setter
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
+@ToString
 public class ExternalPaymentTransactionOtpGenerationResponse extends BaseAppResponse {
     private Data data;
     private String status;
