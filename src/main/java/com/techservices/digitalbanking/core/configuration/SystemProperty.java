@@ -28,6 +28,9 @@ public class SystemProperty {
 	@Value("${payinvert.merchant.password}")
 	private String payinvertMerchantPassword;
 
+	@Value("${payinvert.merchant.channelId}")
+	private String payinvertMerchantChannelId;
+
 	@Value("${application.identity.verification.threshold}")
 	private Long identityVerificationThreshold;
 

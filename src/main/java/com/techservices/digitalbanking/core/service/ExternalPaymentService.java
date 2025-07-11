@@ -51,6 +51,7 @@ public class ExternalPaymentService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + generateAccessToken());
+            headers.set("channelId", systemProperty.getPayinvertMerchantChannelId());
             return apiService.callExternalApi(url, responseType, HttpMethod.POST, request, headers);
         } catch (PlatformServiceException e) {
             log.error("Error processing external payment transaction {}", e.toString());
