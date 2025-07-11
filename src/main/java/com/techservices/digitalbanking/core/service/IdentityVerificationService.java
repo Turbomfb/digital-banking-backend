@@ -123,10 +123,13 @@ public class IdentityVerificationService {
 
     private List<String> findMismatchedFields(IdentityVerificationRequest customerData, IdentityVerificationResponse.IdentityVerificationResponseData responseData) {
         List<String> mismatchedFields = new ArrayList<>();
-        if (StringUtils.getLevenshteinDistance(customerData.getFirstName(), responseData.getFirstName()) > systemProperty.getIdentityVerificationThreshold()) {
+        if (StringUtils.getLevenshteinDistance(
+                customerData.getFirstName().toLowerCase(),
+                responseData.getFirstName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
             mismatchedFields.add("First Name");
         }
-        if (StringUtils.getLevenshteinDistance(customerData.getLastName(), responseData.getLastName()) > systemProperty.getIdentityVerificationThreshold()) {
+
+        if (StringUtils.getLevenshteinDistance(customerData.getLastName().toLowerCase(), responseData.getLastName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
             mismatchedFields.add("Last Name");
         }
         if (!StringUtils.equalsIgnoreCase(customerData.getPhoneNumber(), responseData.getMobile())) {
