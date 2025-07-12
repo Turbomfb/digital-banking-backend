@@ -46,6 +46,7 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command) {
 		if ("generate-otp".equalsIgnoreCase(command)) {
+			log.info("Generating otp");
 			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber());
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(createCustomerRequest.getPhoneNumber(), createCustomerRequest.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(createCustomerRequest, OtpType.ONBOARDING, notificationRequestDto);
@@ -186,13 +187,15 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	private void validateDuplicateCustomer(String emailAddress, String phoneNumber) {
+		log.info("Validating duplicate customer email address: {}", emailAddress);
 		validateDuplicateCustomerByEmailAddress(emailAddress);
+		log.info("Validating duplicate customer phone number: {}", phoneNumber);
 		validateDuplicateCustomerByPhoneNumber(phoneNumber);
 	}
 
 	private void validateDuplicateCustomerByEmailAddress(String emailAddress) {
 		getCustomerByEmailAddress(emailAddress).ifPresent(existingCustomer -> {
-			throw new ValidationException(   );
+			throw new ValidationException("customer.exist", "Customer already exists. Please proceed to login");
 		});
 	}
 
