@@ -107,8 +107,11 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 			if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
 				GetClientsClientIdResponse client = clientService.getCustomerByBvn(customerKycRequest.getBvn());
 				if (client != null) {
+					validateEntityClient(client);
 					return IdentityVerificationResponse.parse(client);
 				}
+				client = this.fetchCbaClientByEmailOrPhoneNumber(foundCustomer.getEmailAddress(), foundCustomer.getPhoneNumber());
+				validateEntityClient(client);
 				return this.identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
 			}
 
@@ -130,8 +133,11 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 			if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
 				GetClientsClientIdResponse client = clientService.getCustomerByNin(customerKycRequest.getNin());
 				if (client != null) {
+					validateEntityClient(client);
 					return IdentityVerificationResponse.parse(client);
 				}
+				client = this.fetchCbaClientByEmailOrPhoneNumber(foundCustomer.getEmailAddress(), foundCustomer.getPhoneNumber());
+				validateEntityClient(client);
 				return this.identityVerificationService.retrieveNinData(customerKycRequest.getNin());
 			}
 
@@ -146,14 +152,17 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		return null;
 	}
 
+	private static void validateEntityClient(GetClientsClientIdResponse client) {
+		if (client != null && client.getLegalForm() != null && client.getLegalForm().getId() == 2) {
+			throw new ValidationException("validation.error.exists", "This profile is currently linked to a corporate entity and is not permitted to perform any operations.");
+		}
+	}
+
 	private void activateCustomer(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier) {
 		GetClientsClientIdResponse client = clientService.searchClients(customerKycRequest.getNin(), customerKycRequest.getBvn(), null, null);
 		log.info("Client found: {}", client);
 		if (client == null) {
-			client = clientService.searchClients(null, null, foundCustomer.getEmailAddress(), null);
-			if (client == null) {
-				client = clientService.searchClients(null, null, null, foundCustomer.getPhoneNumber());
-			}
+			client = fetchCbaClientByEmailOrPhoneNumber(foundCustomer.getEmailAddress(), foundCustomer.getPhoneNumber());
 		}
         CreateCustomerRequest createCustomerRequest = buildCreateCustomerRequest(foundCustomer, customerKycRequest, customerKycTier);
         PostClientsResponse createCustomerResponse = null;
@@ -176,6 +185,15 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 				foundCustomer.setActive(true);
 			}
 		}
+	}
+
+	private GetClientsClientIdResponse fetchCbaClientByEmailOrPhoneNumber(String emailAddress, String phoneNumber) {
+		GetClientsClientIdResponse client;
+		client = clientService.searchClients(null, null, emailAddress, null);
+		if (client == null) {
+			client = clientService.searchClients(null, null, null, phoneNumber);
+		}
+		return client;
 	}
 
 	private void upgradeClientTier(CustomerKycTier customerKycTier, Long clientId) {

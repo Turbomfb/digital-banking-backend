@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.techservices.digitalbanking.customer.domian.dto.CustomerTierData;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -58,8 +60,19 @@ public class GetClientsClientIdResponse {
 	private boolean proofOfAddress;
 	private Long savingsAccountId;
 	private String savingsAccountNo;
+	private LegalForm legalForm;
 	private BigDecimal balance;
 	private CustomerTierData kycTier;
 
 	private GetDataTablesResponse settlementAccount;
+
+
+
+	@Getter
+	@Setter
+	public static class LegalForm {
+		private long id;
+		private String code;
+		private String value;
+	}
 }
