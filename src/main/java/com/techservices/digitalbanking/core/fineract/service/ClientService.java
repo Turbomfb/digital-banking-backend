@@ -178,25 +178,25 @@ public class ClientService {
 	}
 
 	public GetClientsResponse getAllCustomers(Integer offset, Integer limit, String nin, String bvn) {
-		return clientApiClient.retrieveAll(offset, limit, null, null);
+		return clientApiClient.retrieveAll(offset, limit, null, null, null, null);
 	}
 
 	public GetClientsClientIdResponse getCustomerByBvn(String bvn) {
-		return clientApiClient.retrieveAll(null, 1, null, bvn)						.getPageItems()
+		return clientApiClient.retrieveAll(null, 1, null, bvn, null, null)						.getPageItems()
 				.stream()
 				.findAny()
 				.orElse(null);
 	}
 
 	public GetClientsClientIdResponse getCustomerByNin(String nin) {
-		return clientApiClient.retrieveAll(null, 1, nin, null)						.getPageItems()
+		return clientApiClient.retrieveAll(null, 1, nin, null, null, null)						.getPageItems()
 				.stream()
 				.findAny()
 				.orElse(null);
 	}
 
-	public GetClientsClientIdResponse searchClients(String nin, String bvn) {
-		return clientApiClient.retrieveAll(null, 1, nin, bvn)
+	public GetClientsClientIdResponse searchClients(String nin, String bvn, String emailAddress, String phoneNumber) {
+		return clientApiClient.retrieveAll(null, 1, nin, bvn, emailAddress, phoneNumber)
 				.getPageItems()
 				.stream()
 				.findAny()

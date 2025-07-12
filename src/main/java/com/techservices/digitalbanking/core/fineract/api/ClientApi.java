@@ -69,8 +69,9 @@ public interface ClientApi {
 			@RequestParam(value = "offset", required = false) Integer offset,
 			@RequestParam(value = "limit", required = false) Integer limit,
 			@RequestParam(value = "nin", required = false) String nin,
-			@RequestParam(value = "bvn", required = false) String bvn
-	);
+			@RequestParam(value = "bvn", required = false) String bvn,
+			@RequestParam(value = "emailAddress", required = false) String emailAddress,
+			@RequestParam(value = "mobileNo", required = false) String mobileNo);
 
 	@PostMapping(value = "/clients/{clientId}")
 	PostClientsClientIdResponse manageClient(@PathVariable("clientId") Long clientId,

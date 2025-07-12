@@ -8,7 +8,6 @@ import com.techservices.digitalbanking.core.domain.dto.request.NotificationReque
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
-import com.techservices.digitalbanking.core.domain.enums.NotificationChannel;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
@@ -96,7 +95,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		if (StringUtils.isNotBlank(customerKycRequest.getBvn())) {
 			log.info("Validating BVN: {}", customerKycRequest.getBvn());
 			customerRepository.findByBvn(customerKycRequest.getBvn()).ifPresent(existedCustomer -> {
-				throw new ValidationException("bvn.already.exists", "A customer with this BVN already exists.");
+				throw new ValidationException("bvn.already.exists", "You have entered and invalid BVN");
 			});
 
 			if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
@@ -119,7 +118,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 			log.info("Validating NIN: {}", customerKycRequest.getNin());
 			customerRepository.findByNin(customerKycRequest.getNin())
 					.ifPresent(existingCustomer -> {
-						throw new ValidationException("nin.already.exists", "A customer with this NIN already exists.");
+						throw new ValidationException("nin.already.exists", "You have entered and invalid NIN.");
 					});
 
 			if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
@@ -142,7 +141,13 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 	}
 
 	private void activateCustomer(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier) {
-		GetClientsClientIdResponse client = clientService.searchClients(customerKycRequest.getNin(), customerKycRequest.getBvn());
+		GetClientsClientIdResponse client = clientService.searchClients(customerKycRequest.getNin(), customerKycRequest.getBvn(), null, null);
+		if (client == null) {
+			client = clientService.searchClients(null, null, foundCustomer.getEmailAddress(), null);
+			if (client == null) {
+				client = clientService.searchClients(null, null, null, foundCustomer.getPhoneNumber());
+			}
+		}
         CreateCustomerRequest createCustomerRequest = buildCreateCustomerRequest(foundCustomer, customerKycRequest, customerKycTier);
         PostClientsResponse createCustomerResponse = null;
         if (client == null) {
