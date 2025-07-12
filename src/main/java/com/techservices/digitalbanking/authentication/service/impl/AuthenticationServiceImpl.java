@@ -133,7 +133,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command) {
         if (StringUtils.equals(GENERATE_OTP_COMMAND, command)){
             Customer foundCustomer = getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber());
-            NotificationRequestDto notificationRequestDto = new NotificationRequestDto(passwordMgtRequest.getPhoneNumber(), passwordMgtRequest.getEmailAddress());
+            NotificationRequestDto notificationRequestDto = new NotificationRequestDto(foundCustomer.getPhoneNumber(), foundCustomer.getEmailAddress());
             boolean isPhoneNumberPresent = StringUtils.isNotBlank(passwordMgtRequest.getPhoneNumber());
             OtpDto otpDto = this.redisService.generateOtpRequest(foundCustomer, OtpType.FORGOT_PASSWORD, notificationRequestDto);
             return new GenericApiResponse(otpDto.getUniqueId(), "We sent a code to "+ (isPhoneNumberPresent ? AppUtil.maskPhoneNumber(passwordMgtRequest.getPhoneNumber()) : AppUtil.maskEmailAddress(passwordMgtRequest.getEmailAddress())), "success", null);
