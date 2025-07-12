@@ -29,6 +29,7 @@ import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRe
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerKycService;
 import com.techservices.digitalbanking.customer.service.CustomerService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +52,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 	private final FineractProperty fineractProperty;
 
 	@Override
+	@Transactional(rollbackOn = Exception.class)
 	public BaseAppResponse updateCustomerKyc(CustomerKycRequest customerKycRequest, Long customerId, String command) {
 		log.info("customerKycRequest: {}", customerKycRequest);
 		Customer foundCustomer = this.customerService.getCustomerById(customerId);
@@ -66,7 +68,11 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		if (isIdentityDataRetrieved) {
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse.getData().getMobile(), verificationResponse.getData().getEmail());
 			OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto);
-			return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(verificationResponse.getData().getMobile())+" and "+AppUtil.maskEmailAddress(verificationResponse.getData().getEmail()), "success", null);
+			String message = "We sent an OTP to ";
+			if (StringUtils.isNotBlank(verificationResponse.getData().getMobile()) && StringUtils.isBlank(verificationResponse.getData().getEmail())) message += AppUtil.maskPhoneNumber(verificationResponse.getData().getMobile());
+			else if (StringUtils.isNotBlank(verificationResponse.getData().getEmail()) && StringUtils.isBlank(verificationResponse.getData().getMobile())) message += AppUtil.maskEmailAddress(verificationResponse.getData().getEmail());
+			else message += AppUtil.maskPhoneNumber(verificationResponse.getData().getMobile())+" and "+AppUtil.maskEmailAddress(verificationResponse.getData().getEmail());
+			return new GenericApiResponse(otpDto.getUniqueId(), message, "success", null);
 		}
 		CustomerKycTier customerKycTier = this.getCustomerKycTier(foundCustomer);
 		if (!foundCustomer.isActive()) {
@@ -142,6 +148,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
 	private void activateCustomer(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier) {
 		GetClientsClientIdResponse client = clientService.searchClients(customerKycRequest.getNin(), customerKycRequest.getBvn(), null, null);
+		log.info("Client found: {}", client);
 		if (client == null) {
 			client = clientService.searchClients(null, null, foundCustomer.getEmailAddress(), null);
 			if (client == null) {

@@ -46,6 +46,9 @@ public class IdentityVerificationService {
             return IdentityVerificationResponse.parse(data.get());
         }
         IdentityVerificationResponse verificationResponse = fetchIdentityVerificationResponse(url, bvn);
+        if (!verificationResponse.isSuccess()) {
+            throw new ValidationException("validation.error.exists", "BVN is invalid");
+        }
         IdentityVerificationData identityVerificationData = IdentityVerificationData.parse(verificationResponse);
         identityVerificationData.setType(IdentityVerificationType.BVN.name());
         identityVerificationData.setIdentifier(bvn);
@@ -69,6 +72,9 @@ public class IdentityVerificationService {
             return IdentityVerificationResponse.parse(data.get());
         }
         IdentityVerificationResponse verificationResponse = fetchIdentityVerificationResponse(url, nin);
+        if (!verificationResponse.isSuccess()) {
+            throw new ValidationException("validation.error.exists", "NIN is invalid");
+        }
         IdentityVerificationData identityVerificationData = IdentityVerificationData.parse(verificationResponse);
         identityVerificationData.setType(IdentityVerificationType.NIN.name());
         identityVerificationData.setIdentifier(nin);
