@@ -38,14 +38,14 @@ public class CustomResponseErrorHandler implements ResponseErrorHandler {
                         ? errorResponse.getMessage()
                         : errorResponse.getStatusMessage() != null
                         ? errorResponse.getStatusMessage()
-                        : "An error occurred while processing the request";
+                        : "We're unable to process your request at this time. Please try again later.";
                 throw new PlatformServiceException("error.from.external.service", message, errorResponse);
             } else {
-                throw new PlatformServiceException("error.from.external.service", errorBody);
+                throw new PlatformServiceException("error.from.external.service", "We're unable to process your request at this time. Please try again later.", errorBody);
             }
         } catch (IOException e) {
             log.error("Error processing external payment transaction {}", e.toString());
-            throw new PlatformServiceException("error.from.external.service", e.getMessage());
+            throw new PlatformServiceException("error.from.external.service", "We're unable to process your request at this time. Please try again later.", e.getMessage());
         }
     }
 

@@ -51,7 +51,10 @@ public class ApiService {
         } else if (responseEntity.getStatusCode().is5xxServerError()) {
             log.error("External API call failed with server error: {}", responseEntity.getStatusCode());
             throw new PlatformServiceException("Server error during external API call: " + responseEntity.getBody());
-        } else {
+        } else if (responseEntity.getStatusCode().is5xxServerError()) {
+            log.error("External API call failed with status code: {}", responseEntity.getBody());
+            throw new PlatformServiceException("We're unable to process your request at this time. Please try again later.");
+        }  else {
             log.error("External API call failed with status code: {}", responseEntity.getStatusCode());
             throw new PlatformServiceException("External API call failed: " + responseEntity.getBody());
         }
@@ -78,6 +81,9 @@ public class ApiService {
         log.info("Calling external API returned: {}", responseEntity);
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             log.info("External API call successful: {}", responseEntity.getBody());
+        } else if (responseEntity.getStatusCode().is5xxServerError()) {
+            log.error("External API call failed with status code: {}", responseEntity.getBody());
+            throw new PlatformServiceException("We're unable to process your request at this time. Please try again later.");
         } else {
             log.error("External API call failed with status code: {}", responseEntity.getBody());
             throw new PlatformServiceException("External API call failed: " + responseEntity.getBody());

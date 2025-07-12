@@ -54,7 +54,7 @@ public class FineractErrorDecoder implements ErrorDecoder {
 
 		String errorCode = Objects.toString(fineractErrorResponse.getUserMessageGlobalisationCode(), "error.msg.cba");
 		String errorMessage = Objects.toString(fineractErrorResponse.getDefaultUserMessage(),
-				"CBA error occurred, Please contact the admin");
+				"We're unable to process your request at this time. Please try again later.");
 
 		if (!fineractErrorResponse.getErrors().isEmpty()) {
 			ErrorDetail errorDetail = fineractErrorResponse.getErrors().get(0);

@@ -82,7 +82,7 @@ public class CustomFeignErrorDecoder implements ErrorDecoder {
 
 			String errorCode = Objects.toString(errorResponse.getGlobalisationMessageCode(), "error.msg.cba");
 			String errorMessage = Objects.toString(errorResponse.getMessage(),
-					"CBA error occurred, Please contact the admin ");
+					"We're unable to process your request at this time. Please try again later.");
 			List<String> errorDetails = errorResponse.getDetails();
 
 			System.err.println("Status: " + response.status());
@@ -95,7 +95,9 @@ public class CustomFeignErrorDecoder implements ErrorDecoder {
 				default -> new AbstractPlatformDomainRuleException(errorCode, errorMessage, errorDetails);
 			};
 		} catch (IOException e) {
-			return new RuntimeException("Failed to process error response", e);
+			log.error("Failed to process error response");
+			log.error(e.getMessage(), e);
+			return new RuntimeException("We're unable to process your request at this time. Please try again later.", e);
 		}
 	}
 
