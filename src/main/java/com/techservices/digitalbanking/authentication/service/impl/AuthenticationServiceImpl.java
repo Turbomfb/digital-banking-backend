@@ -136,7 +136,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             NotificationRequestDto notificationRequestDto = new NotificationRequestDto(foundCustomer.getPhoneNumber(), foundCustomer.getEmailAddress());
             boolean isPhoneNumberPresent = StringUtils.isNotBlank(passwordMgtRequest.getPhoneNumber());
             OtpDto otpDto = this.redisService.generateOtpRequest(foundCustomer, OtpType.FORGOT_PASSWORD, notificationRequestDto);
-            return new GenericApiResponse(otpDto.getUniqueId(), "We sent a code to "+ (isPhoneNumberPresent ? AppUtil.maskPhoneNumber(passwordMgtRequest.getPhoneNumber()) : AppUtil.maskEmailAddress(passwordMgtRequest.getEmailAddress())), "success", null);
+          return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(foundCustomer.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(foundCustomer.getEmailAddress()), "success", null);
         } else if (StringUtils.equals(VERIFY_OTP_COMMAND, command)) {
             if (StringUtils.isBlank(passwordMgtRequest.getOtp())){
                 throw new ValidationException("Invalid.data.provided", "otp must be provided");
