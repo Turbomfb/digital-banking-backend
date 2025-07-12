@@ -192,14 +192,14 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private void validateDuplicateCustomerByEmailAddress(String emailAddress) {
 		getCustomerByEmailAddress(emailAddress).ifPresent(existingCustomer -> {
-			throw new ValidationException("customer.exist", "Customer with email: " + emailAddress + " already exists.", emailAddress);
+			throw new ValidationException(   );
 		});
 	}
 
 	private void validateDuplicateCustomerByPhoneNumber(String phoneNumber) {
 		log.info("Validating duplicate customer phone number: {}", phoneNumber);
 		getCustomerByPhoneNumber(phoneNumber).ifPresent(existingCustomer -> {
-			throw new ValidationException("customer.exist", "Customer with phoneNumber: " + phoneNumber + " already exists.", phoneNumber);
+			throw new ValidationException("customer.exist", "Customer already exists. Please proceed to login");
 		});
 	}
 
