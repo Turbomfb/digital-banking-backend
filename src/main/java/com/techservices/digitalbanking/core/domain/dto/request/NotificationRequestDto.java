@@ -17,9 +17,9 @@ public class NotificationRequestDto {
     public NotificationRequestDto(String phoneNumber, String emailAddress) {
         this.phoneNumber = phoneNumber;
         this.emailAddress = emailAddress;
-        if (StringUtils.isNotBlank(emailAddress)) {
+        if (StringUtils.isNotBlank(emailAddress) && StringUtils.isBlank(phoneNumber)) {
             this.channel = NotificationChannel.EMAIL;
-        } else if (StringUtils.isNotBlank(phoneNumber)) {
+        } else if (StringUtils.isNotBlank(phoneNumber) && StringUtils.isBlank(emailAddress)) {
             this.channel = NotificationChannel.SMS;
         } else if (StringUtils.isNotBlank(emailAddress) && StringUtils.isNotBlank(phoneNumber)) {
             this.channel = NotificationChannel.SMS_AND_EMAIL;

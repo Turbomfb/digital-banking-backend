@@ -134,7 +134,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (StringUtils.equals(GENERATE_OTP_COMMAND, command)){
             Customer foundCustomer = getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber());
             NotificationRequestDto notificationRequestDto = new NotificationRequestDto(foundCustomer.getPhoneNumber(), foundCustomer.getEmailAddress());
-            boolean isPhoneNumberPresent = StringUtils.isNotBlank(passwordMgtRequest.getPhoneNumber());
             OtpDto otpDto = this.redisService.generateOtpRequest(foundCustomer, OtpType.FORGOT_PASSWORD, notificationRequestDto);
           return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(foundCustomer.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(foundCustomer.getEmailAddress()), "success", null);
         } else if (StringUtils.equals(VERIFY_OTP_COMMAND, command)) {

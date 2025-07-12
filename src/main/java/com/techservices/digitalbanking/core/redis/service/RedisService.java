@@ -105,6 +105,7 @@ public class RedisService {
                 case FORGOT_PASSWORD -> "You requested a password reset. Your OTP is: " + otpDto.getOtp();
             };
             if (notificationRequestDto.getChannel() != null) {
+                log.info("Sending OTP notification for channel: {}", notificationRequestDto.getChannel());
                 if (notificationRequestDto.getChannel().equals(NotificationChannel.SMS)){
                     notificationService.sendSms(notificationRequestDto.getPhoneNumber(), message);
                 } else if (notificationRequestDto.getChannel().equals(NotificationChannel.EMAIL)){
