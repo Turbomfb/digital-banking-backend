@@ -66,6 +66,13 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
 		boolean isIdentityDataRetrieved = verificationResponse != null && GENERATE_OTP_COMMAND.equalsIgnoreCase(command);
 		if (isIdentityDataRetrieved) {
+			if (verificationResponse.getData() != null) {
+				IdentityVerificationResponse.IdentityVerificationResponseData data = verificationResponse.getData();
+				if (StringUtils.isBlank(data.getMobile()) || StringUtils.isBlank(data.getFirstName()) || StringUtils.isBlank(data.getLastName())) {
+					log.error("Identity verification failed for customer id: {}. Null fields were identified", data);
+					throw new ValidationException("validation.error.exists", "Unable to validate your BVN at the moment. Please try again later.");
+				}
+			}
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse.getData().getMobile(), verificationResponse.getData().getEmail());
 			OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto);
 			String message = "We sent an OTP to ";
