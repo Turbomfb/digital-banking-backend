@@ -70,7 +70,8 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 				IdentityVerificationResponse.IdentityVerificationResponseData data = verificationResponse.getData();
 				if (StringUtils.isBlank(data.getMobile()) || StringUtils.isBlank(data.getFirstName()) || StringUtils.isBlank(data.getLastName())) {
 					log.error("Identity verification failed for customer id: {}. Null fields were identified", data);
-					throw new ValidationException("validation.error.exists", "Unable to validate your BVN at the moment. Please try again later.");
+					String dataType = StringUtils.isNotBlank(customerKycRequest.getBvn()) ? "BVN" : "NIN";
+					throw new ValidationException("validation.error.exists", "Unable to validate your "+dataType+" at the moment. Please try again later.");
 				}
 			}
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse.getData().getMobile(), verificationResponse.getData().getEmail());
