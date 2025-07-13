@@ -56,10 +56,10 @@ public class SavingsAccountApiResource {
 	}
 
 	@Operation(summary = "Get a Savings Account by account number")
-	@GetMapping("/{savingsAccountId}")
+	@GetMapping("/{customerId}")
 	public ResponseEntity<GetSavingsAccountsAccountIdResponse> retrieveSavingsAccountById(
-			@PathVariable String savingsAccountId, @RequestParam(name = "productId", required = false) Long productId) {
-		return ResponseEntity.ok(savingsAccountService.retrieveSavingsAccountById(savingsAccountId));
+			@PathVariable Long customerId, @RequestParam(name = "productId", required = false) Long productId) {
+		return ResponseEntity.ok(savingsAccountService.retrieveSavingsAccountById(customerId));
 	}
 
 	@Operation(summary = "Calculate Total Interest Breakdown for a Savings Account")

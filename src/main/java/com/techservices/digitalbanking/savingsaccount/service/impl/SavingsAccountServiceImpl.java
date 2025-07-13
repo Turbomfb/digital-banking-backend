@@ -53,14 +53,15 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 	}
 
 	@Override
-	public GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(String savingsAccountId) {
+	public GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(Long customerId) {
+		String savingsAccountId = customerService.getCustomerSavingsId(customerId);
 		return accountService.retrieveSavingsAccount(Long.valueOf(savingsAccountId), true);
 	}
 
 	@Override
 	public BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(Long customerId, LocalDate startDate, LocalDate endDate) {
 		String savingsAccountId = customerService.getCustomerSavingsId(customerId);
-		GetSavingsAccountsAccountIdResponse savingsAccount = retrieveSavingsAccountById(savingsAccountId);
+		GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccount(Long.valueOf(savingsAccountId), true);
 
 		// Validate date range
 		if (startDate.isAfter(endDate)) {

@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.savingsaccount.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.service.ExternalPaymentService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
@@ -42,47 +43,8 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 	private final SavingsAccountService savingsAccountService;
 	private final ExternalPaymentService externalPaymentService;
 	private final CustomerService customerService;
+	private final AccountService accountService;
 
-	@Override
-	public PostSavingsAccountTransactionsResponse processTransaction(
-			CreateSavingsAccountTransactionRequest createSavingsAccountTransactionRequest, String command,
-			String savingsAccountNumber, Long transactionId, Long productId) {
-		GetSavingsAccountsAccountIdResponse savingsAccount = savingsAccountService
-				.retrieveSavingsAccountById(savingsAccountNumber);
-
-		// if beneficiary account number is passed , then get details
-		// of the beneficiary account
-		GetSavingsAccountsAccountIdResponse toSavingsAccount = null;
-		if (StringUtils.isNotBlank(createSavingsAccountTransactionRequest.beneficiaryAccountNumber())) {
-			toSavingsAccount = savingsAccountService.retrieveSavingsAccountById(
-					createSavingsAccountTransactionRequest.beneficiaryAccountNumber());
-		}
-
-		Long savingsAccountId = savingsAccount.getId();
-
-		return switch (command) {
-			case DEPOSIT -> accountTransactionService.handleDeposit(savingsAccountId,
-					createSavingsAccountTransactionRequest.transactionAmount(),
-					createSavingsAccountTransactionRequest.transactionReference(),
-					createSavingsAccountTransactionRequest.narration(),
-					createSavingsAccountTransactionRequest.additionalInformation());
-			case WITHDRAWAL -> accountTransactionService.handleWithdrawal(savingsAccountId,
-					createSavingsAccountTransactionRequest.transactionAmount(),
-					createSavingsAccountTransactionRequest.transactionReference(),
-					createSavingsAccountTransactionRequest.narration(),
-					createSavingsAccountTransactionRequest.additionalInformation());
-			case TRANSFER -> accountTransactionService.handleSavingsAccountTransfer(savingsAccount, toSavingsAccount,
-					createSavingsAccountTransactionRequest.transactionAmount(),
-					createSavingsAccountTransactionRequest.narration());
-			case HOLD_AMOUNT ->
-				accountTransactionService.handleLienAmount(createSavingsAccountTransactionRequest.transactionAmount(),
-						savingsAccountId, createSavingsAccountTransactionRequest.reasonForBlock());
-			case RELEASE_AMOUNT -> accountTransactionService.handleUnLienAmount(savingsAccountId, transactionId);
-			case UNDO -> accountTransactionService.handleUndoTransaction(savingsAccountId, transactionId);
-			default -> throw new AbstractPlatformDomainRuleException("error.msg.invalid.transaction.command",
-					"Invalid transaction command");
-		};
-	}
 
 	@Override
 	public FineractPageResponse<SavingsAccountTransactionData> retrieveSavingsAccountTransactions(
@@ -156,7 +118,7 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 		}
 		log.info("Validating customer account for savings transaction: {}", customer);
 
-		GetSavingsAccountsAccountIdResponse savingsAccount = savingsAccountService.retrieveSavingsAccountById(request.getSavingsId());
+		GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccount(Long.valueOf(request.getSavingsId()), true);
 		if (savingsAccount.getSummary().getAvailableBalance().compareTo(request.getAmount()) < 0) {
 			log.error("Insufficient funds: Available balance {} is less than requested amount {}",
 					savingsAccount.getSummary().getAvailableBalance(), request.getAmount());

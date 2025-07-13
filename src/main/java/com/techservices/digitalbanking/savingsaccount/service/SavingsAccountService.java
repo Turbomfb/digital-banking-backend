@@ -19,7 +19,7 @@ public interface SavingsAccountService {
 
 	GetSavingsAccountsResponse retrieveAllSavingsAccount(Long limit, Long offset, Long productId);
 
-	GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(String savingsAccountId);
+	GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(Long customerId);
 
 	BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(Long customerId, LocalDate startDate, LocalDate endDate);
 }
