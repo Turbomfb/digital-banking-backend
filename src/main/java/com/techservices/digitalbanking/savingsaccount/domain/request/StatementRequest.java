@@ -13,6 +13,7 @@ import java.time.temporal.ChronoUnit;
 @Getter
 @Builder
 public class StatementRequest {
+    private Long customerId;
     private Long savingsId;
     private LocalDate startDate;
     private LocalDate endDate;

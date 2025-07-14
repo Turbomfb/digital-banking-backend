@@ -41,7 +41,7 @@ public class SavingsAccountStatementServiceImpl implements SavingsAccountStateme
         // Retrieve transactions
         FineractPageResponse<SavingsAccountTransactionData> transactionResult =
                 savingsAccountTransactionService.retrieveSavingsAccountTransactions(
-                        request.getSavingsId(),
+                        request.getCustomerId(),
                         request.getStartDate().toString(),
                         request.getEndDate().toString(),
                         "yyyy-MM-dd",

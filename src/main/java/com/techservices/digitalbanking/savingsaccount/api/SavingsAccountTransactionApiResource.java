@@ -95,6 +95,7 @@ public class SavingsAccountTransactionApiResource {
 			);
 			String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
 			statementRequest.setSavingsId(Long.valueOf(savingsAccountId));
+			statementRequest.setCustomerId(customerId);
 			System.err.println("Date Range: " + statementRequest.getStartDate() + " to " + statementRequest.getEndDate());
 
 			switch (format.toUpperCase()) {

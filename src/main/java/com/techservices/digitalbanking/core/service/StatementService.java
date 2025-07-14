@@ -20,10 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -139,7 +141,7 @@ public class StatementService {
             // Retrieve transactions
             FineractPageResponse<SavingsAccountTransactionData> transactionResult =
                     savingsAccountTransactionService.retrieveSavingsAccountTransactions(
-                            request.getSavingsId(),
+                            request.getCustomerId(),
                             request.getStartDate().toString(),
                             request.getEndDate().toString(),
                             "yyyy-MM-dd",
@@ -536,12 +538,15 @@ public class StatementService {
             row.createCell(1).setCellValue(debitCount);
 
             // Average transaction amount
-            BigDecimal avgAmount = transactions.stream()
-                    .map(SavingsAccountTransactionData::getAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add)
-                    .divide(BigDecimal.valueOf(transactions.size()), 2, BigDecimal.ROUND_HALF_UP);
+            Optional<BigDecimal> avgAmountOptional = transactions.isEmpty() ?
+                    Optional.empty() :
+                    Optional.of(transactions.stream()
+                            .map(SavingsAccountTransactionData::getAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add)
+                            .divide(BigDecimal.valueOf(transactions.size()), 2, RoundingMode.HALF_UP));
 
-            row = summarySheet.createRow(rowNum++);
+            BigDecimal avgAmount = avgAmountOptional.orElse(BigDecimal.ZERO);
+            row = summarySheet.createRow(++rowNum);
             row.createCell(0).setCellValue("Average Transaction Amount:");
             Cell avgCell = row.createCell(1);
             avgCell.setCellValue(avgAmount.doubleValue());
