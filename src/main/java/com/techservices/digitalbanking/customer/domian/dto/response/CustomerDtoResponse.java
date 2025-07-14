@@ -1,6 +1,7 @@
 package com.techservices.digitalbanking.customer.domian.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -33,6 +34,7 @@ public class CustomerDtoResponse extends BaseAppResponse {
     private String bvn;
     private boolean isActive;
     private boolean isTransactionPinSet;
+    @JsonProperty("isPreQualifiedForLoan")
     private boolean isPreQualifiedForLoan;
     private CustomerKycTier kycTier;
     private CustomerTierData kycTierData;
