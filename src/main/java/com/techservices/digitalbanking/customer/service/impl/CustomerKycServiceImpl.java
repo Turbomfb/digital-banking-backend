@@ -75,12 +75,9 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 					throw new ValidationException("validation.error.exists", "Unable to validate your "+dataType+" at the moment. Please try again later.");
 				}
 			}
-			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse.getData().getMobile(), verificationResponse.getData().getEmail());
-			OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto);
-			String message = "We sent an OTP to ";
-			if (StringUtils.isNotBlank(verificationResponse.getData().getMobile()) && StringUtils.isBlank(verificationResponse.getData().getEmail())) message += AppUtil.maskPhoneNumber(verificationResponse.getData().getMobile());
-			else if (StringUtils.isNotBlank(verificationResponse.getData().getEmail()) && StringUtils.isBlank(verificationResponse.getData().getMobile())) message += AppUtil.maskEmailAddress(verificationResponse.getData().getEmail());
-			else message += AppUtil.maskPhoneNumber(verificationResponse.getData().getMobile())+" and "+AppUtil.maskEmailAddress(verificationResponse.getData().getEmail());
+			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse);
+			OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto, null);
+			String message = notificationRequestDto.getOtpResponseMessage();
 			return new GenericApiResponse(otpDto.getUniqueId(), message, "success", null);
 		}
 		CustomerKycTier customerKycTier = this.getCustomerKycTier(foundCustomer);

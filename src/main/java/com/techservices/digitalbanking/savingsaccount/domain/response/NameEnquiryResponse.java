@@ -17,12 +17,12 @@ public class NameEnquiryResponse {
 
     @Setter
     @Getter
-    private static class NameEnquiryResponseData {
+    public class NameEnquiryResponseData {
         private BankDetail bankDetails;
 
         @Setter
         @Getter
-        public static class BankDetail {
+        public class BankDetail {
             private String accountName;
             private String accountNumber;
             private String bankName;

@@ -47,6 +47,16 @@ public class ExternalPaymentService {
         return response;
     }
 
+    public ExternalPaymentTransactionOtpVerificationResponse initiateTransfer(SavingsAccountTransactionRequest request) {
+        String url = systemProperty.getPayinvertMerchantIntegrationUrl() + PAYMENT_URL + "initiate/external";
+        ExternalPaymentTransactionOtpVerificationResponse response = this.processRequest(url, request, ExternalPaymentTransactionOtpVerificationResponse.class);
+        if (!response.isSuccessful()) {
+            throw new ValidationException("external.payment.service.error", response.getMessage());
+        }
+        log.info("External payment transaction verified successfully: {}", response);
+        return response;
+    }
+
     private <T> T processRequest(String url, Object request, Class<T> responseType) {
         try {
             HttpHeaders headers = new HttpHeaders();

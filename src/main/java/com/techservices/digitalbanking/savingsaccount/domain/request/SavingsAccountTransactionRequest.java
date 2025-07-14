@@ -17,18 +17,17 @@ import java.math.BigDecimal;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SavingsAccountTransactionRequest {
 	private BigDecimal amount;
-	private String reference;
 	private String narration;
 	private String savingsId;
 	private String accountNumber;
 	private String otp;
 	private String bankNipCode;
 	private String transactionPin;
+	private String uniqueId;
 
 	public void validateForOtpGeneration() {
 		this.validateAmount();
 		this.validateTransactionPin();
-		this.reference = null;
 		this.narration = null;
 		this.savingsId = null;
 		this.accountNumber = null;
@@ -50,9 +49,6 @@ public class SavingsAccountTransactionRequest {
 
 	public void validateForOtpVerification() {
 		this.validateAmount();
-		if (StringUtils.isBlank(this.reference)) {
-			throw new ValidationException("reference.field.cannot.be.blank", "reference cannot be empty");
-		}
 		if (StringUtils.isBlank(this.accountNumber)) {
 			throw new ValidationException("accountNumber.field.cannot.be.blank", "accountNumber cannot be empty");
 		}
@@ -61,6 +57,9 @@ public class SavingsAccountTransactionRequest {
 		}
 		if (StringUtils.isBlank(this.bankNipCode)) {
 			throw new ValidationException("bankNipCode.field.cannot.be.blank", "bankNipCode cannot be empty");
+		}
+		if (StringUtils.isBlank(this.uniqueId)) {
+			throw new ValidationException("uniqueId.field.cannot.be.blank", "uniqueId cannot be empty");
 		}
 	}
 }

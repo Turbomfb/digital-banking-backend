@@ -2,9 +2,15 @@
 package com.techservices.digitalbanking.savingsaccount.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
+import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ExternalPaymentService;
+import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.savingsaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.savingsaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
@@ -44,6 +50,7 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 	private final ExternalPaymentService externalPaymentService;
 	private final CustomerService customerService;
 	private final AccountService accountService;
+	private final RedisService redisService;
 
 
 	@Override
@@ -84,16 +91,16 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 						"Customer transaction pin is not correct");
 			}
 			request.setTransactionPin(null);
-			ExternalPaymentTransactionOtpGenerationResponse response = externalPaymentService.generateOtp(request);
-			return new GenericApiResponse(
-					response.getMessage(),
-					response.getStatus(),
-					response.getData()
-			);
+			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(customer.getPhoneNumber(), customer.getEmailAddress());
+			OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.TRANSFER, notificationRequestDto, request.getAmount());
+			String message = notificationRequestDto.getOtpResponseMessage();
+			return new GenericApiResponse(otpDto.getUniqueId(), message, "success", null);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
+			this.redisService.validateOtpWithoutDeletingRecord(request.getUniqueId(), request.getOtp(), OtpType.KYC_UPGRADE);
 			this.validateCustomerAccount(request, customerId);
 			request.validateForOtpVerification();
-			ExternalPaymentTransactionOtpVerificationResponse response = externalPaymentService.verifyOtp(request);
+			ExternalPaymentTransactionOtpVerificationResponse response = externalPaymentService.initiateTransfer(request);
+			this.redisService.validateOtp(request.getUniqueId(), request.getOtp(), OtpType.KYC_UPGRADE);
 			return new GenericApiResponse(
 					response.getMessage(),
 					response.getStatus(),

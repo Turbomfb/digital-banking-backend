@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.UUID;
@@ -88,7 +89,7 @@ public class RedisService {
                 && otpDto.getOtpType().equals(otpType);
     }
 
-    public OtpDto generateOtpRequest(Object request, OtpType otpType, NotificationRequestDto notificationRequestDto) {
+    public OtpDto generateOtpRequest(Object request, OtpType otpType, NotificationRequestDto notificationRequestDto, BigDecimal amount) {
         OtpDto otpDto = new OtpDto();
         String uniqueId = UUID.randomUUID().toString();
         otpDto.setUniqueId(uniqueId);
@@ -103,6 +104,7 @@ public class RedisService {
                 case ONBOARDING -> "Welcome to our platform! Your OTP for onboarding is: " + otpDto.getOtp();
                 case KYC_UPGRADE -> "Your OTP for upgrading your KYC is: " + otpDto.getOtp();
                 case FORGOT_PASSWORD -> "You requested a password reset. Your OTP is: " + otpDto.getOtp();
+                case TRANSFER -> String.format("You have initiated a transfer of %s. Your one-time password (OTP) is: %s", amount, otpDto.getOtp());
             };
             if (notificationRequestDto.getChannel() != null) {
                 log.info("Sending OTP notification for channel: {}", notificationRequestDto.getChannel());
