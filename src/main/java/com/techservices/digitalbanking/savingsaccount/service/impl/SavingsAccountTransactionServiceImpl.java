@@ -5,6 +5,7 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ExternalPaymentService;
@@ -94,13 +95,18 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(customer.getPhoneNumber(), customer.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.TRANSFER, notificationRequestDto, request.getAmount());
 			String message = notificationRequestDto.getOtpResponseMessage();
-			return new GenericApiResponse(otpDto.getUniqueId(), message, "success", null);
+			ExternalPaymentTransactionOtpGenerationResponse.Data responseData = new ExternalPaymentTransactionOtpGenerationResponse.Data(request.getAmount(), otpDto.getUniqueId());
+			return new GenericApiResponse(message, "success", responseData);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
-			this.redisService.validateOtpWithoutDeletingRecord(request.getUniqueId(), request.getOtp(), OtpType.KYC_UPGRADE);
+			SavingsAccountTransactionRequest otpData = (SavingsAccountTransactionRequest) this.redisService.validateOtpWithoutDeletingRecord(request.getReference(), request.getOtp(), OtpType.KYC_UPGRADE).getData();
+			if (otpData.getAmount().compareTo(request.getAmount()) != 0) {
+				throw new ValidationException("error.msg.customer.transaction.amount.mismatch",
+						"Invalid payment reference provided");
+			}
 			this.validateCustomerAccount(request, customerId);
 			request.validateForOtpVerification();
 			ExternalPaymentTransactionOtpVerificationResponse response = externalPaymentService.initiateTransfer(request);
-			this.redisService.validateOtp(request.getUniqueId(), request.getOtp(), OtpType.KYC_UPGRADE);
+			this.redisService.validateOtp(request.getReference(), request.getOtp(), OtpType.KYC_UPGRADE);
 			return new GenericApiResponse(
 					response.getMessage(),
 					response.getStatus(),
