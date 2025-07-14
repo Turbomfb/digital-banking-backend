@@ -47,10 +47,7 @@ public class CustomerServiceImpl implements CustomerService {
 	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command) {
 		if ("generate-otp".equalsIgnoreCase(command)) {
 			log.info("Generating otp");
-			if (StringUtils.isBlank(createCustomerRequest.getTransactionPin())) {
-				throw new ValidationException("transaction.pin.required", "Transaction pin field is required.");
-			}
-			if (createCustomerRequest.getTransactionPin().length() < 4) {
+			if (StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()) && createCustomerRequest.getTransactionPin().length() < 4) {
 				throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
 			}
 			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber());
