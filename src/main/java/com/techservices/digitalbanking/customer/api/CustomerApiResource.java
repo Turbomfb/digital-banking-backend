@@ -7,6 +7,9 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
+import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
+import com.techservices.digitalbanking.loan.service.LoanApplicationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +35,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("api/v1/customers")
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerApiResource {
 
 	private final CustomerService customerService;
+	private final LoanApplicationService loanApplicationService;
 
 	@Operation(summary = "Create a New Customer")
 	@PostMapping
@@ -51,7 +56,7 @@ public class CustomerApiResource {
 	@PutMapping("{customerId}")
 	public ResponseEntity<CustomerDtoResponse> updateCustomer(
 			@Validated @RequestBody CustomerUpdateRequest customerUpdateRequest, @PathVariable Long customerId) {
-		CustomerDtoResponse customerDtoResponse = customerService.getCustomerDtoResponse(
+		CustomerDtoResponse customerDtoResponse = CustomerDtoResponse.parse(
 				customerService.updateCustomer(customerUpdateRequest,
 				customerId, null)
 		);
@@ -62,11 +67,19 @@ public class CustomerApiResource {
 	@Operation(summary = "Get Customer By Id")
 	@GetMapping("{customerId}")
 	public ResponseEntity<CustomerDtoResponse> getCustomerById(@PathVariable Long customerId) {
-		CustomerDtoResponse getSavingsAccountsAccountIdResponse = customerService.getCustomerDtoResponse(
-				customerService.getCustomerById(customerId)
-		);
-		return ResponseEntity.ok(getSavingsAccountsAccountIdResponse);
-	}
+        CustomerDtoResponse response = CustomerDtoResponse.parse(
+                customerService.getCustomerById(customerId)
+        );
+        BasePageResponse<LoanOfferResponse> offers = null;
+        try {
+            offers = loanApplicationService.retrieveCustomerLoanOffers(customerId);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            response.setPreQualifiedForLoan(false);
+        }
+        response.setPreQualifiedForLoan(offers != null && !offers.getData().isEmpty());
+        return ResponseEntity.ok(response);
+    }
 
 	@Operation(summary = "Retrieve Customer's dashboard by ID")
 	@GetMapping("{customerId}/dashboard")

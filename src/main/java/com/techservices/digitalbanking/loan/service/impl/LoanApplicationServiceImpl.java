@@ -107,10 +107,17 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 
 	@Override
 	public BasePageResponse<LoanOfferResponse> retrieveCustomerLoanOffers(Long customerId) {
-		Customer customer = customerService.getCustomerById(customerId);
-		List<LoanOfferResponse> loanOffers = this.externalLoanService.retrieveCustomerLoanOffers(customer.getPhoneNumber());
-		return BasePageResponse.instance(loanOffers);
-	}
+        Customer customer = customerService.getCustomerById(customerId);
+        List<LoanOfferResponse> loanOffers;
+        try {
+            loanOffers = this.externalLoanService.retrieveCustomerLoanOffers(customer.getPhoneNumber());
+        } catch (Exception e) {
+            log.error("Error retrieving loan offers for customer {}: {}", customerId, e.getMessage());
+            throw new ValidationException("validation.msg.loan.offers.retrieval.failed",
+                    "Customer is not pre-qualified for loan offers.");
+        }
+        return BasePageResponse.instance(loanOffers);
+    }
 
 	@Override
 	public GenericApiResponse processLoanApplication(Long customerId, LoanApplicationRequest loanApplicationRequest) {

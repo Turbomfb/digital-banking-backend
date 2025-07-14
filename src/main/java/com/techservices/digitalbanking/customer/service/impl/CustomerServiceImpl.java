@@ -47,6 +47,12 @@ public class CustomerServiceImpl implements CustomerService {
 	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command) {
 		if ("generate-otp".equalsIgnoreCase(command)) {
 			log.info("Generating otp");
+			if (StringUtils.isBlank(createCustomerRequest.getTransactionPin())) {
+				throw new ValidationException("transaction.pin.required", "Transaction pin field is required.");
+			}
+			if (createCustomerRequest.getTransactionPin().length() < 4) {
+				throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
+			}
 			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber());
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(createCustomerRequest.getPhoneNumber(), createCustomerRequest.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(createCustomerRequest, OtpType.ONBOARDING, notificationRequestDto);
@@ -106,11 +112,6 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private String retrieveCustomerExternalId(Long customerId) {
 		return getCustomerById(customerId).getExternalId();
-	}
-
-	@Override
-	public CustomerDtoResponse getCustomerDtoResponse(Customer customer) {
-		return CustomerDtoResponse.parse(customer, clientService);
 	}
 
 	@Override
@@ -219,6 +220,8 @@ public class CustomerServiceImpl implements CustomerService {
 		customer.setPhoneNumber(createCustomerRequest.getPhoneNumber());
 		customer.setExternalId(postClientsResponse.getClientId());
 		customer.setReferralCode(createCustomerRequest.getReferralCode());
+		customer.setTransactionPin(createCustomerRequest.getTransactionPin());
+		customer.setTransactionPinSet(true);
 		customer.setUserType(UserType.CUSTOMER);
 		customer.setActive(!isInitialRegistration);
 		return customer;

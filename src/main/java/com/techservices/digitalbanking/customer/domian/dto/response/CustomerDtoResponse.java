@@ -33,6 +33,7 @@ public class CustomerDtoResponse extends BaseAppResponse {
     private String bvn;
     private boolean isActive;
     private boolean isTransactionPinSet;
+    private boolean isPreQualifiedForLoan;
     private CustomerKycTier kycTier;
     private CustomerTierData kycTierData;
 

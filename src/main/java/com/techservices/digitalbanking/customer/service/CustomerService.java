@@ -29,8 +29,6 @@ public interface CustomerService {
 
 	GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountTypes);
 
-	CustomerDtoResponse getCustomerDtoResponse(Customer customerById);
-
 	CustomerDashboardResponse retrieveCustomerDashboard(Long customerId);
 
 	GenericApiResponse createTransactionPin(Long customerId, CustomerTransactionPinRequest customerTransactionPinRequest);

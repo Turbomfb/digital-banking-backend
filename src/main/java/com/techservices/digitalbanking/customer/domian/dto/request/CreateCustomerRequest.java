@@ -40,6 +40,7 @@ public class CreateCustomerRequest {
 	private Boolean proofOfAddress;
 	private Long merchantId;
 	private String alternateAccountNumber;
+	private String transactionPin;
 
 	private Long savingsProductId;
 

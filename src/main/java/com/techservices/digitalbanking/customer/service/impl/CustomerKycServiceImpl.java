@@ -27,6 +27,7 @@ import com.techservices.digitalbanking.customer.domian.data.repository.CustomerR
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
+import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerKycService;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import jakarta.transaction.Transactional;
@@ -92,7 +93,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		foundCustomer.setKycTier(customerKycTier);
 		foundCustomer = this.customerRepository.save(foundCustomer);
 		this.redisService.validateOtp(uniqueId, otp, OtpType.KYC_UPGRADE);
-		return this.customerService.getCustomerDtoResponse(foundCustomer);
+		return CustomerDtoResponse.parse(foundCustomer);
 	}
 
 	@Override
