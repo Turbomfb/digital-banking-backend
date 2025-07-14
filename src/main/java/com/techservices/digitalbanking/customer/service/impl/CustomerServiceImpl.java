@@ -218,7 +218,7 @@ public class CustomerServiceImpl implements CustomerService {
 		customer.setExternalId(postClientsResponse.getClientId());
 		customer.setReferralCode(createCustomerRequest.getReferralCode());
 		customer.setTransactionPin(createCustomerRequest.getTransactionPin());
-		customer.setTransactionPinSet(true);
+		customer.setTransactionPinSet(StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()));
 		customer.setUserType(UserType.CUSTOMER);
 		customer.setActive(!isInitialRegistration);
 		return customer;
