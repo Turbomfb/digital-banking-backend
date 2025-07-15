@@ -1,0 +1,174 @@
+/*
+ * Copyright (c) 2025 Techservice Engineering Team.
+ * All rights reserved.
+ *
+ * This software is proprietary and confidential. It may not be reproduced,
+ * distributed, or transmitted in any form or by any means, including photocopying,
+ * recording, or other electronic or mechanical methods, without the prior written
+ * permission of Techservice Engineering Team.
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ *
+ * For any questions regarding this license, please contact:
+ * Techservice Engineering Team
+ * Email: engineering@techservice.com
+ */ 
+package com.techservices.digitalbanking.authentication.service.impl;
+
+import com.techservices.digitalbanking.authentication.domain.request.AuthenticationRequest;
+import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
+import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
+import com.techservices.digitalbanking.authentication.service.AuthenticationService;
+import com.techservices.digitalbanking.core.configuration.security.JwtUtil;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.domain.data.model.AppUser;
+import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
+import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.core.redis.service.RedisService;
+import com.techservices.digitalbanking.core.util.AppUtil;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
+import com.techservices.digitalbanking.customer.service.CustomerService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.techservices.digitalbanking.core.util.CommandUtil.*;
+
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class AuthenticationServiceImpl implements AuthenticationService {
+
+    private static final long DEFAULT_INVITATION_TOKEN_EXPIRATION_MS = 3600000; // 1 hour
+
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final CustomerService customerService;
+    private final RedisService redisService;
+
+    @Override
+    public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest) {
+        Map<String, Object> claims = new HashMap<>();
+        Customer foundCustomer = getCustomerByEmailOrPhoneNumber(postAuthenticationRequest.getEmailAddress(), postAuthenticationRequest.getPhoneNumber());
+
+        assert foundCustomer != null;
+        log.info("Found customer with email address {}", foundCustomer.getEmailAddress());
+        if (!passwordEncoder.matches(postAuthenticationRequest.getPassword(), foundCustomer.getPassword())) {
+            throw new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid username or password");
+        }
+
+        claims.put("customerId", foundCustomer.getId());
+        claims.put("email", foundCustomer.getEmailAddress());
+        claims.put("userType", foundCustomer.getUserType());
+        claims.put("isActive", foundCustomer.isActive());
+
+        String accessToken = generateToken(foundCustomer.getEmailAddress(), claims);
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse();
+        authenticationResponse.setAccessToken(accessToken);
+        authenticationResponse.setId(foundCustomer.getId());
+        authenticationResponse.setFirstname(foundCustomer.getFirstname());
+        authenticationResponse.setLastname(foundCustomer.getLastname());
+        authenticationResponse.setEmailAddress(foundCustomer.getEmailAddress());
+        authenticationResponse.setUserType(foundCustomer.getUserType());
+
+        AppUser appUser = new AppUser(
+                foundCustomer.getId(),
+                foundCustomer.getEmailAddress(),
+                accessToken,
+                true,
+                foundCustomer.isActive(),
+                null
+        );
+        SecurityContextHolder.getContext().setAuthentication(appUser);
+
+        return authenticationResponse;
+    }
+
+    private Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber) {
+        Customer foundCustomer;
+        if (StringUtils.isNotBlank(emailAddress)){
+            foundCustomer = customerService.getCustomerByEmailAddress(emailAddress)
+                    .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid email or password"));
+        } else if (StringUtils.isNotBlank(phoneNumber)){
+            foundCustomer = customerService.getCustomerByPhoneNumber(phoneNumber)
+                    .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid phoneNumber or password"));
+        } else {
+            throw new ValidationException("Invalid.credentials.provided", "Email or phone number must be provided");
+        }
+        return foundCustomer;
+    }
+
+    @Override
+    public GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest) {
+        Customer foundCustomer = customerService.getCustomerById(passwordMgtRequest.getCustomerId());
+        if (StringUtils.isBlank(foundCustomer.getPassword())){
+            if (StringUtils.isNotBlank(passwordMgtRequest.getPassword())){
+                foundCustomer.setPassword(passwordEncoder.encode(passwordMgtRequest.getPassword()));
+                customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer);
+                return new GenericApiResponse("Password created successfully", "success", CustomerDtoResponse.parse(foundCustomer));
+            } else {
+                throw new ValidationException("Invalid.credentials.provided", "password cannot be blank");
+            }
+        }
+        throw new ValidationException("password.already.exists", "Password has already been set for this customer. Please use the update password endpoint.");
+    }
+
+    @Override
+    public GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command) {
+        if (StringUtils.equals(GENERATE_OTP_COMMAND, command)){
+            Customer foundCustomer = getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber());
+            NotificationRequestDto notificationRequestDto = new NotificationRequestDto(foundCustomer.getPhoneNumber(), foundCustomer.getEmailAddress());
+            OtpDto otpDto = this.redisService.generateOtpRequest(foundCustomer, OtpType.FORGOT_PASSWORD, notificationRequestDto, null);
+          return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(foundCustomer.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(foundCustomer.getEmailAddress()), "success", null);
+        } else if (StringUtils.equals(VERIFY_OTP_COMMAND, command)) {
+            if (StringUtils.isBlank(passwordMgtRequest.getOtp())){
+                throw new ValidationException("Invalid.data.provided", "otp must be provided");
+            }
+            if (StringUtils.isBlank(passwordMgtRequest.getUniqueId())){
+                throw new ValidationException("Invalid.data.provided", "uniqueId must be provided");
+            }
+
+            OtpDto otpDto = redisService.validateOtpWithoutDeletingRecord(passwordMgtRequest.getUniqueId(), passwordMgtRequest.getOtp(), OtpType.FORGOT_PASSWORD);
+            if (otpDto == null) {
+                throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
+            }
+            return new GenericApiResponse("OTP validated successfully. Kindly proceed to change password", "success", null);
+        } else if (StringUtils.equals(CHANGE_PASSWORD_COMMAND, command)) {
+            if (StringUtils.isBlank(passwordMgtRequest.getUniqueId())){
+                throw new ValidationException("Invalid.data.provided", "uniqueId must be provided");
+            }
+            if (StringUtils.isBlank(passwordMgtRequest.getPassword())){
+                throw new ValidationException("Invalid.data.provided", "password must be provided");
+            }
+            OtpDto otpDto = redisService.validateOtpWithoutOtp(passwordMgtRequest.getUniqueId());
+            String password = passwordEncoder.encode(passwordMgtRequest.getPassword());
+            Customer foundCustomer = (Customer) otpDto.getData();
+            foundCustomer.setPassword(password);
+            customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer);
+            return new GenericApiResponse("Password has been changed successfully", "success", null);
+        } else {
+            throw new ValidationException("Invalid.command", "Invalid command: " + command);
+        }
+
+    }
+
+    private String generateToken(String username, Map<String, Object> claims) {
+        return jwtUtil.generateToken(username, DEFAULT_INVITATION_TOKEN_EXPIRATION_MS, claims);
+    }
+}

@@ -1,0 +1,25 @@
+package com.techservices.digitalbanking.customer.domian.data.repository;
+
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface CustomerRepository extends CrudRepository<Customer, Long> {
+
+    @Query("SELECT c FROM Customer c WHERE LOWER(c.emailAddress) = LOWER(:emailAddress)")
+    Optional<Customer> findByEmailAddress(String emailAddress);
+
+    @Query("SELECT c FROM Customer c WHERE LOWER(c.phoneNumber) = LOWER(:phoneNumber)")
+    Optional<Customer> findByPhoneNumber(String phoneNumber);
+
+    Page<Customer> findAll(Pageable pageable);
+
+    Optional<Customer> findByBvn(String bvn);
+
+    Optional<Customer> findByNin(String nin);
+}
