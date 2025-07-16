@@ -285,8 +285,8 @@ public class AccountTransactionService {
 		return postSavingsAccountTransactionsResponse;
 	}
 
-	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long savingsAccountId,
-			Long transactionId) {
+	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(String savingsAccountId,
+																			   Long transactionId) {
 		return savingsAccountApiClient.retrieveOneTransaction(savingsAccountId, transactionId);
 	}
 }

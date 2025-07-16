@@ -1,5 +1,5 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.service.impl;
+package com.techservices.digitalbanking.walletaccount.service.impl;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAc
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountProductsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PutSavingsAccountProductsProductIdResponse;
 import com.techservices.digitalbanking.core.fineract.service.SavingsProductService;
-import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountProductService;
+import com.techservices.digitalbanking.walletaccount.service.SavingsAccountProductService;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,7 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.service;
+package com.techservices.digitalbanking.walletaccount.service;
 
-import com.techservices.digitalbanking.savingsaccount.domain.request.StatementRequest;
+import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;

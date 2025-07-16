@@ -1,5 +1,5 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.service;
+package com.techservices.digitalbanking.walletaccount.service;
 
 import java.util.List;
 

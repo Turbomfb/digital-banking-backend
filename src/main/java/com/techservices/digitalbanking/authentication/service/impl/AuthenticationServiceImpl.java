@@ -95,6 +95,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 foundCustomer.isActive(),
                 null
         );
+        System.err.println("Setting authentication for user: " + appUser);
         SecurityContextHolder.getContext().setAuthentication(appUser);
 
         return authenticationResponse;

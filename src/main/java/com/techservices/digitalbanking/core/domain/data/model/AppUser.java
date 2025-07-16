@@ -21,6 +21,7 @@
 package com.techservices.digitalbanking.core.domain.data.model;
 
 import lombok.*;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -72,5 +73,19 @@ public class AppUser extends AbstractAuthenticationToken {
     @Override
     public Object getPrincipal() {
         return this.emailAddress;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("userId", userId)
+                .append("emailAddress", emailAddress)
+                .append("accessToken", accessToken)
+                .append("isAuthenticated", isAuthenticated)
+                .append("isActive", isActive)
+                .append("permissions", permissions)
+                .toString();
     }
 }

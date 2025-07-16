@@ -9,13 +9,12 @@ import com.techservices.digitalbanking.core.domain.dto.response.BankDataResponse
 import com.techservices.digitalbanking.core.domain.dto.response.YouverifyBankDataResponse;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.savingsaccount.domain.request.NameEnquiryRequest;
-import com.techservices.digitalbanking.savingsaccount.domain.response.NameEnquiryResponse;
+import com.techservices.digitalbanking.walletaccount.domain.request.NameEnquiryRequest;
+import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;

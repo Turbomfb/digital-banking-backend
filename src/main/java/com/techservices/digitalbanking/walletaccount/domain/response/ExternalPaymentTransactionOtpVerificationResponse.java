@@ -1,23 +1,20 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.domain.response;
+package com.techservices.digitalbanking.walletaccount.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
-import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.math.BigDecimal;
 
 @Setter
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
-@ToString
-public class ExternalPaymentTransactionOtpGenerationResponse extends BaseAppResponse {
-    private Data data;
+public class ExternalPaymentTransactionOtpVerificationResponse extends BaseAppResponse {
+    private Long data;
     private String status;
     private String statusCode;
     private String message;

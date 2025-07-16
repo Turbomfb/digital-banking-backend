@@ -1,9 +1,8 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.domain.request;
+package com.techservices.digitalbanking.walletaccount.domain.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.model.response.TransactionMetadata;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.customer.api;
 
+import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
@@ -10,7 +11,6 @@ import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoR
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import com.techservices.digitalbanking.loan.service.LoanApplicationService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientsClientIdResponse;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
@@ -40,6 +39,7 @@ public class CustomerApiResource {
 
 	private final CustomerService customerService;
 	private final LoanApplicationService loanApplicationService;
+	private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
 	@Operation(summary = "Create a New Customer")
 	@PostMapping
@@ -65,8 +65,9 @@ public class CustomerApiResource {
 	}
 
 	@Operation(summary = "Get Customer By Id")
-	@GetMapping("{customerId}")
-	public ResponseEntity<CustomerDtoResponse> getCustomerById(@PathVariable Long customerId) {
+	@GetMapping("me")
+	public ResponseEntity<CustomerDtoResponse> getCustomerById() {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
         CustomerDtoResponse response = CustomerDtoResponse.parse(
                 customerService.getCustomerById(customerId)
         );
@@ -82,24 +83,18 @@ public class CustomerApiResource {
     }
 
 	@Operation(summary = "Retrieve Customer's dashboard by ID")
-	@GetMapping("{customerId}/dashboard")
-	public ResponseEntity<CustomerDashboardResponse> retrieveCustomerDashboard(@PathVariable Long customerId) {
+	@GetMapping("me/dashboard")
+	public ResponseEntity<CustomerDashboardResponse> retrieveCustomerDashboard() {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		return ResponseEntity.ok(customerService.retrieveCustomerDashboard(customerId));
 	}
 
-	@Operation(summary = "Retrieve All Customers")
-	@GetMapping
-	public ResponseEntity<BasePageResponse<CustomerDtoResponse>> getAllCustomers(Pageable pageable) {
-		BasePageResponse<CustomerDtoResponse> customerBasePageResponse = customerService.getAllCustomers(pageable);
-
-		return ResponseEntity.ok(customerBasePageResponse);
-	}
-
 	@Operation(summary = "Retrieve All Customer's accounts by customer ID")
-	@GetMapping("{customerId}/accounts")
+	@GetMapping("me/accounts")
 	public ResponseEntity<GetClientsClientIdAccountsResponse> getCustomerAccountsByClientId(
-			@PathVariable Long customerId, @RequestParam(name = "accountType", required = false) String accountType
+			@RequestParam(name = "accountType", required = false) String accountType
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		GetClientsClientIdAccountsResponse getClientsResponse = customerService.getClientAccountsByClientId(customerId, accountType);
 
 		return ResponseEntity.ok(getClientsResponse);

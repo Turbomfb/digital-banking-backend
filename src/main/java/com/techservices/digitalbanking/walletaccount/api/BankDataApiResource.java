@@ -1,10 +1,10 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.api;
+package com.techservices.digitalbanking.walletaccount.api;
 
 import com.techservices.digitalbanking.core.domain.dto.response.BankDataResponse;
 import com.techservices.digitalbanking.core.service.BankDataService;
-import com.techservices.digitalbanking.savingsaccount.domain.request.NameEnquiryRequest;
-import com.techservices.digitalbanking.savingsaccount.domain.response.NameEnquiryResponse;
+import com.techservices.digitalbanking.walletaccount.domain.request.NameEnquiryRequest;
+import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

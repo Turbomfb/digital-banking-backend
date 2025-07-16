@@ -12,8 +12,8 @@ import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResp
 import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
-import com.techservices.digitalbanking.savingsaccount.domain.request.StatementRequest;
-import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountTransactionService;
+import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
+import com.techservices.digitalbanking.walletaccount.service.SavingsAccountTransactionService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

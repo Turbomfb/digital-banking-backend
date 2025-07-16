@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.loan.api;
 
+import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
@@ -26,16 +27,18 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RequestMapping("api/v1/customers/{customerId}/loans")
+@RequestMapping("api/v1/customers/me/loans")
 @RestController
 @RequiredArgsConstructor
 public class LoanApplicationApiResource {
 
 	private final LoanApplicationService loanService;
+	private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
 	@Operation(summary = "Retrieve Customer Loan offers")
 	@GetMapping("offers")
-	public ResponseEntity<BasePageResponse<LoanOfferResponse>> retrieveCustomerLoanOffers(@PathVariable Long customerId) {
+	public ResponseEntity<BasePageResponse<LoanOfferResponse>> retrieveCustomerLoanOffers() {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		BasePageResponse<LoanOfferResponse> loanOfferResponseBasePageResponse = loanService.retrieveCustomerLoanOffers(customerId);
 
 		return ResponseEntity.ok(loanOfferResponseBasePageResponse);
@@ -45,9 +48,9 @@ public class LoanApplicationApiResource {
 	@Operation(summary = "Apply for a loan")
 	@PostMapping("application")
 	public ResponseEntity<GenericApiResponse> processLoanApplication(
-			@PathVariable Long customerId,
 			@RequestBody @Valid LoanApplicationRequest loanApplicationRequest
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		GenericApiResponse genericApiResponse = loanService.processLoanApplication(customerId, loanApplicationRequest);
 
 		return ResponseEntity.ok(genericApiResponse);
@@ -55,7 +58,8 @@ public class LoanApplicationApiResource {
 
 	@Operation(summary = "Retrieve Customer Loan Dashboard")
 	@GetMapping("dashboard")
-	public ResponseEntity<LoanDashboardResponse> retrieveCustomerLoanDashboard(@PathVariable Long customerId) {
+	public ResponseEntity<LoanDashboardResponse> retrieveCustomerLoanDashboard() {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		LoanDashboardResponse loanDashboardResponse = loanService.retrieveCustomerLoanDashboard(customerId);
 
 		return ResponseEntity.ok(loanDashboardResponse);
@@ -67,7 +71,8 @@ public class LoanApplicationApiResource {
 																   @Valid @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
 																   @Valid @RequestParam(value = "associations", required = false, defaultValue = "all") String associations,
 																   @Valid @RequestParam(value = "exclude", required = false, defaultValue = "transactions") String exclude,
-																   @Valid @RequestParam(value = "fields", required = false) String fields, @PathVariable Long customerId) {
+																   @Valid @RequestParam(value = "fields", required = false) String fields) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		GetLoansLoanIdResponse getLoansLoanIdResponse = loanService.retrieveLoanById(loanId, staffInSelectedOfficeOnly,
 				associations, exclude, fields, customerId);
 
@@ -84,12 +89,11 @@ public class LoanApplicationApiResource {
 			@Valid @RequestParam(value = "orderBy", required = false) String orderBy,
 			@Valid @RequestParam(value = "sortOrder", required = false) String sortOrder,
 			@Valid @RequestParam(value = "accountNo", required = false) String accountNo,
-			@Valid @RequestParam(value = "clientId", required = false) String clientId,
-			@Valid @RequestParam(value = "status", required = false) String status,
-			@PathVariable String customerId
+			@Valid @RequestParam(value = "status", required = false) String status
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		GetLoansResponse getLoansResponse = loanService.retrieveAllLoans(sqlSearch, externalId, offset, limit, orderBy,
-				sortOrder, accountNo, clientId, status);
+				sortOrder, accountNo, customerId, status);
 
 		return ResponseEntity.ok(getLoansResponse);
 	}
@@ -97,8 +101,9 @@ public class LoanApplicationApiResource {
 	@Operation(summary = "Retrieve loan transactions")
 	@GetMapping("{loanId}/transactions")
 	public ResponseEntity<FineractPageResponse<LoanTransactionResponse>> retrieveLoanTransactions(
-			@Valid @PathVariable(value = "loanId") Long loanId, @PathVariable String customerId) {
-		FineractPageResponse<LoanTransactionResponse> transactions = loanService.retrieveLoanTransactions(loanId);
+			@Valid @PathVariable(value = "loanId") Long loanId) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		FineractPageResponse<LoanTransactionResponse> transactions = loanService.retrieveLoanTransactions(loanId, customerId);
 
 		return ResponseEntity.ok(transactions);
 	}
@@ -107,9 +112,10 @@ public class LoanApplicationApiResource {
 	@GetMapping("{loanId}/transactions/{transactionId}")
 	public ResponseEntity<LoanTransactionResponse> retrieveLoanTransactionDetails(
 			@Valid @PathVariable(value = "loanId") Long loanId,
-			@Valid @PathVariable(value = "transactionId") Long transactionId,
-			@PathVariable String customerId) {
-		LoanTransactionResponse transaction = loanService.retrieveLoanTransactionDetails(loanId, transactionId);
+			@Valid @PathVariable(value = "transactionId") Long transactionId
+	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		LoanTransactionResponse transaction = loanService.retrieveLoanTransactionDetails(loanId, transactionId, customerId);
 
 		return ResponseEntity.ok(transaction);
 	}
@@ -119,8 +125,9 @@ public class LoanApplicationApiResource {
 	public GenericApiResponse repayLoan(
 		@PathVariable Long loanId,
 		@RequestBody @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest,
-		@RequestParam(required = false, defaultValue = "repayment") String command,
-		@PathVariable Long customerId) {
+		@RequestParam(required = false, defaultValue = "repayment") String command
+	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		return loanService.repayLoan(loanId, postLoansLoanIdTransactionsRequest, command, customerId);
 	}
 }

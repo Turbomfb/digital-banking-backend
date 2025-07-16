@@ -28,7 +28,7 @@ public interface LoanApplicationService {
 											String exclude, String fields, Long customerId);
 
 	GetLoansResponse retrieveAllLoans(String sqlSearch, String externalId, Integer offset, Integer limit,
-									  String orderBy, String sortOrder, String accountNo, @Valid String clientId, @Valid String status);
+									  String orderBy, String sortOrder, String accountNo, @Valid Long customerId, @Valid String status);
 
 	PostLoansLoanIdResponse processLoanCommand(Long loanId, PostLoansLoanIdRequest postLoansLoanIdRequest,
 			@Valid String command);
@@ -39,14 +39,14 @@ public interface LoanApplicationService {
 	GetLoanTemplateResponse retrieveLoanTemplate(@Valid String templateType, @Valid Long clientId,
 			@Valid Long productId);
 
-	FineractPageResponse<LoanTransactionResponse> retrieveLoanTransactions(@Valid Long loanId);
+	FineractPageResponse<LoanTransactionResponse> retrieveLoanTransactions(@Valid Long loanId, Long customerId);
 
 	LoanRescheduleResponse createALoanRescheduleRequest(@Valid LoanRescheduleRequest loanRescheduleRequest);
 
 	PostLoansLoanIdResponse processLoanRescheduleCommand(PostLoansLoanIdRequest postLoansLoanIdRequest,
 			String requestId, String command);
 
-	LoanTransactionResponse retrieveLoanTransactionDetails(@Valid Long loanId, @Valid Long transactionId);
+	LoanTransactionResponse retrieveLoanTransactionDetails(@Valid Long loanId, @Valid Long transactionId, Long customerId);
 
 	BasePageResponse<LoanOfferResponse> retrieveCustomerLoanOffers(Long customerId);
 

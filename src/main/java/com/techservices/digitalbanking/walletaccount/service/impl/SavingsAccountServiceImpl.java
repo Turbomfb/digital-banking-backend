@@ -1,11 +1,10 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.service.impl;
+package com.techservices.digitalbanking.walletaccount.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
-import com.techservices.digitalbanking.savingsaccount.domain.response.SavingsInterestBreakdownResponse;
+import com.techservices.digitalbanking.walletaccount.domain.response.SavingsInterestBreakdownResponse;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
@@ -13,8 +12,8 @@ import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAc
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
-import com.techservices.digitalbanking.savingsaccount.domain.request.CreateSavingsAccountRequest;
-import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountService;
+import com.techservices.digitalbanking.walletaccount.domain.request.CreateSavingsAccountRequest;
+import com.techservices.digitalbanking.walletaccount.service.SavingsAccountService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,9 +32,9 @@ public class SavingsAccountServiceImpl implements SavingsAccountService {
 
 	@Override
 	public PostSavingsAccountsResponse createSavingsAccount(CreateSavingsAccountRequest createSavingsAccountRequest) {
-		return accountService.createSavingsAccount(createSavingsAccountRequest.clientId(),
-				createSavingsAccountRequest.productId(), createSavingsAccountRequest.accountNumber(),
-				createSavingsAccountRequest.accountName(), createSavingsAccountRequest.externalId(), null,
+		return accountService.createSavingsAccount(createSavingsAccountRequest.getClientId(),
+				createSavingsAccountRequest.getProductId(), createSavingsAccountRequest.getAccountNumber(),
+				createSavingsAccountRequest.getAccountName(), createSavingsAccountRequest.getExternalId(), null,
 				createSavingsAccountRequest.isActive(), null);
 	}
 

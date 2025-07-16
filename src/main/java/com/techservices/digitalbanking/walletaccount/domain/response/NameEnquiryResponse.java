@@ -1,6 +1,5 @@
-package com.techservices.digitalbanking.savingsaccount.domain.response;
+package com.techservices.digitalbanking.walletaccount.domain.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

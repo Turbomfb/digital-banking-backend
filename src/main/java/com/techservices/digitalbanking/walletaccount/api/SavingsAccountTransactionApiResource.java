@@ -1,11 +1,12 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.api;
+package com.techservices.digitalbanking.walletaccount.api;
 
+import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
-import com.techservices.digitalbanking.savingsaccount.domain.request.SavingsAccountTransactionRequest;
-import com.techservices.digitalbanking.savingsaccount.domain.request.StatementRequest;
-import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountStatementService;
+import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
+import com.techservices.digitalbanking.walletaccount.service.SavingsAccountStatementService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
-import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountTransactionService;
+import com.techservices.digitalbanking.walletaccount.service.SavingsAccountTransactionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -30,7 +31,7 @@ import java.time.LocalDate;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
-@RequestMapping("api/v1/savings-accounts/{customerId}/transactions")
+@RequestMapping("api/v1/wallet-accounts/me/transactions")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -38,26 +39,27 @@ public class SavingsAccountTransactionApiResource {
 	private final SavingsAccountTransactionService savingsAccountTransactionService;
 	private final SavingsAccountStatementService statementService;
 	private final CustomerService customerService;
+	private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
 	@PostMapping
 	public ResponseEntity<GenericApiResponse> processTransactionCommand(
 			@RequestBody SavingsAccountTransactionRequest request,
-			@RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command,
-			@PathVariable Long customerId
+			@RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		return ResponseEntity.ok(savingsAccountTransactionService.processTransactionCommand(command, request, customerId));
 	}
 
 	@GetMapping
 	public ResponseEntity<FineractPageResponse<SavingsAccountTransactionData>> retrieveSavingsAccountTransactions(
-			@PathVariable Long customerId, @RequestParam(required = false) Integer page,
+			@RequestParam(required = false) Integer page,
 			@RequestParam(required = false) Integer size, @RequestParam(required = false) String startDate,
 			@RequestParam(required = false) String endDate, @RequestParam(required = false) String dateFormat,
 			@RequestParam(required = false) Long productId, @RequestParam(value = "offset", required = false) @Valid Long offset,
 			@RequestParam(value = "limit", required = false) @Valid Long limit,
 			@RequestParam(value = "transactionType", required = false) @Valid String transactionType
 	) {
-
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		return ResponseEntity.ok(savingsAccountTransactionService.retrieveSavingsAccountTransactions(
 				customerId, startDate, endDate, dateFormat, productId, limit, offset, transactionType));
 	}
@@ -72,7 +74,6 @@ public class SavingsAccountTransactionApiResource {
 			@ApiResponse(responseCode = "500", description = "Internal server error")
 	})
 	public ResponseEntity<Void> generateAccountStatement(
-			@PathVariable @NotNull @Positive Long customerId,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
 			@RequestParam(required = false) @Positive Long productId,
@@ -84,6 +85,7 @@ public class SavingsAccountTransactionApiResource {
 			HttpServletRequest request,
 			HttpServletResponse response
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 
 		try {
 
@@ -126,9 +128,10 @@ public class SavingsAccountTransactionApiResource {
 
 	@GetMapping("/{transactionId}")
 	public ResponseEntity<SavingsAccountTransactionData> retrieveSavingsAccountTransactionById(
-			@PathVariable Long savingsId, @PathVariable(required = false) Long transactionId,
+			@PathVariable(required = false) Long transactionId,
 			@RequestParam(required = false) Long productId) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		return ResponseEntity.ok(savingsAccountTransactionService
-				.retrieveSavingsAccountTransactionById(savingsId, transactionId, productId));
+				.retrieveSavingsAccountTransactionById(customerId, transactionId, productId));
 	}
 }

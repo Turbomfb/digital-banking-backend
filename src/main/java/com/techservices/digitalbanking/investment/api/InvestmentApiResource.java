@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.investment.api;
 
+import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsSavingsAccounts;
@@ -19,18 +20,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RequestMapping("api/v1/customers/{customerId}/investments")
+@RequestMapping("api/v1/customers/me/investments")
 @RestController
 @RequiredArgsConstructor
 public class InvestmentApiResource {
 	private final InvestmentService investmentService;
+	private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
 	@Operation(summary = "Retrieve Customer's Investments")
 	@GetMapping()
 	public ResponseEntity<BasePageResponse<GetClientsSavingsAccounts>> retrieveAllCustomerInvestments(
-			@PathVariable Long customerId,
 			@RequestParam(required = false) String investmentType
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		BasePageResponse<GetClientsSavingsAccounts> investment = investmentService.retrieveAllCustomerInvestments(customerId, investmentType);
 		return ResponseEntity.ok(investment);
 	}
@@ -41,9 +43,9 @@ public class InvestmentApiResource {
 			@PathVariable Long id,
 			@RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
 			@Valid @RequestParam(value = "chargeStatus", required = false, defaultValue = "all") String chargeStatus,
-			@PathVariable Long customerId,
 			@RequestParam(required = false) String investmentType
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		BaseAppResponse investment = investmentService.retrieveInvestmentById(id,
 				staffInSelectedOfficeOnly, chargeStatus, investmentType, customerId);
 		return ResponseEntity.ok(investment);
@@ -55,9 +57,9 @@ public class InvestmentApiResource {
 			@PathVariable Long id,
 			@RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
 			@Valid @RequestParam(value = "chargeStatus", required = false, defaultValue = "all") String chargeStatus,
-			@PathVariable Long customerId,
 			@RequestParam(required = false) String investmentType
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		Object investment = investmentService.retrieveInvestmentTransactionsById(id,
 				staffInSelectedOfficeOnly, chargeStatus, investmentType, customerId);
 		return ResponseEntity.ok(investment);

@@ -6,9 +6,9 @@ import com.techservices.digitalbanking.core.configuration.resttemplate.ApiServic
 import com.techservices.digitalbanking.core.domain.dto.response.ExternalPaymentServiceAuthenticationResponse;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.savingsaccount.domain.request.SavingsAccountTransactionRequest;
-import com.techservices.digitalbanking.savingsaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
-import com.techservices.digitalbanking.savingsaccount.domain.response.ExternalPaymentTransactionOtpVerificationResponse;
+import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
+import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpVerificationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;

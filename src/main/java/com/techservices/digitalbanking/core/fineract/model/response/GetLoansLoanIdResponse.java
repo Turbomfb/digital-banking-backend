@@ -28,7 +28,7 @@ public class GetLoansLoanIdResponse {
 
 	private Double approvedPrincipal;
 
-	private Integer clientId;
+	private String clientId;
 
 	private String clientName;
 

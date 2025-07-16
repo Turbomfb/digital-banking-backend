@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.customer.api;
 
+import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
@@ -30,14 +31,15 @@ public class CustomerKycApiResource {
 
 	private final CustomerKycService customerKycService;
 	private final String GENERATE_OTP = "";
+	private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
 	@Operation(summary = "Update Customer KYC Information", description = "This endpoint allows you to update the KYC (Know Your Customer) information for a specific customer.")
-	@PostMapping("customers/{customerId}/kyc")
+	@PostMapping("customers/me/kyc")
 	public ResponseEntity<BaseAppResponse> updateCustomerKyc(
 			@Validated @RequestBody CustomerKycRequest customerKycRequest,
-			@PathVariable Long customerId,
 			@RequestParam(name = "command", required = false, defaultValue = GENERATE_OTP) String command
 	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		BaseAppResponse postClientsResponse = customerKycService.updateCustomerKyc(customerKycRequest, customerId, command);
 
 		return new ResponseEntity<>(postClientsResponse, HttpStatus.OK);

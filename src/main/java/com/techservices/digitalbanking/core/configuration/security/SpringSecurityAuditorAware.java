@@ -21,6 +21,7 @@
 package com.techservices.digitalbanking.core.configuration.security;
 
 import com.techservices.digitalbanking.core.domain.data.model.AppUser;
+import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.AuditorAware;
@@ -37,7 +38,7 @@ public class SpringSecurityAuditorAware implements AuditorAware<String> {
 	@Override
 	@NonNull
 	public Optional<String> getCurrentAuditor() {
-		return getAuthentication()
+		return getAppUser()
 				.filter(auth -> auth instanceof AppUser)
 				.map(auth -> ((AppUser) auth).getEmailAddress())
 				.or(() -> {
@@ -47,18 +48,19 @@ public class SpringSecurityAuditorAware implements AuditorAware<String> {
 	}
 
 	public AppUser getAuthenticatedUser() {
-		return getAuthentication()
+		return getAppUser()
 				.filter(Authentication::isAuthenticated)
-				.filter(auth -> auth instanceof AppUser)
+				.filter(auth -> auth.getPrincipal() instanceof AppUser)
+				.filter(auth -> auth.getPrincipal() != null && ((AppUser)auth.getPrincipal()).getUserId() != null)
 				.map(auth -> {
-					AppUser userInfo = (AppUser) auth;
+					AppUser userInfo = (AppUser) auth.getPrincipal();
 					log.debug("Retrieved userInfo: {}", userInfo);
 					return userInfo;
 				})
-				.orElse(null);
+				.orElseThrow(() -> new UnAuthenticatedUserException("user.is.not.authenticated","User is not authenticated"));
 	}
 
-	private Optional<Authentication> getAuthentication() {
+	private Optional<Authentication> getAppUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null) {
 			log.debug("No authentication found in SecurityContext");

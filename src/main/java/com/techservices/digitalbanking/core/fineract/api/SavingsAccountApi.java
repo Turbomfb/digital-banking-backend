@@ -61,7 +61,7 @@ public interface SavingsAccountApi {
 			@Valid @RequestParam(value = "command", required = false) String command);
 
 	@GetMapping(value = "/savingsaccounts/{savingsId}/transactions/{transactionId}")
-	SavingsAccountTransactionData retrieveOneTransaction(@PathVariable("savingsId") Long savingsId,
+	SavingsAccountTransactionData retrieveOneTransaction(@PathVariable("savingsId") String savingsId,
 			@PathVariable("transactionId") Long transactionId);
 
 	@PostMapping(value = "/savingsaccounts")

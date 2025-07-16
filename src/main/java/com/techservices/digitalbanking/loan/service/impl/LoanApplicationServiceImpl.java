@@ -33,6 +33,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,12 +54,21 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	@Override
 	public GetLoansLoanIdResponse retrieveLoanById(Long loanId, Boolean staffInSelectedOfficeOnly, String associations,
 												   String exclude, String fields, Long customerId) {
-		return loanService.retrieveLoanById(loanId, staffInSelectedOfficeOnly, associations, exclude, fields);
+		Customer customer = customerService.getCustomerById(customerId);
+		GetLoansLoanIdResponse loanIdResponse = loanService.retrieveLoanById(loanId, staffInSelectedOfficeOnly, associations, exclude, fields);
+		if (loanIdResponse != null && Objects.equals(loanIdResponse.getClientId(), customer.getExternalId())) {
+			return loanIdResponse;
+		}
+		else {
+			throw new ValidationException("validation.msg.loan.not.found",
+					"Loan with ID " + loanId + " not found for customer with ID " + customerId);
+		}
 	}
 
 	@Override
 	public GetLoansResponse retrieveAllLoans(String sqlSearch, String externalId, Integer offset, Integer limit,
-											 String orderBy, String sortOrder, String accountNo, String clientId, String status) {
+											 String orderBy, String sortOrder, String accountNo, Long customerId, String status) {
+		String clientId = customerService.getCustomerById(customerId).getExternalId();
 		return loanService.retrieveAllLoans(sqlSearch, externalId, offset, limit, orderBy, sortOrder, accountNo, clientId, status);
 	}
 
@@ -71,6 +81,7 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	@Override
 	public GenericApiResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest loanRepaymentRequest,
 										String command, Long customerId) {
+		this.retrieveLoanById(loanId, null, null, null, null, customerId);
 		if (StringUtils.isBlank(loanRepaymentRequest.getTransactionPin())){
 			throw new ValidationException("validation.msg.loan.repayment.transaction.pin.required",
 					"Transaction PIN is required for loan repayment");
@@ -95,13 +106,15 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	}
 
 	@Override
-	public FineractPageResponse<LoanTransactionResponse> retrieveLoanTransactions(Long loanId) {
+	public FineractPageResponse<LoanTransactionResponse> retrieveLoanTransactions(Long loanId, Long customerId) {
+		this.retrieveLoanById(loanId, null, null, null, null, customerId);
 		return loanService.retrieveLoanTransactions(loanId);
 	}
 
 
 	@Override
-	public LoanTransactionResponse retrieveLoanTransactionDetails(Long loanId, Long transactionId) {
+	public LoanTransactionResponse retrieveLoanTransactionDetails(Long loanId, Long transactionId, Long customerId) {
+		this.retrieveLoanById(loanId, null, null, null, null, customerId);
 		return loanService.retrieveLoanTransactionDetails(loanId, transactionId);
 	}
 

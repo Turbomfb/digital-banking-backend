@@ -1,5 +1,5 @@
 /* Developed by MKAN Engineering (C)2024 */
-package com.techservices.digitalbanking.savingsaccount.service.impl;
+package com.techservices.digitalbanking.walletaccount.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
@@ -9,13 +9,11 @@ import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ExternalPaymentService;
-import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
-import com.techservices.digitalbanking.savingsaccount.domain.request.SavingsAccountTransactionRequest;
-import com.techservices.digitalbanking.savingsaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
-import com.techservices.digitalbanking.savingsaccount.domain.response.ExternalPaymentTransactionOtpVerificationResponse;
+import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
+import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpVerificationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -23,12 +21,10 @@ import org.springframework.stereotype.Service;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformDomainRuleException;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountTransactionsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.fineract.service.AccountTransactionService;
-import com.techservices.digitalbanking.savingsaccount.domain.request.CreateSavingsAccountTransactionRequest;
-import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountService;
-import com.techservices.digitalbanking.savingsaccount.service.SavingsAccountTransactionService;
+import com.techservices.digitalbanking.walletaccount.service.SavingsAccountService;
+import com.techservices.digitalbanking.walletaccount.service.SavingsAccountTransactionService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +35,6 @@ import java.util.Comparator;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
-import static com.techservices.digitalbanking.core.util.TransactionUtil.*;
-import static com.techservices.digitalbanking.core.util.TransactionUtil.UNDO;
 
 @Slf4j
 @Service
@@ -64,8 +58,9 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 	}
 
 	@Override
-	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long savingsAccountId,
+	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long customerId,
 			Long transactionId, Long productId) {
+		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
 		return accountTransactionService.retrieveSavingsAccountTransactionById(savingsAccountId, transactionId);
 	}
 
