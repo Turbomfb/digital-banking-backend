@@ -26,7 +26,7 @@ public class PostLoanApplicationRequest {
 	private Long numberOfRepayments;
 	private Long repaymentEvery;
 	private Long repaymentFrequencyType;
-	private Long interestRatePerPeriod;
+	private Double interestRatePerPeriod;
 	private Long amortizationType;
 	private Long interestType;
 	private Long interestCalculationPeriodType;
@@ -39,13 +39,13 @@ public class PostLoanApplicationRequest {
 	private Long daysInYearType;
 	private String externalId;
 	private String repaymentsStartingFromDate;
-	private boolean createStandingInstructionAtDisbursement;
-	private boolean enableInstallmentLevelDelinquency;
-	private List<Object> charges = Collections.emptyList();
-	private List<Object> collateral = Collections.emptyList();
+	private Boolean createStandingInstructionAtDisbursement;
+	private Boolean enableInstallmentLevelDelinquency;
+	private List<Object> charges;
+	private List<Object> collateral;
 
 	@Valid
-	private List<@Valid PostLoanApplicationDisbursementData> disbursementData = Collections.emptyList();
+	private List<@Valid PostLoanApplicationDisbursementData> disbursementData;
 
 	private List<PostLoanApplicationDatatable> datatables;
 }
