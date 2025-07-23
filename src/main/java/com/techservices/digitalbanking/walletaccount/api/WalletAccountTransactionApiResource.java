@@ -6,25 +6,36 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountStatementService;
+import com.techservices.digitalbanking.walletaccount.domain.request.WalletPaymentOrderRequest;
+import com.techservices.digitalbanking.walletaccount.domain.response.WalletPaymentOrderResponse;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountStatementService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountTransactionService;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
@@ -35,9 +46,9 @@ import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class SavingsAccountTransactionApiResource {
-	private final SavingsAccountTransactionService savingsAccountTransactionService;
-	private final SavingsAccountStatementService statementService;
+public class WalletAccountTransactionApiResource {
+	private final WalletAccountTransactionService walletAccountTransactionService;
+	private final WalletAccountStatementService statementService;
 	private final CustomerService customerService;
 	private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
@@ -47,7 +58,14 @@ public class SavingsAccountTransactionApiResource {
 			@RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		return ResponseEntity.ok(savingsAccountTransactionService.processTransactionCommand(command, request, customerId));
+		return ResponseEntity.ok(walletAccountTransactionService.processTransactionCommand(command, request, customerId));
+	}
+
+	@PostMapping("/initiate-payment-order")
+	public ResponseEntity<WalletPaymentOrderResponse> initiatePaymentOrder(@RequestBody WalletPaymentOrderRequest request) throws Exception {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		WalletPaymentOrderResponse responseOrder = walletAccountTransactionService.initiatePaymentOrder(request, customerId);
+		return ResponseEntity.ok(responseOrder);
 	}
 
 	@GetMapping
@@ -60,7 +78,7 @@ public class SavingsAccountTransactionApiResource {
 			@RequestParam(value = "transactionType", required = false) @Valid String transactionType
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		return ResponseEntity.ok(savingsAccountTransactionService.retrieveSavingsAccountTransactions(
+		return ResponseEntity.ok(walletAccountTransactionService.retrieveSavingsAccountTransactions(
 				customerId, startDate, endDate, dateFormat, productId, limit, offset, transactionType));
 	}
 
@@ -98,7 +116,7 @@ public class SavingsAccountTransactionApiResource {
 			String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
 			statementRequest.setSavingsId(Long.valueOf(savingsAccountId));
 			statementRequest.setCustomerId(customerId);
-			System.err.println("Date Range: " + statementRequest.getStartDate() + " to " + statementRequest.getEndDate());
+            log.info("Date Range: {} to {}", statementRequest.getStartDate(), statementRequest.getEndDate());
 
 			switch (format.toUpperCase()) {
 				case "CSV":
@@ -131,7 +149,7 @@ public class SavingsAccountTransactionApiResource {
 			@PathVariable(required = false) Long transactionId,
 			@RequestParam(required = false) Long productId) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		return ResponseEntity.ok(savingsAccountTransactionService
+		return ResponseEntity.ok(walletAccountTransactionService
 				.retrieveSavingsAccountTransactionById(customerId, transactionId, productId));
 	}
 }

@@ -11,7 +11,7 @@ import com.techservices.digitalbanking.walletaccount.domain.response.SavingsInte
 
 import java.time.LocalDate;
 
-public interface SavingsAccountService {
+public interface WalletAccountService {
 
 	PostSavingsAccountsResponse createSavingsAccount(CreateSavingsAccountRequest fixedDepositApplicationRequest);
 

@@ -12,8 +12,10 @@ import com.techservices.digitalbanking.core.service.ExternalPaymentService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.walletaccount.domain.request.WalletPaymentOrderRequest;
 import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
 import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpVerificationResponse;
+import com.techservices.digitalbanking.walletaccount.domain.response.WalletPaymentOrderResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -23,8 +25,7 @@ import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResp
 import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.fineract.service.AccountTransactionService;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountService;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountTransactionService;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,10 +40,9 @@ import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_C
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SavingsAccountTransactionServiceImpl implements SavingsAccountTransactionService {
+public class WalletAccountTransactionServiceImpl implements WalletAccountTransactionService {
 	private final AccountTransactionService accountTransactionService;
-	private final SavingsAccountService savingsAccountService;
-	private final ExternalPaymentService externalPaymentService;
+    private final ExternalPaymentService externalPaymentService;
 	private final CustomerService customerService;
 	private final AccountService accountService;
 	private final RedisService redisService;
@@ -109,6 +109,12 @@ public class SavingsAccountTransactionServiceImpl implements SavingsAccountTrans
 			);
 		}
 		return null;
+	}
+
+	@Override
+	public WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId) throws Exception {
+		Customer customer = customerService.getCustomerById(customerId);
+		return externalPaymentService.initiateOrder(request, customer);
 	}
 
 	private Customer validateCustomerAccount(SavingsAccountTransactionRequest request, Long customerId) {

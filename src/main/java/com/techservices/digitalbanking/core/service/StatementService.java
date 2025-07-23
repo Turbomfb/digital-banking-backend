@@ -13,7 +13,7 @@ import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAc
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountTransactionService;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StatementService {
 
-        private final SavingsAccountTransactionService savingsAccountTransactionService;
+        private final WalletAccountTransactionService walletAccountTransactionService;
 
         private final AccountService accountService;
 
@@ -140,7 +140,7 @@ public class StatementService {
         private List<SavingsAccountTransactionData> getFilteredTransactions(StatementRequest request) {
             // Retrieve transactions
             FineractPageResponse<SavingsAccountTransactionData> transactionResult =
-                    savingsAccountTransactionService.retrieveSavingsAccountTransactions(
+                    walletAccountTransactionService.retrieveSavingsAccountTransactions(
                             request.getCustomerId(),
                             request.getStartDate().toString(),
                             request.getEndDate().toString(),
@@ -667,7 +667,7 @@ public class StatementService {
 
         private BigDecimal getOpeningBalance(Long savingsId, LocalDate startDate) {
             try {
-                return savingsAccountTransactionService.getBalanceAsOfDate(savingsId, startDate.minusDays(1));
+                return walletAccountTransactionService.getBalanceAsOfDate(savingsId, startDate.minusDays(1));
             } catch (Exception e) {
                 log.warn("Could not retrieve opening balance for account: {}", savingsId);
                 return BigDecimal.ZERO;

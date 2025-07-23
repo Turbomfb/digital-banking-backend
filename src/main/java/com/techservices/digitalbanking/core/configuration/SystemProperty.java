@@ -55,4 +55,16 @@ public class SystemProperty {
 
 	@Value("${application.cors.allowed-origins}")
 	private List<String> corsAllowedOrigins;
+
+	@Value("${application.client.payment.redirect.url}")
+	private String clientPaymentRedirectUrl;
+
+	@Value("${payinvert.public.key}")
+	private String payinvertPublicKey;
+
+	@Value("${payinvert.api.key}")
+	private String payinvertApiKey;
+
+	@Value("${payinvert.integration.url}")
+	private String payinvertIntegrationUrl;
 }

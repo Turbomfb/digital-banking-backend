@@ -8,8 +8,8 @@ import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccou
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.service.StatementService;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountStatementService;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountTransactionService;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountStatementService;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -28,10 +28,10 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class SavingsAccountStatementServiceImpl implements SavingsAccountStatementService {
+public class WalletAccountStatementServiceImpl implements WalletAccountStatementService {
     private final AccountService accountService;
     private final StatementService statementService;
-    private final SavingsAccountTransactionService savingsAccountTransactionService;
+    private final WalletAccountTransactionService walletAccountTransactionService;
 
     @Override
     public void generateCsvStatement(StatementRequest request, HttpServletResponse response) throws IOException {
@@ -40,7 +40,7 @@ public class SavingsAccountStatementServiceImpl implements SavingsAccountStateme
 
         // Retrieve transactions
         FineractPageResponse<SavingsAccountTransactionData> transactionResult =
-                savingsAccountTransactionService.retrieveSavingsAccountTransactions(
+                walletAccountTransactionService.retrieveSavingsAccountTransactions(
                         request.getCustomerId(),
                         request.getStartDate().toString(),
                         request.getEndDate().toString(),
@@ -182,7 +182,7 @@ public class SavingsAccountStatementServiceImpl implements SavingsAccountStateme
     private BigDecimal getOpeningBalance(Long savingsId, LocalDate startDate) {
         // Calculate opening balance as of start date
         // This would typically involve querying transactions before the start date
-        return savingsAccountTransactionService.getBalanceAsOfDate(savingsId, startDate.minusDays(1));
+        return walletAccountTransactionService.getBalanceAsOfDate(savingsId, startDate.minusDays(1));
     }
 
     private BigDecimal calculateTotalDebits(List<SavingsAccountTransactionData> transactions) {
