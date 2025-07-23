@@ -1,13 +1,12 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.configuration;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import lombok.Data;
-
 @Configuration
-@Data
+@Getter
 public class SystemProperty {
 
 	@Value("${spring.profiles.active}")
@@ -48,4 +47,7 @@ public class SystemProperty {
 
 	@Value("${sms.notification.service.sender-id}")
 	private String smsNotificationServiceSenderId;
+
+	@Value("${application.client.url}")
+	private String clientUrl;
 }
