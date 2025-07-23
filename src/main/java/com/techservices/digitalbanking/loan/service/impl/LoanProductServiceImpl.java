@@ -1,8 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.loan.service.impl;
 
-import java.util.List;
-
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.model.request.PostLoanProductsRequest;
@@ -21,8 +20,8 @@ public class LoanProductServiceImpl implements LoanProductService {
 	private final LoanService loanProductService;
 
 	@Override
-	public List<GetLoanProductsProductIdResponse> getLoanProducts(Long fields) {
-		return loanProductService.getLoanProducts(fields);
+	public BasePageResponse<GetLoanProductsProductIdResponse> getLoanProducts(Long fields) {
+		return BasePageResponse.instance(loanProductService.getLoanProducts(fields));
 	}
 
 	@Override

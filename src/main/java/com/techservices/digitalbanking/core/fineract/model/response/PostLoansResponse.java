@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.fineract.model.response;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -49,7 +50,7 @@ public class PostLoansResponse {
 
 	private Long totalRepayment;
 
-	private Double totalRepaymentExpected;
+	private BigDecimal totalRepaymentExpected;
 
 	private Long totalWaived;
 

@@ -19,6 +19,7 @@ public class AppUtil {
 
 	public static final String[] PUBLIC_POST_ENDPOINTS = {
 			"/api/v1/customers",
+			"/api/v1/loan-products/loan-schedule-calculation",
 			"/api/v1/customers/{customerId}/transaction-pin",
 			"/api/v1/auth",
 			"/api/v1/auth/create-password",
@@ -26,7 +27,8 @@ public class AppUtil {
 	};
 
 	public static final String[] PUBLIC_GET_ENDPOINTS = {
-			"/api/v1/customers/identity-verification"
+			"/api/v1/customers/identity-verification",
+			"api/v1/loan-products"
 	};
 
 	public static String concatenate(String... strings) {

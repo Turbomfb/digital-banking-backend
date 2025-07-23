@@ -4,6 +4,8 @@ package com.techservices.digitalbanking.core.fineract.service;
 import java.util.Collections;
 import java.util.List;
 
+import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
+import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.api.LoansApiClient;
@@ -195,5 +197,31 @@ public class LoanService {
 
 	public LoanTransactionResponse retrieveLoanTransactionDetails(Long loanId, Long transactionId) {
 		return loansApiClient.getLoanTransactionDetails(loanId, transactionId);
+	}
+
+	public LoanScheduleCalculationResponse calculateLoanSchedule(@Valid LoanScheduleCalculationRequest loanScheduleCalculationRequest) {
+		GetLoanProductsProductIdResponse product = loansApiClient.getLoanProductById(loanScheduleCalculationRequest.getProductId(), null, null);
+		Double interestRate = product.getInterestRatePerPeriod();
+		PostLoanApplicationRequest postLoanApplicationRequest = new PostLoanApplicationRequest();
+		postLoanApplicationRequest.setDateFormat(DEFAULT_DATE_FORMAT);
+		postLoanApplicationRequest.setLocale(DEFAULT_LOCALE);
+		postLoanApplicationRequest.setProductId(loanScheduleCalculationRequest.getProductId());
+		postLoanApplicationRequest.setLoanTermFrequency(loanScheduleCalculationRequest.getLoanTermFrequency());
+		postLoanApplicationRequest.setLoanTermFrequencyType(2L);
+		postLoanApplicationRequest.setNumberOfRepayments(loanScheduleCalculationRequest.getLoanTermFrequency());
+		postLoanApplicationRequest.setRepaymentEvery(1L);
+		postLoanApplicationRequest.setRepaymentFrequencyType(2L);
+		postLoanApplicationRequest.setPrincipal(loanScheduleCalculationRequest.getPrincipal());
+		postLoanApplicationRequest.setClientId(1L);
+		postLoanApplicationRequest.setAmortizationType(1L);
+		postLoanApplicationRequest.setInterestCalculationPeriodType(1L);
+		postLoanApplicationRequest.setInterestRatePerPeriod(interestRate);
+		postLoanApplicationRequest.setInterestType(0L);
+		postLoanApplicationRequest.setExpectedDisbursementDate(getCurrentDate());
+		postLoanApplicationRequest.setSubmittedOnDate(getCurrentDate());
+		postLoanApplicationRequest.setLoanType("individual");
+		postLoanApplicationRequest.setTransactionProcessingStrategyCode("mifos-standard-strategy");
+		PostLoansResponse loanSchedule = loansApiClient.calculateLoanScheduleOrSubmitLoanApplication(postLoanApplicationRequest, "calculateLoanSchedule");
+		return LoanScheduleCalculationResponse.parse(loanSchedule, product, loanScheduleCalculationRequest);
 	}
 }
