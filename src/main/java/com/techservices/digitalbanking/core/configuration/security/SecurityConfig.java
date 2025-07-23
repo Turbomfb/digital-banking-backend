@@ -20,6 +20,8 @@
  */ 
 package com.techservices.digitalbanking.core.configuration.security;
 
+import com.techservices.digitalbanking.core.configuration.SystemProperty;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,19 +41,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 import static com.techservices.digitalbanking.core.configuration.security.JwtUtil.MAX_AGE_SECONDS;
-import static com.techservices.digitalbanking.core.util.AppUtil.PUBLIC_ENDPOINTS;
-import static com.techservices.digitalbanking.core.util.AppUtil.PUBLIC_POST_ENDPOINTS;
+import static com.techservices.digitalbanking.core.util.AppUtil.*;
 
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+  private final SystemProperty systemProperty;
 
   @Value("${jwt.secret}")
   private String secretKey;
-
-  @Value("${application.client.url}")
-  private String clientUrl;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
@@ -62,6 +63,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                     .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+                    .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .anyRequest().authenticated()
             )
@@ -76,7 +78,7 @@ public class SecurityConfig {
     // Configure allowed origins
     configuration.setAllowedOriginPatterns(List.of(
             "http://localhost:*",
-            clientUrl
+            systemProperty.getClientUrl()
     ));
 
     // Configure allowed methods

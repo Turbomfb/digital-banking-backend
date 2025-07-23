@@ -25,6 +25,10 @@ public class AppUtil {
 			"/api/v1/auth/forgot-password"
 	};
 
+	public static final String[] PUBLIC_GET_ENDPOINTS = {
+			"/api/v1/customers/identity-verification"
+	};
+
 	public static String concatenate(String... strings) {
 		StringJoiner joiner = new StringJoiner("");
 		for (String str : strings) {

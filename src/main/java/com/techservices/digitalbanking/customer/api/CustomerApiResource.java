@@ -5,6 +5,10 @@ import com.techservices.digitalbanking.core.configuration.security.SpringSecurit
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
+import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationType;
+import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
@@ -40,6 +44,7 @@ public class CustomerApiResource {
 	private final CustomerService customerService;
 	private final LoanApplicationService loanApplicationService;
 	private final SpringSecurityAuditorAware springSecurityAuditorAware;
+	private final IdentityVerificationService identityVerificationService;
 
 	@Operation(summary = "Create a New Customer")
 	@PostMapping
@@ -50,6 +55,24 @@ public class CustomerApiResource {
 		BaseAppResponse postClientsResponse = customerService.createCustomer(createCustomerRequest, command);
 
 		return new ResponseEntity<>(postClientsResponse, HttpStatusCode.valueOf(201));
+	}
+
+	@Operation(summary = "Retrieve Identity Data")
+	@GetMapping("identity-verification")
+	public ResponseEntity<IdentityVerificationResponse> retrieveIdentityData(
+			@RequestParam(name = "identityType") IdentityVerificationType identityType,
+			@RequestParam(name = "identityValue") String identityValue
+	) {
+		IdentityVerificationResponse identityResponse;
+		if (identityType == IdentityVerificationType.NIN) {
+			identityResponse = identityVerificationService.retrieveNinData(identityValue);
+		} else if (identityType == IdentityVerificationType.BVN) {
+			identityResponse = identityVerificationService.retrieveBvnData(identityValue);
+		} else {
+			log.error("Unsupported identity type: {}", identityType);
+			throw new ValidationException("validation.error.exists", "Unsupported identity type: " + identityType);
+		}
+		return new ResponseEntity<>(identityResponse, HttpStatusCode.valueOf(200));
 	}
 
 	@Operation(summary = "Update Customer")
