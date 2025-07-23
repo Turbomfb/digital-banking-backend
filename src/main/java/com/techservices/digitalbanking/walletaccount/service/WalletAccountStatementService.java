@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-public interface SavingsAccountStatementService {
+public interface WalletAccountStatementService {
 
 	void generateCsvStatement(StatementRequest statementRequest, HttpServletResponse response) throws IOException;
 

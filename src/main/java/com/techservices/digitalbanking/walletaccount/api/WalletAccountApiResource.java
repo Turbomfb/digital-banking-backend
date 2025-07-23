@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
 import com.techservices.digitalbanking.walletaccount.domain.request.CreateSavingsAccountRequest;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountService;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +25,8 @@ import java.time.LocalDate;
 @RequestMapping("api/v1/wallet-accounts")
 @RestController
 @RequiredArgsConstructor
-public class SavingsAccountApiResource {
-	private final SavingsAccountService savingsAccountService;
+public class WalletAccountApiResource {
+	private final WalletAccountService walletAccountService;
 	private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
 	@Operation(summary = "Create a new savings account")
@@ -35,7 +35,7 @@ public class SavingsAccountApiResource {
 			@RequestBody CreateSavingsAccountRequest createAccountRequest) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		createAccountRequest.setClientId(customerId);
-		PostSavingsAccountsResponse postSavingsAccountsResponse = savingsAccountService
+		PostSavingsAccountsResponse postSavingsAccountsResponse = walletAccountService
 				.createSavingsAccount(createAccountRequest);
 
 		return ResponseEntity.ok(postSavingsAccountsResponse);
@@ -45,7 +45,7 @@ public class SavingsAccountApiResource {
 	@GetMapping("/me")
 	public ResponseEntity<GetSavingsAccountsAccountIdResponse> retrieveSavingsAccountById() {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		return ResponseEntity.ok(savingsAccountService.retrieveSavingsAccountById(customerId));
+		return ResponseEntity.ok(walletAccountService.retrieveSavingsAccountById(customerId));
 	}
 
 	@Operation(summary = "Calculate Total Interest Breakdown for a Savings Account")
@@ -57,6 +57,6 @@ public class SavingsAccountApiResource {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		startDate = startDate == null ? LocalDate.now() : startDate;
 		endDate = endDate == null || endDate.equals(LocalDate.now()) ? LocalDate.now().plusDays(24) : endDate;
-		return ResponseEntity.ok(savingsAccountService.calculateInterestBreakdown(customerId, startDate, endDate));
+		return ResponseEntity.ok(walletAccountService.calculateInterestBreakdown(customerId, startDate, endDate));
 	}
 }

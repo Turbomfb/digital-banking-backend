@@ -5,6 +5,8 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
 @Configuration
 @Getter
 public class SystemProperty {
@@ -50,4 +52,19 @@ public class SystemProperty {
 
 	@Value("${application.client.url}")
 	private String clientUrl;
+
+	@Value("${application.cors.allowed-origins}")
+	private List<String> corsAllowedOrigins;
+
+	@Value("${application.client.payment.redirect.url}")
+	private String clientPaymentRedirectUrl;
+
+	@Value("${payinvert.public.key}")
+	private String payinvertPublicKey;
+
+	@Value("${payinvert.api.key}")
+	private String payinvertApiKey;
+
+	@Value("${payinvert.integration.url}")
+	private String payinvertIntegrationUrl;
 }

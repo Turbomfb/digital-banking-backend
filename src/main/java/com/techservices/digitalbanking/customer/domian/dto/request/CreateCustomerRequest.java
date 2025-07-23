@@ -12,10 +12,12 @@ import com.techservices.digitalbanking.core.fineract.model.request.PostClientsDa
 
 import jakarta.validation.Valid;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@ToString
 public class CreateCustomerRequest {
 	private String uniqueId;
 	private String otp;

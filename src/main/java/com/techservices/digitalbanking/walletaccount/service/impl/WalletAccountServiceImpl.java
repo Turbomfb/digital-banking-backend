@@ -13,7 +13,7 @@ import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsA
 import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.walletaccount.domain.request.CreateSavingsAccountRequest;
-import com.techservices.digitalbanking.walletaccount.service.SavingsAccountService;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +26,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SavingsAccountServiceImpl implements SavingsAccountService {
+public class WalletAccountServiceImpl implements WalletAccountService {
 	private final AccountService accountService;
 	private final CustomerService customerService;
 
