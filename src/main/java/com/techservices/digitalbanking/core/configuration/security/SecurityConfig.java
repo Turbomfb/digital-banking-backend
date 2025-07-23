@@ -39,6 +39,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.techservices.digitalbanking.core.configuration.security.JwtUtil.MAX_AGE_SECONDS;
 import static com.techservices.digitalbanking.core.util.AppUtil.*;
@@ -76,10 +78,12 @@ public class SecurityConfig {
     CorsConfiguration configuration = new CorsConfiguration();
 
     // Configure allowed origins
-    configuration.setAllowedOriginPatterns(List.of(
-            "http://localhost:*",
-            systemProperty.getClientUrl()
-    ));
+    configuration.setAllowedOriginPatterns(
+            Stream.concat(
+                    Stream.of("http://localhost:*", systemProperty.getClientUrl()),
+                    systemProperty.getCorsAllowedOrigins().stream()
+            ).collect(Collectors.toList())
+    );
 
     // Configure allowed methods
     configuration.setAllowedMethods(List.of(
