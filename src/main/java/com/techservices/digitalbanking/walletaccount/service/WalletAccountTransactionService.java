@@ -6,6 +6,7 @@ import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResp
 import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
 
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.walletaccount.domain.request.WalletInboundWebhookRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.WalletPaymentOrderRequest;
 import com.techservices.digitalbanking.walletaccount.domain.response.WalletPaymentOrderResponse;
 import jakarta.validation.Valid;
@@ -26,4 +27,6 @@ public interface WalletAccountTransactionService {
 	GenericApiResponse processTransactionCommand(@Valid String command, SavingsAccountTransactionRequest request, Long customerId);
 
 	WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId) throws Exception;
+
+    GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request);
 }

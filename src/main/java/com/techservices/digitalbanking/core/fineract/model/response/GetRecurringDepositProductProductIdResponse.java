@@ -20,14 +20,16 @@ public class GetRecurringDepositProductProductIdResponse {
 	private String shortName;
 	private String description;
 	private Currency currency;
-	private Integer recurringDepositFrequency;
+	private Long recurringDepositFrequency;
 	private EnumOptionData recurringDepositFrequencyType;
 	private Boolean preClosurePenalApplicable;
 	private Double preClosurePenalInterest;
 	private EnumOptionData preClosurePenalInterestOnType;
 	private Integer minDepositTerm;
 	private EnumOptionData minDepositTermType;
-	private Integer maxDepositTerm;
+	private Long inMultiplesOfDepositTerm;
+	private EnumOptionData inMultiplesOfDepositTermType;
+	private Long maxDepositTerm;
 	private EnumOptionData maxDepositTermType;
 	private EnumOptionData interestCompoundingPeriodType;
 	private EnumOptionData interestPostingPeriodType;

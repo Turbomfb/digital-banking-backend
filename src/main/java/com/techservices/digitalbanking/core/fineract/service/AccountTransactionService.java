@@ -111,8 +111,6 @@ public class AccountTransactionService {
 			transactionMetadata.setCreditAccountNumber("");
 			transactionMetadata.setDebitAccountName("");
 			transactionMetadata.setDebitBvn("");
-			PostClientsDatatable postClientsDatatable = getTransactionMetadata(transactionAmount, transactionMetadata);
-			postSavingsAccountTransactionsRequest.setDatatables(Collections.singletonList(postClientsDatatable));
 		} else if (transactionMetadata != null) {
 			transactionMetadata.setTransactionReference(transactionMetadata.getTransactionReference() == null
 					? transactionReference

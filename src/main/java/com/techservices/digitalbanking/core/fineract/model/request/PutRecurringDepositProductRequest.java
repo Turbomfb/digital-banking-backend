@@ -20,12 +20,14 @@ public class PutRecurringDepositProductRequest {
 	private Integer accountingRule;
 
 	@Valid
-	private Set<@Valid PostRecurringDepositProductsCharts> charts = new LinkedHashSet<>();
+	private Set<@Valid PostRecurringDepositProductsCharts> charts;
 
 	private String currencyCode;
 
+	private String allocationName;
 	private String description;
 
+	private BigDecimal mandatoryRecommendedDepositAmount;
 	private Integer digitsAfterDecimal;
 
 	private Integer inMultiplesOf;

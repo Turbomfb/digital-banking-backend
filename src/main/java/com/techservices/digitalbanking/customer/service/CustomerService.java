@@ -25,6 +25,8 @@ public interface CustomerService {
 	Customer getCustomerById(Long customerId);
 	Optional<Customer> getCustomerByEmailAddress(String emailAddress);
 	Optional<Customer> getCustomerByPhoneNumber(String phoneNumber);
+	Optional<Customer> getCustomerByEmailAddressAndUserType(String emailAddress, UserType customerType);
+	Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber, UserType customerType);
 
 	BasePageResponse<CustomerDtoResponse> getAllCustomers(Pageable pageable);
 

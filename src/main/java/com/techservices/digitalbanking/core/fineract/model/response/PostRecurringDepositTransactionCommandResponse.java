@@ -1,12 +1,13 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.fineract.model.response;
 
+import com.techservices.digitalbanking.investment.domain.response.InvestmentUpdateResponse;
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class PostRecurringDepositTransactionCommandResponse {
+public class PostRecurringDepositTransactionCommandResponse extends InvestmentUpdateResponse {
 	private Long officeId;
 	private Long clientId;
 	private Long savingsId;

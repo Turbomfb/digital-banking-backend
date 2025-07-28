@@ -6,6 +6,7 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
+import com.techservices.digitalbanking.walletaccount.domain.request.WalletInboundWebhookRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.WalletPaymentOrderRequest;
 import com.techservices.digitalbanking.walletaccount.domain.response.WalletPaymentOrderResponse;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountStatementService;
@@ -66,6 +67,13 @@ public class WalletAccountTransactionApiResource {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		WalletPaymentOrderResponse responseOrder = walletAccountTransactionService.initiatePaymentOrder(request, customerId);
 		return ResponseEntity.ok(responseOrder);
+	}
+
+
+	@PostMapping("/webhooks")
+	public ResponseEntity<GenericApiResponse> receiveInboundWebhook(@RequestBody WalletInboundWebhookRequest request) throws Exception {
+		GenericApiResponse webhookResponse = walletAccountTransactionService.receiveInboundWebhook(request);
+		return ResponseEntity.ok(webhookResponse);
 	}
 
 	@GetMapping

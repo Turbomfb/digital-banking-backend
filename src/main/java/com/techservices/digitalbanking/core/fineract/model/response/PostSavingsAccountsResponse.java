@@ -4,12 +4,13 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
 import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PostSavingsAccountsResponse {
+public class PostSavingsAccountsResponse extends InvestmentApplicationResponse {
 
 	private Long clientId;
 

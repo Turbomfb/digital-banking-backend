@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.fineract.service;
 
 import java.util.List;
 
+import com.techservices.digitalbanking.core.fineract.model.request.PutRecurringDepositProductRequest;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.api.RecurringDepositAccountsApiClient;
@@ -33,7 +34,13 @@ public class RecurringDepositAccountService {
 
 	public PostRecurringDepositAccountsResponse submitApplication(
 			PostRecurringDepositAccountsRequest postRecurringDepositAccountsRequest, boolean activate) {
-		return recurringDepositAccountApiClient.create(postRecurringDepositAccountsRequest);
+		PostRecurringDepositAccountsResponse response = recurringDepositAccountApiClient.create(postRecurringDepositAccountsRequest);
+		if (activate) {
+			RecurringDepositCommandRequest request = new RecurringDepositCommandRequest();
+			this.processInvestmentCommand(response.getResourceId(), request, APPROVE);
+			this.processInvestmentCommand(response.getResourceId(), request, ACTIVATE);
+		}
+		return response;
 	}
 
 	public List<GetRecurringDepositAccountsResponse> retrieveAllInvestments(Boolean paged, Integer offset,
@@ -90,5 +97,9 @@ public class RecurringDepositAccountService {
 			PostRecurringDepositAccountsAccountIdRequest postRecurringDepositAccountsAccountIdRequest) {
 		postRecurringDepositAccountsAccountIdRequest.setLocale(DEFAULT_LOCALE);
 		postRecurringDepositAccountsAccountIdRequest.setDateFormat(DEFAULT_DATE_FORMAT);
+	}
+
+	public GetRecurringDepositAccountsResponse updateAnInvestment(String investmentId, PutRecurringDepositProductRequest putRecurringDepositProductRequest) {
+		return recurringDepositAccountApiClient.update(Long.valueOf(investmentId), putRecurringDepositProductRequest);
 	}
 }

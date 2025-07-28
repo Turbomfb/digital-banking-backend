@@ -18,11 +18,12 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetRecurringDepositAccountsResponse extends BaseAppResponse {
-	private Long accountNo;
+	private String accountNo;
 
 	private Integer clientId;
 
 	private String clientName;
+	private String allocationName;
 
 	private GetSavingsCurrency currency;
 
