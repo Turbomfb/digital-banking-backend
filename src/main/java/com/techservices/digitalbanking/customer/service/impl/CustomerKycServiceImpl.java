@@ -174,7 +174,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         if (client == null) {
             createCustomerResponse = clientService.createCustomer(createCustomerRequest);
         } else {
-			this.upgradeClientTier(customerKycTier, client.getId());
+			this.upgradeClientTier(customerKycTier, client.getId(), foundCustomer);
 		}
 
         Long clientId = client != null && client.getId() != null ? client.getId() : createCustomerResponse != null ? createCustomerResponse.getClientId() : null;
@@ -212,10 +212,10 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 		return client;
 	}
 
-	private void upgradeClientTier(CustomerKycTier customerKycTier, Long clientId) {
+	private void upgradeClientTier(CustomerKycTier customerKycTier, Long clientId, Customer foundCustomer) {
 		CustomerUpdateRequest updateRequest = new CustomerUpdateRequest();
 		updateRequest.setKycTier(customerKycTier.getCode());
-		clientService.updateCustomer(updateRequest, clientId);
+		clientService.updateCustomer(updateRequest, clientId, foundCustomer.getUserType());
 	}
 
 	private CustomerKycTier getCustomerKycTier(Customer foundCustomer) {

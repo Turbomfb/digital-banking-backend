@@ -12,7 +12,6 @@ import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
-import com.techservices.digitalbanking.authentication.service.SystemService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
@@ -261,7 +260,7 @@ public class CustomerServiceImpl implements CustomerService {
 	private void updateCustomerDetails(CustomerUpdateRequest customerUpdateRequest, Customer customer) {
 		if (customerUpdateRequest != null) {
 			if (customer.getExternalId() != null) {
-				clientService.updateCustomer(customerUpdateRequest, Long.valueOf(customer.getExternalId()));
+				clientService.updateCustomer(customerUpdateRequest, Long.valueOf(customer.getExternalId()), customer.getUserType());
 			}
 			updateCustomerFields(customerUpdateRequest, customer);
 		}

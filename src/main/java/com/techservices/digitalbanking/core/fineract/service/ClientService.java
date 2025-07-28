@@ -150,12 +150,12 @@ public class ClientService {
 		return postClientsDatatable;
 	}
 
-	public PutClientsClientIdResponse updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long clientId) {
-		PutClientsClientIdRequest putClientsClientIdRequest = this.retrieveUpdateRequest(customerUpdateRequest);
+	public PutClientsClientIdResponse updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long clientId, UserType userType) {
+		PutClientsClientIdRequest putClientsClientIdRequest = this.retrieveUpdateRequest(customerUpdateRequest, userType);
 		return clientApiClient.updateClient(clientId, putClientsClientIdRequest);
 	}
 
-	private PutClientsClientIdRequest retrieveUpdateRequest(CustomerUpdateRequest customerUpdateRequest) {
+	private PutClientsClientIdRequest retrieveUpdateRequest(CustomerUpdateRequest customerUpdateRequest, UserType userType) {
 		PutClientsClientIdRequest putClientsClientIdRequest = new PutClientsClientIdRequest();
 		putClientsClientIdRequest.setActivationDate(getCurrentDate());
 		putClientsClientIdRequest.setDateFormat(DateUtil.getDefaultDateFormat());
@@ -176,6 +176,9 @@ public class ClientService {
 		putClientsClientIdRequest.setProofOfAddress(customerUpdateRequest.getProofOfAddress());
 
 		putClientsClientIdRequest.setDateFormat(DateUtil.getDefaultDateFormat());
+		if (userType == UserType.CORPORATE) {
+			putClientsClientIdRequest.setClientNonPersonDetails(new PostClientNonPersonDetails());
+		}
 		return putClientsClientIdRequest;
 	}
 
