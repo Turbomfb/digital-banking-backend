@@ -31,6 +31,7 @@ public class PostClientsRequest {
 	private String firstname;
 	private Integer groupId;
 	private String lastname;
+	private String fullname;
 	private Long legalFormId;
 	private String locale;
 	private String mobileNo;

@@ -28,7 +28,8 @@ public class AppUtil {
 
 	public static final String[] PUBLIC_GET_ENDPOINTS = {
 			"/api/v1/customers/identity-verification",
-			"api/v1/loan-products"
+			"api/v1/loan-products",
+			"api/v1/system/codes/**"
 	};
 
 	public static String concatenate(String... strings) {

@@ -51,6 +51,15 @@ public class Customer extends BaseEntity {
     @Column(name = "bvn")
     private String bvn;
 
+    @Column(name = "rc_number")
+    private String rcNumber;
+
+    @Column(name = "industry_id")
+    private String industryId;
+
+    @Column(name = "business_name")
+    private String businessName;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "user_type")
     private UserType userType;

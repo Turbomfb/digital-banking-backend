@@ -117,8 +117,7 @@ public class IdentityVerificationService {
             throw new ValidationException("verification.failed", "Verification failed for identifier.");
         }
 
-        IdentityVerificationResponse.IdentityVerificationResponseData responseData = response.getData();
-        List<String> mismatchedFields = findMismatchedFields(customerData, responseData);
+        List<String> mismatchedFields = findMismatchedFields(customerData, response);
 
         CustomerIdentityVerificationResponse customerIdentityVerificationResponse = new CustomerIdentityVerificationResponse();
         customerIdentityVerificationResponse.setMismatchedFields(mismatchedFields);
@@ -127,16 +126,18 @@ public class IdentityVerificationService {
         return customerIdentityVerificationResponse;
     }
 
-    private List<String> findMismatchedFields(IdentityVerificationRequest customerData, IdentityVerificationResponse.IdentityVerificationResponseData responseData) {
+    private List<String> findMismatchedFields(IdentityVerificationRequest customerData, IdentityVerificationResponse verificationResponse) {
+        IdentityVerificationResponse.IdentityVerificationResponseData responseData = verificationResponse.getData();
         List<String> mismatchedFields = new ArrayList<>();
-        if (StringUtils.getLevenshteinDistance(
-                customerData.getFirstName().toLowerCase(),
-                responseData.getFirstName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
-            mismatchedFields.add("First Name");
-        }
-
-        if (StringUtils.getLevenshteinDistance(customerData.getLastName().toLowerCase(), responseData.getLastName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
-            mismatchedFields.add("Last Name");
+        if (StringUtils.equalsIgnoreCase("EXTERNAL", verificationResponse.getDataSource())) {
+            if (StringUtils.getLevenshteinDistance(
+                    customerData.getFirstName().toLowerCase(),
+                    responseData.getFirstName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
+                mismatchedFields.add("First Name");
+            }
+            if (StringUtils.getLevenshteinDistance(customerData.getLastName().toLowerCase(), responseData.getLastName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
+                mismatchedFields.add("Last Name");
+            }
         }
         if (!StringUtils.equalsIgnoreCase(customerData.getPhoneNumber(), responseData.getMobile())) {
             mismatchedFields.add("Phone Number");
