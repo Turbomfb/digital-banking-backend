@@ -26,6 +26,8 @@ public class GetClientsSavingsAccounts {
 
 	private String shortProductName;
 
+	private String allocationName;
+
 	private String accountNo;
 
 	private BigDecimal accountBalance;

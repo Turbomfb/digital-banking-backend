@@ -12,6 +12,7 @@ import com.techservices.digitalbanking.core.service.ExternalPaymentService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
+import com.techservices.digitalbanking.walletaccount.domain.request.WalletInboundWebhookRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.WalletPaymentOrderRequest;
 import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
 import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpVerificationResponse;
@@ -115,6 +116,11 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	public WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId) throws Exception {
 		Customer customer = customerService.getCustomerById(customerId);
 		return externalPaymentService.initiateOrder(request, customer);
+	}
+
+	@Override
+	public GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request) {
+		return null;
 	}
 
 	private Customer validateCustomerAccount(SavingsAccountTransactionRequest request, Long customerId) {

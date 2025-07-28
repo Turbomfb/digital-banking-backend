@@ -24,6 +24,7 @@ import com.techservices.digitalbanking.authentication.domain.request.Authenticat
 import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
 import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
 import com.techservices.digitalbanking.authentication.service.AuthenticationService;
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.configuration.security.JwtUtil;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
@@ -63,9 +64,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final RedisService redisService;
 
     @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest) {
+    public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType) {
         Map<String, Object> claims = new HashMap<>();
-        Customer foundCustomer = getCustomerByEmailOrPhoneNumber(postAuthenticationRequest.getEmailAddress(), postAuthenticationRequest.getPhoneNumber());
+        Customer foundCustomer = getCustomerByEmailOrPhoneNumber(postAuthenticationRequest.getEmailAddress(), postAuthenticationRequest.getPhoneNumber(), customerType);
 
         assert foundCustomer != null;
         log.info("Found customer with email address {}", foundCustomer.getEmailAddress());
@@ -100,13 +101,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return authenticationResponse;
     }
 
-    private Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber) {
+    private Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber, UserType customerType) {
         Customer foundCustomer;
         if (StringUtils.isNotBlank(emailAddress)){
-            foundCustomer = customerService.getCustomerByEmailAddress(emailAddress)
+            foundCustomer = customerService.getCustomerByEmailAddressAndUserType(emailAddress, customerType)
                     .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid email or password"));
         } else if (StringUtils.isNotBlank(phoneNumber)){
-            foundCustomer = customerService.getCustomerByPhoneNumber(phoneNumber)
+            foundCustomer = customerService.getCustomerByPhoneNumberAndUserType(phoneNumber, customerType)
                     .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid phoneNumber or password"));
         } else {
             throw new ValidationException("Invalid.credentials.provided", "Email or phone number must be provided");
@@ -130,9 +131,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command) {
+    public GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command, UserType customerType) {
         if (StringUtils.equals(GENERATE_OTP_COMMAND, command)){
-            Customer foundCustomer = getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber());
+            Customer foundCustomer = getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber(), customerType);
             NotificationRequestDto notificationRequestDto = new NotificationRequestDto(foundCustomer.getPhoneNumber(), foundCustomer.getEmailAddress());
             OtpDto otpDto = this.redisService.generateOtpRequest(foundCustomer, OtpType.FORGOT_PASSWORD, notificationRequestDto, null);
           return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(foundCustomer.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(foundCustomer.getEmailAddress()), "success", null);

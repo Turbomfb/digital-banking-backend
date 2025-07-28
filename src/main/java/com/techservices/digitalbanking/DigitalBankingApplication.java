@@ -1,6 +1,10 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
+import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -11,9 +15,26 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableCaching
 @EnableFeignClients(basePackages = "com.techservices.digitalbanking.core.fineract.api")
+@RequiredArgsConstructor
 public class DigitalBankingApplication {
+	private final CustomerRepository customerRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(DigitalBankingApplication.class, args);
+	}
+
+	@PostConstruct
+	public void init() {
+		customerRepository.findAll().forEach(
+				customer -> {
+					if (customer.getUserType() == UserType.CUSTOMER){
+						customer.setUserType(UserType.RETAIL);
+						customerRepository.save(customer);
+						System.err.println(
+								"Updated customer: " + customer.getId() + " to UserType: " + customer.getUserType()
+						);
+					}
+				}
+		);
 	}
 }

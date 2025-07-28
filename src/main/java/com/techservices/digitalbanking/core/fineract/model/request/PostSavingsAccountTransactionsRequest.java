@@ -56,5 +56,5 @@ public class PostSavingsAccountTransactionsRequest {
 	private Map<String, Object> additionalInformation;
 
 	@Valid
-	private List<@Valid PostClientsDatatable> datatables = Collections.emptyList();
+	private List<@Valid PostClientsDatatable> datatables;
 }

@@ -20,9 +20,10 @@ import lombok.Setter;
 public class GetFixedDepositAccountsAccountIdResponse extends BaseAppResponse {
 	private Long accountNo;
 
-	private Integer clientId;
+	private Long clientId;
 
 	private String clientName;
+	private String allocationName;
 
 	private GetSavingsCurrency currency;
 

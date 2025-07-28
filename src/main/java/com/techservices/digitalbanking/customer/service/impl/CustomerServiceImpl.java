@@ -106,10 +106,12 @@ public class CustomerServiceImpl implements CustomerService {
 		);
 	}
 
+	@Override
 	public Optional<Customer> getCustomerByEmailAddressAndUserType(String emailAddress, UserType customerType) {
 		return customerRepository.findByEmailAddressAndUserType(emailAddress, customerType);
 	}
 
+	@Override
 	public Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber, UserType customerType) {
 		return customerRepository.findByPhoneNumberAndUserType(phoneNumber, customerType);
 	}

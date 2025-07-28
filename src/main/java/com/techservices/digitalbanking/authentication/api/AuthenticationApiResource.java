@@ -23,6 +23,7 @@ import com.techservices.digitalbanking.authentication.domain.request.Authenticat
 import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
 import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
 import com.techservices.digitalbanking.authentication.service.AuthenticationService;
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -44,9 +45,10 @@ public class AuthenticationApiResource {
     @Operation(summary = "Authenticate User")
     @PostMapping()
     public ResponseEntity<AuthenticationResponse> authenticate(
-            @RequestBody AuthenticationRequest postAuthenticationRequest
+            @RequestBody AuthenticationRequest postAuthenticationRequest,
+            @RequestParam (value = "customerType", required = false, defaultValue = "RETAIL") UserType customerType
     ) {
-        return ResponseEntity.ok(authenticationService.authenticate(postAuthenticationRequest));
+        return ResponseEntity.ok(authenticationService.authenticate(postAuthenticationRequest, customerType));
     }
 
     @Operation(summary = "Create Password")
@@ -62,9 +64,10 @@ public class AuthenticationApiResource {
     @PostMapping("/forgot-password")
     public ResponseEntity<GenericApiResponse> forgotPassword(
             @RequestBody PasswordMgtRequest passwordMgtRequest,
-            @RequestParam (value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) String command
+            @RequestParam (value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) String command,
+            @RequestParam (value = "customerType", required = false, defaultValue = "RETAIL") UserType customerType
     ) {
-        return ResponseEntity.ok(authenticationService.forgotPassword(passwordMgtRequest, command));
+        return ResponseEntity.ok(authenticationService.forgotPassword(passwordMgtRequest, command, customerType));
     }
 
 }

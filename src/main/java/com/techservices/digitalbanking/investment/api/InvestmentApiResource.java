@@ -7,12 +7,14 @@ import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsSavingsAccounts;
 import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsResponse;
+import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
+import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
+import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
+import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
+import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
+import com.techservices.digitalbanking.investment.domain.response.InvestmentUpdateResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.techservices.digitalbanking.investment.service.InvestmentService;
 
@@ -26,6 +28,30 @@ import lombok.RequiredArgsConstructor;
 public class InvestmentApiResource {
 	private final InvestmentService investmentService;
 	private final SpringSecurityAuditorAware springSecurityAuditorAware;
+
+	@Operation(summary = "Create an investment")
+	@PostMapping
+	public ResponseEntity<InvestmentApplicationResponse> createAnInvestment(
+			@RequestBody InvestmentApplicationRequest request,
+			@RequestParam(required = false) InvestmentType investmentType
+	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		InvestmentApplicationResponse investment = investmentService.submitApplication(customerId, investmentType, request);
+		return ResponseEntity.ok(investment);
+	}
+
+
+	@Operation(summary = "Update an investment")
+	@PutMapping("/{investmentId}")
+	public ResponseEntity<BaseAppResponse> updateAnInvestment(
+			@RequestBody InvestmentUpdateRequest request,
+			@RequestParam(required = false) InvestmentType investmentType,
+			@PathVariable String investmentId
+	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		BaseAppResponse investment = investmentService.updateAnInvestment(customerId, investmentType, request, investmentId);
+		return ResponseEntity.ok(investment);
+	}
 
 	@Operation(summary = "Retrieve Customer's Investments")
 	@GetMapping()
