@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.customer.service;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 public interface CustomerService {
 
-	BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command);
+	BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType);
 
 	Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer existingCustomer);
 

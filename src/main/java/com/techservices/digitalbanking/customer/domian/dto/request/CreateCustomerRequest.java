@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.fineract.model.request.PostClientNonPersonDetails;
 import com.techservices.digitalbanking.core.fineract.model.request.PostClientsAddressRequest;
 import com.techservices.digitalbanking.core.fineract.model.request.PostClientsDatatable;
@@ -52,4 +53,9 @@ public class CreateCustomerRequest {
 	private String firstname;
 	private String lastname;
 	private String referralCode;
+
+	private String businessName;
+	private Long industryId;
+	private String rcNumber;
+	private UserType customerType = UserType.RETAIL;
 }

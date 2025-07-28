@@ -12,6 +12,7 @@ import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
+import com.techservices.digitalbanking.authentication.service.SystemService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
@@ -43,13 +44,34 @@ public class CustomerServiceImpl implements CustomerService {
 	private final RedisService redisService;
 
 	@Override
-	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command) {
+	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType) {
 		if ("generate-otp".equalsIgnoreCase(command)) {
+			createCustomerRequest.setCustomerType(customerType != null ? customerType : UserType.RETAIL);
+			if (customerType == UserType.RETAIL) {
+				if (StringUtils.isBlank(createCustomerRequest.getEmailAddress()) && StringUtils.isBlank(createCustomerRequest.getPhoneNumber())) {
+					throw new ValidationException("email.or.phone.required", "Either email address or phone number is required for retail customers.");
+				}
+				if (StringUtils.isNotBlank(createCustomerRequest.getBusinessName())) {
+					throw new ValidationException("business.name.not.allowed", "Business name is not allowed for retail customers.");
+				}
+				if (StringUtils.isNotBlank(createCustomerRequest.getRcNumber())) {
+					throw new ValidationException("rc.number.not.allowed", "RC number is not allowed for retail customers.");
+				}
+			} else if (customerType == UserType.CORPORATE) {
+				if (StringUtils.isBlank(createCustomerRequest.getBusinessName())) {
+					throw new ValidationException("business.name.required", "Business name is required for corporate customers.");
+				}
+				if (StringUtils.isBlank(createCustomerRequest.getRcNumber())) {
+					throw new ValidationException("rc.number.required", "RC number is required for corporate customers.");
+				}
+			} else {
+				throw new ValidationException("invalid.customer.type", "Invalid customer type provided.");
+			}
 			log.info("Generating otp");
 			if (StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()) && createCustomerRequest.getTransactionPin().length() < 4) {
 				throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
 			}
-			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber());
+			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber(), createCustomerRequest.getCustomerType());
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(createCustomerRequest.getPhoneNumber(), createCustomerRequest.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(createCustomerRequest, OtpType.ONBOARDING, notificationRequestDto, null);
 			return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(createCustomerRequest.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(createCustomerRequest.getEmailAddress()), "success", null);
@@ -83,6 +105,14 @@ public class CustomerServiceImpl implements CustomerService {
 		return customerRepository.findById(customerId).orElseThrow(() ->
 				new AbstractPlatformResourceNotFoundException("customer.not.found.with.id", "Customer not found with id: " + customerId, customerId)
 		);
+	}
+
+	public Optional<Customer> getCustomerByEmailAddressAndUserType(String emailAddress, UserType customerType) {
+		return customerRepository.findByEmailAddressAndUserType(emailAddress, customerType);
+	}
+
+	public Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber, UserType customerType) {
+		return customerRepository.findByPhoneNumberAndUserType(phoneNumber, customerType);
 	}
 
 	@Override
@@ -183,22 +213,22 @@ public class CustomerServiceImpl implements CustomerService {
 		return customer.getAccountId();
 	}
 
-	private void validateDuplicateCustomer(String emailAddress, String phoneNumber) {
+	private void validateDuplicateCustomer(String emailAddress, String phoneNumber, UserType customerType) {
 		log.info("Validating duplicate customer email address: {}", emailAddress);
-		validateDuplicateCustomerByEmailAddress(emailAddress);
+		validateDuplicateCustomerByEmailAddress(emailAddress, customerType);
 		log.info("Validating duplicate customer phone number: {}", phoneNumber);
-		validateDuplicateCustomerByPhoneNumber(phoneNumber);
+		validateDuplicateCustomerByPhoneNumber(phoneNumber, customerType);
 	}
 
-	private void validateDuplicateCustomerByEmailAddress(String emailAddress) {
-		getCustomerByEmailAddress(emailAddress).ifPresent(existingCustomer -> {
+	private void validateDuplicateCustomerByEmailAddress(String emailAddress, UserType customerType) {
+		getCustomerByEmailAddressAndUserType(emailAddress, customerType).ifPresent(existingCustomer -> {
 			throw new ValidationException("customer.exist", "Customer already exists. Please proceed to login");
 		});
 	}
 
-	private void validateDuplicateCustomerByPhoneNumber(String phoneNumber) {
+	private void validateDuplicateCustomerByPhoneNumber(String phoneNumber, UserType customerType) {
 		log.info("Validating duplicate customer phone number: {}", phoneNumber);
-		getCustomerByPhoneNumber(phoneNumber).ifPresent(existingCustomer -> {
+		getCustomerByPhoneNumberAndUserType(phoneNumber, customerType).ifPresent(existingCustomer -> {
 			throw new ValidationException("customer.exist", "Customer already exists. Please proceed to login");
 		});
 	}
@@ -218,7 +248,12 @@ public class CustomerServiceImpl implements CustomerService {
 		customer.setReferralCode(createCustomerRequest.getReferralCode());
 		customer.setTransactionPin(createCustomerRequest.getTransactionPin());
 		customer.setTransactionPinSet(StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()));
-		customer.setUserType(UserType.CUSTOMER);
+		customer.setUserType(createCustomerRequest.getCustomerType());
+		if (createCustomerRequest.getCustomerType() == UserType.CORPORATE){
+			customer.setIndustryId(String.valueOf(createCustomerRequest.getIndustryId()));
+			customer.setBusinessName(createCustomerRequest.getBusinessName());
+			customer.setRcNumber(createCustomerRequest.getRcNumber());
+		}
 		customer.setActive(!isInitialRegistration);
 		return customer;
 	}

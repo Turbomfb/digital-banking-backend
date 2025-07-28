@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.request.*;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,6 @@ public class ClientService {
 
 	private PostClientsRequest processCustomerCreation(CreateCustomerRequest createCustomerRequest) {
 		PostClientsRequest postClientsRequest = new PostClientsRequest();
-		postClientsRequest.setLegalFormId(1L);
 		postClientsRequest.setOfficeId(1L);
 		postClientsRequest.setActive(true);
 		postClientsRequest.setActivationDate(getCurrentDate());
@@ -54,8 +54,14 @@ public class ClientService {
 		postClientsRequest.setDatatables(createCustomerRequest.getDatatables());
 		postClientsRequest.setDateOfBirth(createCustomerRequest.getDateOfBirth());
 		postClientsRequest.setExternalId(createCustomerRequest.getExternalId());
-		postClientsRequest.setFirstname(createCustomerRequest.getFirstname());
-		postClientsRequest.setLastname(createCustomerRequest.getLastname());
+		if (createCustomerRequest.getCustomerType() == UserType.CORPORATE) {
+			postClientsRequest.setLegalFormId(2L);
+			postClientsRequest.setFullname(createCustomerRequest.getBusinessName());
+		} else {
+			postClientsRequest.setLegalFormId(1L);
+			postClientsRequest.setFirstname(createCustomerRequest.getFirstname());
+			postClientsRequest.setLastname(createCustomerRequest.getLastname());
+		}
 		postClientsRequest.setMobileNo(createCustomerRequest.getPhoneNumber());
 		postClientsRequest.setNin(createCustomerRequest.getNin());
 		postClientsRequest.setBvn(createCustomerRequest.getBvn());
@@ -195,16 +201,17 @@ public class ClientService {
 				.orElse(null);
 	}
 
-	public GetClientsClientIdResponse searchClients(String nin, String bvn, String emailAddress, String phoneNumber) {
-		return clientApiClient.retrieveAll(null, 1, nin, bvn, emailAddress, phoneNumber)
+	public GetClientsClientIdResponse searchClients(String nin, String bvn, String emailAddress, String phoneNumber, UserType userType) {
+		return clientApiClient.retrieveAll(null, 5, nin, bvn, emailAddress, phoneNumber)
 				.getPageItems()
 				.stream()
+				.filter(client -> client.getLegalForm().getId() == userType.getId())
 				.findAny()
 				.orElse(null);
 	}
 
-	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(String customerId, String accountType) {
-			return clientApiClient.retrieveAssociatedAccounts(customerId, accountType);
+	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(String clientId, String accountType) {
+			return clientApiClient.retrieveAssociatedAccounts(clientId, accountType);
 	}
 
 	public PostClientsClientIdResponse manageCustomer(String command, Long customerId) {

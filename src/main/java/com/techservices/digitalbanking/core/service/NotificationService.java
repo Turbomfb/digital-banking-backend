@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class NotificationService {
     private final ApiService apiService;
     private final SystemProperty systemProperty;
 
+    @Async
     public NotificationResponse sendSms(String phoneNumber, String message) {
         try {
             String url = this.buildSmsUrl(phoneNumber, message);

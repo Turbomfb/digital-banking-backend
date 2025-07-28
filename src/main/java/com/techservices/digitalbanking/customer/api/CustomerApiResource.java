@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.customer.api;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
@@ -15,6 +16,7 @@ import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoR
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import com.techservices.digitalbanking.loan.service.LoanApplicationService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -50,9 +52,10 @@ public class CustomerApiResource {
 	@PostMapping
 	public ResponseEntity<BaseAppResponse> createMerchantAccount(
 			@Validated @RequestBody CreateCustomerRequest createCustomerRequest,
-			@RequestParam(name = "command", required = false, defaultValue = "generate-otp") String command
+			@RequestParam(name = "command", required = false, defaultValue = "generate-otp") String command,
+			@RequestParam(name = "customerType", required = false, defaultValue = "RETAIL") UserType customerType
 	) {
-		BaseAppResponse postClientsResponse = customerService.createCustomer(createCustomerRequest, command);
+		BaseAppResponse postClientsResponse = customerService.createCustomer(createCustomerRequest, command, customerType);
 
 		return new ResponseEntity<>(postClientsResponse, HttpStatusCode.valueOf(201));
 	}
@@ -103,6 +106,14 @@ public class CustomerApiResource {
         }
         response.setPreQualifiedForLoan(offers != null && !offers.getData().isEmpty());
         return ResponseEntity.ok(response);
+    }
+
+	@Operation(summary = "Get all Customers")
+	@GetMapping
+	public ResponseEntity<BasePageResponse<CustomerDtoResponse>> getCustomers(
+			Pageable pageable
+	) {
+        return ResponseEntity.ok(customerService.getAllCustomers(pageable));
     }
 
 	@Operation(summary = "Retrieve Customer's dashboard by ID")

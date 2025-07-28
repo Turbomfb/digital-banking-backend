@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.LocalDate;
-
 @Setter
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -22,6 +20,7 @@ public class IdentityVerificationResponse {
     private String statusMessage;
     private String statusCode;
     private String message;
+    private String dataSource;
 
     public static IdentityVerificationResponse parse(GetClientsClientIdResponse client) {
         IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
@@ -31,6 +30,7 @@ public class IdentityVerificationResponse {
         identityVerificationResponseData.setMobile(client.getMobileNo());
         identityVerificationResponse.setData(identityVerificationResponseData);
         identityVerificationResponse.setSuccess(true);
+        identityVerificationResponse.setDataSource("INTERNAL");
         return identityVerificationResponse;
     }
 
@@ -45,6 +45,7 @@ public class IdentityVerificationResponse {
         identityVerificationResponseData.setEmail(identityVerificationData.getEmail());
         identityVerificationResponse.setData(identityVerificationResponseData);
         identityVerificationResponse.setSuccess(true);
+        identityVerificationResponse.setDataSource("EXTERNAL");
         return identityVerificationResponse;
     }
 
