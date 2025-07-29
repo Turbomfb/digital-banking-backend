@@ -62,7 +62,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 		errorResponse.put("default", ex.getDefaultUserMessage());
 		errorResponse.put("data", ex.getDefaultUserMessageArgs());
 		try {
-			apiService.callExternalApi("https://webhook.site/712825b6-3cda-407b-9d77-858e9bed9bec/", String.class, HttpMethod.POST, errorResponse, null);
+			apiService.callExternalApi("https://webhook.site/430adecb-d4d6-4b5d-a576-373b4ff44e9b", String.class, HttpMethod.POST, errorResponse, null);
 		} catch (Exception e) {
 			log.error("Failed to send error response to webhook: {}", e.getMessage(), e);
 		}
@@ -98,6 +98,15 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 			WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getDefaultUserMessage(),
 				request.getDescription(false), ex.getGlobalisationMessageCode(), ex.getDefaultUserMessageArgs());
+		Map<String, Object> errorResponse = new HashMap<>();
+		errorResponse.put("message", ex.getGlobalisationMessageCode());
+		errorResponse.put("default", ex.getDefaultUserMessage());
+		errorResponse.put("data", ex.getDefaultUserMessageArgs());
+		try {
+			apiService.callExternalApi("https://webhook.site/430adecb-d4d6-4b5d-a576-373b4ff44e9b", String.class, HttpMethod.POST, errorResponse, null);
+		} catch (Exception e) {
+			log.error("Failed to send error response to webhook: {}", e.getMessage(), e);
+		}
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
 	}
 
