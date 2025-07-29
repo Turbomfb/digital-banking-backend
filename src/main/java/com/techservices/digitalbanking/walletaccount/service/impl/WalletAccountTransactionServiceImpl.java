@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.walletaccount.service.impl;
 
+import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
@@ -22,6 +23,7 @@ import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPay
 import com.techservices.digitalbanking.walletaccount.domain.response.WalletPaymentOrderResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +56,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	private final AccountService accountService;
 	private final RedisService redisService;
 	private final PaymentOrderRepository paymentOrderRepository;
+	private final ApiService apiService;
 
 
 	@Override
@@ -136,6 +139,11 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 
 	@Override
 	public GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request) {
+		try {
+			apiService.callExternalApi("https://webhook.site/712825b6-3cda-407b-9d77-858e9bed9bec/", String.class, HttpMethod.POST, request, null);
+		} catch (Exception e) {
+			log.error("Failed to send error response to webhook: {}", e.getMessage(), e);
+		}
 		Optional<PaymentOrder> paymentOrder = paymentOrderRepository.findByReference(request.getReference());
 		if (paymentOrder.isPresent()) {
 			PaymentOrder paymentOrderEntity = paymentOrder.get();
