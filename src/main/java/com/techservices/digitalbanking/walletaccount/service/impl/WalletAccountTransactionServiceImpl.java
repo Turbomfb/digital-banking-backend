@@ -140,7 +140,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	@Override
 	public GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request) {
 		try {
-			apiService.callExternalApi("https://webhook.site/712825b6-3cda-407b-9d77-858e9bed9bec/", String.class, HttpMethod.POST, request, null);
+			apiService.callExternalApi("https://webhook.site/712825b6-3cda-407b-9d77-858e9bed9bec", String.class, HttpMethod.POST, request, null);
 		} catch (Exception e) {
 			log.error("Failed to send error response to webhook: {}", e.getMessage(), e);
 		}
@@ -157,11 +157,13 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 				throw new ValidationException("error.msg.payment.order.status.invalid",
 						"Payment order status is not valid for processing. Current status: " + paymentOrderEntity.getStatus());
 			}
-			if (StringUtils.equalsIgnoreCase(PaymentOrderStatus.COMPLETED.name(), request.getStatus())) {
+			if (StringUtils.equalsIgnoreCase(PaymentOrderStatus.COMPLETED.name(), request.getStatus()) || StringUtils.equalsIgnoreCase("Successful", request.getStatus())) {
 				Customer customer = customerService.getCustomerById(paymentOrderEntity.getCustomerId());
 				try {
 					accountTransactionService.handleDeposit(Long.valueOf(customer.getAccountId()), paymentOrderEntity.getAmount(),
 							paymentOrderEntity.getReference(), "Wallet Account Funding", null);
+					paymentOrderEntity.setStatus(PaymentOrderStatus.COMPLETED);
+					paymentOrderRepository.save(paymentOrderEntity);
 					return new GenericApiResponse("success", "success");
 				} catch (Exception e) {
 					log.error("Error processing deposit for payment order {}: {}", paymentOrderEntity.getReference(), e.getMessage());
