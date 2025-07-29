@@ -13,16 +13,16 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WalletInboundWebhookRequest {
-    @JsonProperty("Amount")
+
     private BigDecimal amount;
-    @JsonProperty("Transactiondate")
+
     private String transactionDate;
-    @JsonProperty("Channel")
+
     private String channel;
-    @JsonProperty("Reference")
+
     private String reference;
-    @JsonProperty("Processor")
+
     private String processor;
-    @JsonProperty("Status")
+
     private String status;
 }
