@@ -147,11 +147,11 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 		Optional<PaymentOrder> paymentOrder = paymentOrderRepository.findByReference(request.getReference());
 		if (paymentOrder.isPresent()) {
 			PaymentOrder paymentOrderEntity = paymentOrder.get();
-			if (paymentOrderEntity.getAmount().compareTo(request.getAmount()) != 0) {
-				log.error("Payment order amount mismatch: expected {}, received {}", paymentOrderEntity.getAmount(), request.getAmount());
-				throw new ValidationException("error.msg.payment.order.amount.mismatch",
-						"Payment order amount mismatch. Please check the transaction details.");
-			}
+//			if (paymentOrderEntity.getAmount().compareTo(request.getAmount()) != 0) {
+//				log.error("Payment order amount mismatch: expected {}, received {}", paymentOrderEntity.getAmount(), request.getAmount());
+//				throw new ValidationException("error.msg.payment.order.amount.mismatch",
+//						"Payment order amount mismatch. Please check the transaction details.");
+//			}
 			if (paymentOrderEntity.getStatus() != PaymentOrderStatus.IN_PROGRESS) {
 				log.error("Payment order status is not in progress: {}", paymentOrderEntity.getStatus());
 				throw new ValidationException("error.msg.payment.order.status.invalid",
