@@ -1,8 +1,8 @@
-package com.techservices.digitalbanking.authentication.api;
+package com.techservices.digitalbanking.core.api;
 
-import com.techservices.digitalbanking.authentication.service.SystemService;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetCodeValuesDataResponse;
+import com.techservices.digitalbanking.core.service.SystemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

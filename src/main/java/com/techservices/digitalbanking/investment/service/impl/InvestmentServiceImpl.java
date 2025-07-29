@@ -3,9 +3,12 @@ package com.techservices.digitalbanking.investment.service.impl;
 
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.enums.AccountType;
+import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
+import com.techservices.digitalbanking.core.fineract.model.request.PostAccountTransfersRequest;
 import com.techservices.digitalbanking.core.fineract.model.request.PostRecurringDepositAccountsRequest;
 import com.techservices.digitalbanking.core.fineract.model.request.PutRecurringDepositProductRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.*;
@@ -17,9 +20,7 @@ import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import com.techservices.digitalbanking.investment.domain.request.FixedDepositApplicationRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
-import com.techservices.digitalbanking.investment.domain.request.RecurringDepositTransactionCommandRequest;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
-import com.techservices.digitalbanking.investment.domain.response.InvestmentUpdateResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+
+import static com.techservices.digitalbanking.core.util.CommandUtil.ACTIVATE;
+import static com.techservices.digitalbanking.core.util.CommandUtil.APPROVE;
+import static com.techservices.digitalbanking.core.util.DateUtil.*;
 
 @Service
 @RequiredArgsConstructor
@@ -48,22 +53,18 @@ public class InvestmentServiceImpl implements InvestmentService {
 	public InvestmentApplicationResponse submitApplication(
 			Long customerId, InvestmentType investmentType, InvestmentApplicationRequest request) {
 		Customer foundCustomer = customerService.getCustomerById(customerId);
-		GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccountById(Long.valueOf(foundCustomer.getAccountId()));
-		if (savingsAccount.getAccountBalance().compareTo(request.getAmount()) < 0) {
-			throw new ValidationException("insufficient.funds",
-					"Insufficient funds in the customer's savings account to create an investment.");
-		}
-		if (investmentType == InvestmentType.FLEX) {
-			GetRecurringDepositProductProductIdResponse product = recurringDepositProductService.retrieveAProduct(fineractProperty.getDefaultRecurringDepositProductId());
-			PostRecurringDepositAccountsRequest recurringDepositAccountsRequest = PostRecurringDepositAccountsRequest.parse(request, product);
-			recurringDepositAccountsRequest.setClientId(foundCustomer.getExternalId());
-			recurringDepositAccountsRequest.setLinkAccountId(foundCustomer.getAccountId());
-			return recurringDepositAccountService.submitApplication(recurringDepositAccountsRequest, false);
+        if (investmentType == InvestmentType.FLEX) {
+//			This feature is yet to be impl
+			throw new PlatformServiceException("feature.not.implemented",
+					"Recurring Deposit feature is not yet implemented.");
 		} else if (investmentType == InvestmentType.LOCK) {
 			FixedDepositApplicationRequest fixedDepositApplicationRequest = new FixedDepositApplicationRequest();
 			fixedDepositApplicationRequest.setClientId(Long.valueOf(foundCustomer.getExternalId()));
 			fixedDepositApplicationRequest.setLinkAccountId(Long.valueOf(foundCustomer.getAccountId()));
 			fixedDepositApplicationRequest.setDepositAmount(request.getAmount());
+			fixedDepositApplicationRequest.setDepositPeriod(request.getDepositPeriod());
+			fixedDepositApplicationRequest.setAllocationName(request.getAllocationName());
+			fixedDepositApplicationRequest.setProductId(fineractProperty.getDefaultFixedDepositProductId());
 			return fixedDepositService.submitApplication(fixedDepositApplicationRequest, false);
 		} else {
 			throw new ValidationException("invalid.investment.type",
@@ -73,18 +74,48 @@ public class InvestmentServiceImpl implements InvestmentService {
 
 	@Override
 	public BaseAppResponse updateAnInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, String investmentId) {
-		Customer foundCustomer = customerService.getCustomerById(customerId);
+		customerService.getCustomerById(customerId);
 		this.retrieveInvestmentById(Long.valueOf(investmentId), null, null, investmentType.name(), customerId);
 		if (investmentType == InvestmentType.FLEX) {
 			PutRecurringDepositProductRequest putRecurringDepositProductRequest = new PutRecurringDepositProductRequest();
-			if (StringUtils.isNotBlank(request.getAllocationName())) {
-				putRecurringDepositProductRequest.setAllocationName(request.getAllocationName());
-			} if (request.getAmount() != null && request.getAmount().compareTo(BigDecimal.ZERO) > 0) {
-				putRecurringDepositProductRequest.setMandatoryRecommendedDepositAmount(request.getAmount());
+			if (request.getAmount() != null && request.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+
 			}
 			return recurringDepositAccountService.updateAnInvestment(investmentId, putRecurringDepositProductRequest);
 		}
 		return null;
+	}
+
+	@Override
+	public BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, Long investmentId) {
+		Customer foundCustomer = customerService.getCustomerById(customerId);
+		this.retrieveInvestmentById(investmentId, null, null, investmentType.name(), customerId);
+		GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccountById(Long.valueOf(foundCustomer.getAccountId()));
+		if (investmentType == InvestmentType.FLEX) {
+			if (request == null || request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+				throw new ValidationException("invalid.amount",
+						"Invalid amount provided for funding the investment. Amount must be greater than zero.");
+			}
+			if (savingsAccount.getAccountBalance().compareTo(request.getAmount()) < 0) {
+				throw new ValidationException("insufficient.funds",
+						"Insufficient funds in the customer's savings account to create an investment.");
+			}
+			accountTransactionService.handleRecurringDepositAccountTransfer(savingsAccount,
+					investmentId, request.getAmount(), "Investment funding");
+		} else if (investmentType == InvestmentType.LOCK) {
+			GetFixedDepositAccountsAccountIdResponse response = fixedDepositService.retrieveInvestmentById(investmentId, null, null, null);
+			if (savingsAccount.getAccountBalance().compareTo(response.getDepositAmount()) < 0) {
+				throw new ValidationException("insufficient.funds",
+						"Insufficient funds in the customer's savings account to create an investment.");
+			}
+			try {
+				fixedDepositService.processInvestmentCommand(investmentId, null, APPROVE);
+				fixedDepositService.processInvestmentCommand(investmentId, null, ACTIVATE);
+			} catch (Exception e) {
+				throw new PlatformServiceException("investment.funding.failed", "You have already funded this investment or the investment is currently active.", e);
+			}
+		}
+		return GenericApiResponse.builder().message("Flex account has been funded successfully").build();
 	}
 
 	@Override

@@ -2,12 +2,14 @@ package com.techservices.digitalbanking.core.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
 public class GenericApiResponse extends BaseAppResponse {
     private String uniqueId;
     private String message;

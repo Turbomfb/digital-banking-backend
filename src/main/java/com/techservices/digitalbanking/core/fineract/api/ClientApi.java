@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.fineract.api;
 import java.util.List;
 
 import com.techservices.digitalbanking.core.fineract.model.request.*;
+import com.techservices.digitalbanking.core.fineract.model.response.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,19 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientAddressTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientClientIdAddressesResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetDataTablesResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientClientIdAddressesResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientClientIdImagesResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientsClientIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutClientClientIdAddressesResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutClientsClientIdResponse;
 
 import jakarta.validation.Valid;
 
@@ -63,6 +51,14 @@ public interface ClientApi {
 
 	@PostMapping(value = "/clients/{clientId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	PostClientClientIdImagesResponse uploadImageFile(@PathVariable String clientId, MultipartFile file);
+
+	@PostMapping(value = "/clients/{clientId}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	PostClientClientIdDocumentsResponse uploadDocument(
+			@PathVariable String clientId,
+			@RequestParam("name") String name,
+			@RequestParam("description") String description,
+			@RequestBody MultipartFile file
+	);
 
 	@GetMapping(value = "/clients")
 	GetClientsResponse retrieveAll(

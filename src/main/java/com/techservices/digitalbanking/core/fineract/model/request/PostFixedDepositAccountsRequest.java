@@ -27,6 +27,7 @@ public class PostFixedDepositAccountsRequest {
 	private Long productId;
 
 	private String accountNo;
+	private String allocationName;
 
 	private String submittedOnDate;
 
