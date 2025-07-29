@@ -99,8 +99,7 @@ public class ExternalPaymentService {
     }
 
 
-    public WalletPaymentOrderResponse initiateOrder(WalletPaymentOrderRequest dto, Customer customer) throws Exception {
-        String reference = UUID.randomUUID().toString();
+    public WalletPaymentOrderResponse initiateOrder(WalletPaymentOrderRequest dto, Customer customer, String reference) throws Exception {
         Map<String, Object> payload = buildOrderPayload(dto, reference, customer);
         ObjectMapper mapper = new ObjectMapper();
         String jsonPayload = mapper.writeValueAsString(payload);

@@ -13,6 +13,4 @@ import java.math.BigDecimal;
 public class InvestmentUpdateRequest {
 	private BigDecimal amount;
 
-	private String allocationName;
-
 }

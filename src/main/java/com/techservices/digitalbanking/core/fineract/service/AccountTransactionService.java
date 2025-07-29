@@ -283,6 +283,33 @@ public class AccountTransactionService {
 		return postSavingsAccountTransactionsResponse;
 	}
 
+	public PostSavingsAccountTransactionsResponse handleRecurringDepositAccountTransfer(
+			GetSavingsAccountsAccountIdResponse fromSavingsAccount,
+			Long recurringAccountId, BigDecimal transactionAmount, String narration) {
+
+		PostAccountTransfersRequest postAccountTransfersRequest = new PostAccountTransfersRequest();
+		postAccountTransfersRequest.setFromAccountId(fromSavingsAccount.getId());
+		postAccountTransfersRequest.setFromAccountType(2L);
+		postAccountTransfersRequest.setFromClientId(fromSavingsAccount.getClientId());
+		postAccountTransfersRequest.setFromOfficeId(1L);
+		postAccountTransfersRequest.setToClientId(fromSavingsAccount.getClientId());
+		postAccountTransfersRequest.setToOfficeId(1L);
+		postAccountTransfersRequest.setToAccountId(recurringAccountId);
+		postAccountTransfersRequest.setToAccountType(2L);
+		postAccountTransfersRequest.setTransferAmount(transactionAmount);
+		postAccountTransfersRequest.setTransferDescription(narration);
+		postAccountTransfersRequest.setTransferDate(DateUtil.getCurrentDate());
+		postAccountTransfersRequest.setDateFormat(DateUtil.getDefaultDateFormat());
+		postAccountTransfersRequest.setLocale(DateUtil.DEFAULT_LOCALE);
+		PostAccountTransfersResponse transferResponse = accountTransferApiClient
+				.makeTransfer(postAccountTransfersRequest);
+		PostSavingsAccountTransactionsResponse postSavingsAccountTransactionsResponse = new PostSavingsAccountTransactionsResponse();
+		postSavingsAccountTransactionsResponse.setClientId(fromSavingsAccount.getClientId());
+		postSavingsAccountTransactionsResponse.setResourceId(transferResponse.getResourceId());
+		postSavingsAccountTransactionsResponse.setSavingsId(fromSavingsAccount.getId());
+		return postSavingsAccountTransactionsResponse;
+	}
+
 	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(String savingsAccountId,
 																			   Long transactionId) {
 		return savingsAccountApiClient.retrieveOneTransaction(savingsAccountId, transactionId);

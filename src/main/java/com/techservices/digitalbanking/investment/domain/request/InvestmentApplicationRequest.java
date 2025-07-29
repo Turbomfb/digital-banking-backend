@@ -14,5 +14,6 @@ public class InvestmentApplicationRequest {
 	private BigDecimal amount;
 
 	private String allocationName;
+	private Long depositPeriod;
 
 }

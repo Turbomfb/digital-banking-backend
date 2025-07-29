@@ -11,6 +11,9 @@ import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ExternalPaymentService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
+import com.techservices.digitalbanking.walletaccount.domain.data.PaymentOrderStatus;
+import com.techservices.digitalbanking.walletaccount.domain.data.model.PaymentOrder;
+import com.techservices.digitalbanking.walletaccount.domain.data.repository.PaymentOrderRepository;
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.WalletInboundWebhookRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.WalletPaymentOrderRequest;
@@ -19,6 +22,7 @@ import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPay
 import com.techservices.digitalbanking.walletaccount.domain.response.WalletPaymentOrderResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.exception.AbstractPlatformDomainRuleException;
@@ -34,6 +38,8 @@ import lombok.RequiredArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
@@ -47,6 +53,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	private final CustomerService customerService;
 	private final AccountService accountService;
 	private final RedisService redisService;
+	private final PaymentOrderRepository paymentOrderRepository;
 
 
 	@Override
@@ -115,12 +122,48 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	@Override
 	public WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId) throws Exception {
 		Customer customer = customerService.getCustomerById(customerId);
-		return externalPaymentService.initiateOrder(request, customer);
+		PaymentOrder paymentOrder = new PaymentOrder();
+		paymentOrder.setAmount(request.getAmount());
+		String reference = UUID.randomUUID().toString();
+		paymentOrder.setReference(reference);
+		paymentOrder.setCurrency(request.getCurrency());
+		paymentOrder.setCustomerId(customerId);
+		paymentOrder.setStatus(PaymentOrderStatus.IN_PROGRESS);
+		WalletPaymentOrderResponse response = externalPaymentService.initiateOrder(request, customer, reference);
+		paymentOrderRepository.save(paymentOrder);
+		return response;
 	}
 
 	@Override
 	public GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request) {
-		return null;
+		Optional<PaymentOrder> paymentOrder = paymentOrderRepository.findByReference(request.getReference());
+		if (paymentOrder.isPresent()) {
+			PaymentOrder paymentOrderEntity = paymentOrder.get();
+			if (paymentOrderEntity.getAmount().compareTo(request.getAmount()) != 0) {
+				log.error("Payment order amount mismatch: expected {}, received {}", paymentOrderEntity.getAmount(), request.getAmount());
+				throw new ValidationException("error.msg.payment.order.amount.mismatch",
+						"Payment order amount mismatch. Please check the transaction details.");
+			}
+			if (paymentOrderEntity.getStatus() != PaymentOrderStatus.IN_PROGRESS) {
+				log.error("Payment order status is not in progress: {}", paymentOrderEntity.getStatus());
+				throw new ValidationException("error.msg.payment.order.status.invalid",
+						"Payment order status is not valid for processing. Current status: " + paymentOrderEntity.getStatus());
+			}
+			if (StringUtils.equalsIgnoreCase(PaymentOrderStatus.COMPLETED.name(), request.getStatus())) {
+				Customer customer = customerService.getCustomerById(paymentOrderEntity.getCustomerId());
+				try {
+					accountTransactionService.handleDeposit(Long.valueOf(customer.getAccountId()), paymentOrderEntity.getAmount(),
+							paymentOrderEntity.getReference(), "Wallet Account Funding", null);
+					return new GenericApiResponse("success", "success");
+				} catch (Exception e) {
+					log.error("Error processing deposit for payment order {}: {}", paymentOrderEntity.getReference(), e.getMessage());
+					throw new ValidationException("error.msg.payment.order.deposit.failed",
+							"Failed to process deposit for payment order. Please try again later.");
+				}
+			}
+		}
+		throw new ValidationException("error.msg.payment.order.not.found",
+				"Payment order not found or invalid. Please check the reference and try again.");
 	}
 
 	private Customer validateCustomerAccount(SavingsAccountTransactionRequest request, Long customerId) {

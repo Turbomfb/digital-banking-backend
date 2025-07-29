@@ -11,7 +11,6 @@ import com.techservices.digitalbanking.investment.domain.request.FixedDepositApp
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
-import com.techservices.digitalbanking.investment.domain.response.InvestmentUpdateResponse;
 import jakarta.validation.Valid;
 
 public interface InvestmentService {
@@ -36,4 +35,6 @@ public interface InvestmentService {
 	InvestmentApplicationResponse submitApplication(Long customerId, InvestmentType investmentType, InvestmentApplicationRequest request);
 
 	BaseAppResponse updateAnInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, String investmentId);
+
+	BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, Long investmentId);
 }

@@ -53,6 +53,19 @@ public class InvestmentApiResource {
 		return ResponseEntity.ok(investment);
 	}
 
+
+	@Operation(summary = "Fund an investment")
+	@PostMapping("/{investmentId}/fund")
+	public ResponseEntity<BaseAppResponse> fundInvestment(
+			@RequestBody(required = false) InvestmentUpdateRequest request,
+			@RequestParam(required = false) InvestmentType investmentType,
+			@PathVariable Long investmentId
+	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		BaseAppResponse investment = investmentService.fundInvestment(customerId, investmentType, request, investmentId);
+		return ResponseEntity.ok(investment);
+	}
+
 	@Operation(summary = "Retrieve Customer's Investments")
 	@GetMapping()
 	public ResponseEntity<BasePageResponse<GetClientsSavingsAccounts>> retrieveAllCustomerInvestments(

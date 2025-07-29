@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.fineract.model.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class GetFixedDepositAccountsAccountIdResponse extends BaseAppResponse {
 
 	private GetSavingsCurrency currency;
 
-	private Double depositAmount;
+	private BigDecimal depositAmount;
 
 	private Integer depositPeriod;
 

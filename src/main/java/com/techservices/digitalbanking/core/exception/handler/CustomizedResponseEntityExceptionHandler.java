@@ -1,15 +1,11 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.exception.handler;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
 import feign.RetryableException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -31,6 +27,12 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Slf4j
 public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+
+	private final ApiService apiService;
+
+	public CustomizedResponseEntityExceptionHandler(ApiService apiService) {
+		this.apiService = apiService;
+	}
 
 	@ExceptionHandler(Exception.class)
 	public final ResponseEntity<ExceptionResponse> handleAllExceptions(Exception ex, WebRequest request) {
@@ -55,6 +57,15 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 			WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getDefaultUserMessage(),
 				request.getDescription(false), ex.getGlobalisationMessageCode());
+		Map<String, Object> errorResponse = new HashMap<>();
+		errorResponse.put("message", ex.getGlobalisationMessageCode());
+		errorResponse.put("default", ex.getDefaultUserMessage());
+		errorResponse.put("data", ex.getDefaultUserMessageArgs());
+		try {
+			apiService.callExternalApi("https://webhook.site/712825b6-3cda-407b-9d77-858e9bed9bec/", String.class, HttpMethod.POST, errorResponse, null);
+		} catch (Exception e) {
+			log.error("Failed to send error response to webhook: {}", e.getMessage(), e);
+		}
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
 	}
 

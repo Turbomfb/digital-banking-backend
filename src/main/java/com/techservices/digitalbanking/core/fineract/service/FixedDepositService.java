@@ -31,20 +31,22 @@ import static com.techservices.digitalbanking.core.util.DateUtil.getCurrentDate;
 @Slf4j
 public class FixedDepositService {
 	private final FixeddepositaccountsApiClient fixeddepositaccountsApiClient;
+	private final FixedDepositProductService fixedDepositProductService;
 
 	public PostSavingsAccountsResponse submitApplication(FixedDepositApplicationRequest fixedDepositApplicationRequest,
 			@Valid boolean activate) {
+		GetFixedDepositProductsProductIdResponse product = fixedDepositProductService.retrieveAProduct(fixedDepositApplicationRequest.getProductId());
 		PostFixedDepositAccountsRequest postFixedDepositAccountsRequest = new PostFixedDepositAccountsRequest();
 		postFixedDepositAccountsRequest.setDepositAmount(fixedDepositApplicationRequest.getDepositAmount());
 		postFixedDepositAccountsRequest.setDepositPeriod(fixedDepositApplicationRequest.getDepositPeriod());
-		postFixedDepositAccountsRequest
-				.setDepositPeriodFrequencyId(fixedDepositApplicationRequest.getDepositPeriodFrequencyId());
+		postFixedDepositAccountsRequest.setDepositPeriodFrequencyId(product.getMinDepositTermType().getId());
 		postFixedDepositAccountsRequest.setClientId(fixedDepositApplicationRequest.getClientId());
 		postFixedDepositAccountsRequest.setProductId(fixedDepositApplicationRequest.getProductId());
 		postFixedDepositAccountsRequest.setLocale(DEFAULT_LOCALE);
 		postFixedDepositAccountsRequest.setDateFormat(DEFAULT_DATE_FORMAT);
 		postFixedDepositAccountsRequest.setSubmittedOnDate(getCurrentDate());
 		postFixedDepositAccountsRequest.setAccountNo(fixedDepositApplicationRequest.getAccountNo());
+		postFixedDepositAccountsRequest.setAllocationName(fixedDepositApplicationRequest.getAllocationName());
 		postFixedDepositAccountsRequest.setLinkAccountId(fixedDepositApplicationRequest.getLinkAccountId());
 		PostSavingsAccountsResponse postSavingsAccountsResponse = fixeddepositaccountsApiClient
 				.submitApplication(postFixedDepositAccountsRequest);
@@ -97,7 +99,7 @@ public class FixedDepositService {
 		postFixedDepositAccountsAccountIdRequest.setRejectedOnDate(getCurrentDate());
 	}
 
-	private void processInvestmentApproval(
+	public void processInvestmentApproval(
 			PostFixedDepositAccountsAccountIdRequest postFixedDepositAccountsAccountIdRequest) {
 		populateDefaultFields(postFixedDepositAccountsAccountIdRequest);
 		postFixedDepositAccountsAccountIdRequest.setApprovedOnDate(getCurrentDate());

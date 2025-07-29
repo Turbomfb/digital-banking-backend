@@ -24,6 +24,7 @@ public class FixedDepositApplicationRequest {
 	private Long productId;
 
 	private String accountNo;
+	private String allocationName;
 
 	private Long linkAccountId;
 }
