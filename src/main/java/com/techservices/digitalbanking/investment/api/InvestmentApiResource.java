@@ -4,10 +4,7 @@ package com.techservices.digitalbanking.investment.api;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsSavingsAccounts;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
+import com.techservices.digitalbanking.core.fineract.model.response.*;
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
@@ -21,6 +18,8 @@ import com.techservices.digitalbanking.investment.service.InvestmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Comparator;
 
 @RequestMapping("api/v1/customers/me/investments")
 @RestController
@@ -73,6 +72,11 @@ public class InvestmentApiResource {
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		BasePageResponse<GetClientsSavingsAccounts> investment = investmentService.retrieveAllCustomerInvestments(customerId, investmentType);
+		investment.setData(
+				investment.getData().stream()
+						.sorted(Comparator.comparing(GetClientsSavingsAccounts::getId).reversed())
+						.toList()
+		);
 		return ResponseEntity.ok(investment);
 	}
 

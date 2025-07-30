@@ -3,7 +3,9 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,6 +39,10 @@ public class SavingsAccountTransactionData {
 
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDate submittedOnDate;
+
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime transactionDateTime;
 
 	private boolean interestedPostedAsOn;
 	private String submittedByUsername;
