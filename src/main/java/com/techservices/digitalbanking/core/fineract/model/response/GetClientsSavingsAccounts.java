@@ -20,7 +20,7 @@ public class GetClientsSavingsAccounts {
 
 	private Long id;
 
-	private Integer productId;
+	private Long productId;
 
 	private String productName;
 

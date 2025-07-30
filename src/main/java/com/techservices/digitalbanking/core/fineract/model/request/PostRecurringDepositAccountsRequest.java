@@ -33,6 +33,7 @@ public class PostRecurringDepositAccountsRequest {
 	private Long depositPeriod;
 	private Long recurringFrequencyType;
 	private Long recurringFrequency;
+
 	@JsonProperty("isCalendarInherited")
 	private boolean isCalendarInherited;
 

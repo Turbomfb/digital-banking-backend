@@ -22,9 +22,7 @@ import static com.techservices.digitalbanking.core.util.CommandUtil.APPROVE;
 import static com.techservices.digitalbanking.core.util.CommandUtil.CLOSE;
 import static com.techservices.digitalbanking.core.util.CommandUtil.PREMATURE_CLOSE;
 import static com.techservices.digitalbanking.core.util.CommandUtil.REJECT;
-import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_DATE_FORMAT;
-import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_LOCALE;
-import static com.techservices.digitalbanking.core.util.DateUtil.getCurrentDate;
+import static com.techservices.digitalbanking.core.util.DateUtil.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +32,9 @@ public class RecurringDepositAccountService {
 
 	public PostRecurringDepositAccountsResponse submitApplication(
 			PostRecurringDepositAccountsRequest postRecurringDepositAccountsRequest, boolean activate) {
+		postRecurringDepositAccountsRequest.setLocale(DEFAULT_LOCALE);
+		postRecurringDepositAccountsRequest.setDateFormat(getDefaultDateFormat());
+		postRecurringDepositAccountsRequest.setSubmittedOnDate(getCurrentDate());
 		PostRecurringDepositAccountsResponse response = recurringDepositAccountApiClient.create(postRecurringDepositAccountsRequest);
 		if (activate) {
 			RecurringDepositCommandRequest request = new RecurringDepositCommandRequest();
