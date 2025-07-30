@@ -262,8 +262,21 @@ public class InvestmentServiceImpl implements InvestmentService {
                             .filter(account -> Objects.equals(account.getId(), Long.valueOf(foundCustomer.getRecurringDepositAccountId())))
                             .toList()
             );
+        } else {
+            return BasePageResponse.instance(
+                    response.stream()
+                            .peek(account -> {
+                                GetFixedDepositAccountsAccountIdResponse fixedDepositAccount = fixedDepositService.retrieveInvestmentById(account.getId(), null, null, null);
+                                if (account.getStatus().getActive()){
+                                    account.setMaturityDate(fixedDepositAccount.getMaturityDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                                } else {
+                                    account.setMaturityDate(addMonthsToCurrentDate(fixedDepositAccount.getDepositPeriod()));
+                                }
+                                account.setExpectedInterest(fixedDepositAccount.getMaturityAmount().subtract(fixedDepositAccount.getDepositAmount()));
+                            })
+                            .toList()
+            );
         }
-        return BasePageResponse.instance(response);
     }
 
     @Override
