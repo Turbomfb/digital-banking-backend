@@ -273,6 +273,7 @@ public class InvestmentServiceImpl implements InvestmentService {
                                     account.setMaturityDate(addMonthsToCurrentDate(fixedDepositAccount.getDepositPeriod()));
                                 }
                                 account.setExpectedInterest(fixedDepositAccount.getMaturityAmount().subtract(fixedDepositAccount.getDepositAmount()));
+                                account.setDuration(fixedDepositAccount.getDepositPeriod());
                             })
                             .toList()
             );

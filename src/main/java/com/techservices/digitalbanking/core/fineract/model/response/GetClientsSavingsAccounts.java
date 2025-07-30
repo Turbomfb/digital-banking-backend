@@ -32,6 +32,7 @@ public class GetClientsSavingsAccounts {
 
 	private BigDecimal accountBalance;
 	private BigDecimal expectedInterest;
+	private Long duration;
 	private String maturityDate;
 
 	private GetSavingsCurrency currency;
