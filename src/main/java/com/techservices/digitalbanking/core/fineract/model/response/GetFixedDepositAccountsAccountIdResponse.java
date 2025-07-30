@@ -31,7 +31,7 @@ public class GetFixedDepositAccountsAccountIdResponse extends BaseAppResponse {
 
 	private BigDecimal depositAmount;
 
-	private Integer depositPeriod;
+	private Long depositPeriod;
 
 	private GetFixedDepositAccountsDepositPeriodFrequency depositPeriodFrequency;
 
@@ -49,7 +49,7 @@ public class GetFixedDepositAccountsAccountIdResponse extends BaseAppResponse {
 
 	private EnumOptionData interestPostingPeriodType;
 
-	private Double maturityAmount;
+	private BigDecimal maturityAmount;
 
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDate maturityDate;
