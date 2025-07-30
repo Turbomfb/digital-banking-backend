@@ -68,7 +68,7 @@ public class InvestmentApiResource {
 	@Operation(summary = "Retrieve Customer's Investments")
 	@GetMapping()
 	public ResponseEntity<BasePageResponse<GetClientsSavingsAccounts>> retrieveAllCustomerInvestments(
-			@RequestParam(required = false) String investmentType
+			@RequestParam(required = false, defaultValue = "FLEX") String investmentType
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		BasePageResponse<GetClientsSavingsAccounts> investment = investmentService.retrieveAllCustomerInvestments(customerId, investmentType);

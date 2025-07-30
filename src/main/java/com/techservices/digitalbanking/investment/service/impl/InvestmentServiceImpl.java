@@ -30,6 +30,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.ACTIVATE;
@@ -74,24 +75,23 @@ public class InvestmentServiceImpl implements InvestmentService {
 
 	@Override
 	public BaseAppResponse updateAnInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, String investmentId) {
-		customerService.getCustomerById(customerId);
-		this.retrieveInvestmentById(Long.valueOf(investmentId), null, null, investmentType.name(), customerId);
+		Customer foundCustomer = customerService.getCustomerById(customerId);
 		if (investmentType == InvestmentType.FLEX) {
 			PutRecurringDepositProductRequest putRecurringDepositProductRequest = new PutRecurringDepositProductRequest();
 			if (request.getAmount() != null && request.getAmount().compareTo(BigDecimal.ZERO) > 0) {
-
+				return recurringDepositAccountService.updateAnInvestment(foundCustomer.getRecurringDepositAccountId(), putRecurringDepositProductRequest);
 			}
-			return recurringDepositAccountService.updateAnInvestment(investmentId, putRecurringDepositProductRequest);
 		}
+		this.retrieveInvestmentById(Long.valueOf(investmentId), null, null, investmentType.name(), customerId);
 		return null;
 	}
 
 	@Override
 	public BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, Long investmentId) {
 		Customer foundCustomer = customerService.getCustomerById(customerId);
-		this.retrieveInvestmentById(investmentId, null, null, investmentType.name(), customerId);
 		GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccountById(Long.valueOf(foundCustomer.getAccountId()));
 		if (investmentType == InvestmentType.FLEX) {
+			investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : investmentId;
 			if (request == null || request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
 				throw new ValidationException("invalid.amount",
 						"Invalid amount provided for funding the investment. Amount must be greater than zero.");
@@ -103,6 +103,7 @@ public class InvestmentServiceImpl implements InvestmentService {
 			accountTransactionService.handleRecurringDepositAccountTransfer(savingsAccount,
 					investmentId, request.getAmount(), "Investment funding");
 		} else if (investmentType == InvestmentType.LOCK) {
+			this.retrieveInvestmentById(investmentId, null, null, investmentType.name(), customerId);
 			GetFixedDepositAccountsAccountIdResponse response = fixedDepositService.retrieveInvestmentById(investmentId, null, null, null);
 			if (savingsAccount.getAccountBalance().compareTo(response.getDepositAmount()) < 0) {
 				throw new ValidationException("insufficient.funds",
@@ -149,6 +150,7 @@ public class InvestmentServiceImpl implements InvestmentService {
 			}
 			return response;
 		} else if ("flex".equalsIgnoreCase(investmentType)) {
+			id = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : id;
 			GetRecurringDepositAccountsResponse response = recurringDepositAccountService.retrieveInvestmentById(id, staffInSelectedOfficeOnly, chargeStatus, null);
 			if (!StringUtils.equalsIgnoreCase(foundCustomer.getExternalId(), String.valueOf(response.getClientId()))) {
 				throw new ValidationException("investment.not.found",
@@ -168,7 +170,8 @@ public class InvestmentServiceImpl implements InvestmentService {
 
 	@Override
 	public BasePageResponse<GetClientsSavingsAccounts> retrieveAllCustomerInvestments(Long customerId, String investmentType) {
-		String externalId = this.customerService.getCustomerById(customerId).getExternalId();
+		Customer foundCustomer = this.customerService.getCustomerById(customerId);
+		String externalId = foundCustomer.getExternalId();
 		AccountType accountType;
 		if (StringUtils.isNotBlank(investmentType)) {
             if (investmentType.equalsIgnoreCase("flex")) {
@@ -183,21 +186,29 @@ public class InvestmentServiceImpl implements InvestmentService {
             accountType = null;
         }
         GetClientsClientIdAccountsResponse customerAccounts = this.clientService.getClientAccountsByClientId(externalId, "savingsAccounts");
-		return BasePageResponse.instance(
-				accountType == null ? customerAccounts.getSavingsAccounts().stream().filter(account ->
+		List<GetClientsSavingsAccounts> response = accountType == null ? customerAccounts.getSavingsAccounts().stream().filter(account ->
 						account != null && account.getDepositType() != null && !Objects.equals(account.getDepositType().getId(), 100L)).toList() :
 				customerAccounts.getSavingsAccounts().stream().filter(account ->
 						account != null && account.getDepositType() != null && Objects.equals(account.getDepositType().getId(), accountType.getCode())
-				).toList()
-		);
+				).toList();
+
+		if (investmentType.equalsIgnoreCase("flex") && StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId())) {
+			return BasePageResponse.instance(
+					response.stream()
+							.filter(account -> Objects.equals(account.getId(), Long.valueOf(foundCustomer.getRecurringDepositAccountId())))
+							.toList()
+			);
+		}
+		return BasePageResponse.instance(response);
 	}
 
 	@Override
 	public Object retrieveInvestmentTransactionsById(Long id, Boolean staffInSelectedOfficeOnly, String chargeStatus, String investmentType, Long customerId) {
-		customerService.getCustomerById(customerId);
+		Customer foundCustomer = customerService.getCustomerById(customerId);
 		if ("lock".equalsIgnoreCase(investmentType)) {
 			return BasePageResponse.instance(fixedDepositService.retrieveInvestmentById(id, staffInSelectedOfficeOnly, chargeStatus, "all").getTransactions());
 		} else if ("flex".equalsIgnoreCase(investmentType)) {
+			id = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : id;
 			return BasePageResponse.instance(recurringDepositAccountService.retrieveInvestmentById(id, staffInSelectedOfficeOnly, chargeStatus, "all").getTransactions());
 		} else {
 			throw new ValidationException("invalid.investment.type",
