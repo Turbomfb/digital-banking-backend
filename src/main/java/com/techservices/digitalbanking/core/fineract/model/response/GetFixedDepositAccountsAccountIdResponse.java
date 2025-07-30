@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.fineract.model.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
@@ -74,4 +75,11 @@ public class GetFixedDepositAccountsAccountIdResponse extends BaseAppResponse {
 	private GetSavingsTimeline timeline;
 
 	List<GetFixedDepositTransactionResponse> transactions;
+
+	public List<GetFixedDepositTransactionResponse> getTransactions() {
+		this.transactions = transactions.stream()
+						.sorted(Comparator.comparing(GetFixedDepositTransactionResponse::getId).reversed())
+						.toList();
+		return transactions;
+	}
 }

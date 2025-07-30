@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
+import java.util.Comparator;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
@@ -86,8 +87,15 @@ public class WalletAccountTransactionApiResource {
 			@RequestParam(value = "transactionType", required = false) @Valid String transactionType
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		return ResponseEntity.ok(walletAccountTransactionService.retrieveSavingsAccountTransactions(
-				customerId, startDate, endDate, dateFormat, productId, limit, offset, transactionType));
+
+		FineractPageResponse<SavingsAccountTransactionData> savingsAccountTransactions = walletAccountTransactionService.retrieveSavingsAccountTransactions(
+				customerId, startDate, endDate, dateFormat, productId, limit, offset, transactionType);
+		savingsAccountTransactions.setPageItems(
+				savingsAccountTransactions.getPageItems().stream()
+						.sorted(Comparator.comparing(SavingsAccountTransactionData::getTransactionDateTime).reversed())
+						.toList()
+		);
+		return ResponseEntity.ok(savingsAccountTransactions);
 	}
 
 	@GetMapping("/statement")
