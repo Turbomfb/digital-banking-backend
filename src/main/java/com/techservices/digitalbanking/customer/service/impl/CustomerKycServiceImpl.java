@@ -208,25 +208,6 @@ public class CustomerKycServiceImpl implements CustomerKycService {
                 foundCustomer.setAccountId(String.valueOf(savingsAccountId));
                 foundCustomer.setActive(true);
             }
-
-            Optional<@Valid GetClientsSavingsAccounts> recurringAccount = clientAccounts.stream().filter(account -> account != null && account.isAccountType(AccountType.RECURRING_DEPOSIT)).findAny();
-            if (recurringAccount.isEmpty() || !recurringAccount.get().getStatus().getActive() || !Objects.equals(recurringAccount.get().getProductId(), fineractProperty.getDefaultRecurringDepositProductId())) {
-                PostRecurringDepositAccountsRequest request = new PostRecurringDepositAccountsRequest();
-                request.setProductId(fineractProperty.getDefaultRecurringDepositProductId());
-                request.setClientId(String.valueOf(clientId));
-                request.setDepositPeriodFrequencyId(0L);
-                request.setDepositPeriod(1L);
-                request.setMandatoryRecommendedDepositAmount(BigDecimal.ONE);
-                request.setRecurringFrequency(1L);
-                request.setRecurringFrequencyType(0L);
-                PostRecurringDepositAccountsResponse response = recurringDepositAccountService.submitApplication(request, true);
-                if (response != null) {
-                    log.info("Recurring deposit account created successfully: {}", response);
-                    foundCustomer.setRecurringDepositAccountId(String.valueOf(response.getResourceId()));
-                } else {
-                    log.warn("Failed to create recurring deposit account for client ID: {}", clientId);
-                }
-            }
         }
     }
 
