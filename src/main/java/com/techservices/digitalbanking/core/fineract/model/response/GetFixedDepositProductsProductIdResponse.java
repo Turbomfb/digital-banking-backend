@@ -14,7 +14,7 @@ import lombok.Setter;
 public class GetFixedDepositProductsProductIdResponse {
 	private Object accountingMappings;
 
-	private Object activeChart;
+	private DepositProductsCharts activeChart;
 
 	private GetSavingsCurrency currency;
 

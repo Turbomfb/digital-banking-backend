@@ -9,8 +9,10 @@ import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import com.techservices.digitalbanking.investment.domain.request.FixedDepositApplicationRequest;
 
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
+import com.techservices.digitalbanking.investment.domain.request.InvestmentCalculatorRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
+import com.techservices.digitalbanking.investment.domain.response.InvestmentCalculatorResponse;
 import jakarta.validation.Valid;
 
 public interface InvestmentService {
@@ -37,4 +39,6 @@ public interface InvestmentService {
 	BaseAppResponse updateAnInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, String investmentId);
 
 	BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, Long investmentId);
+
+	InvestmentCalculatorResponse calculateInvestment(Long customerId, InvestmentCalculatorRequest request);
 }

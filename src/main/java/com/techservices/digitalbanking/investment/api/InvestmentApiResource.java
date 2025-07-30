@@ -4,11 +4,14 @@ package com.techservices.digitalbanking.investment.api;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.*;
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
+import com.techservices.digitalbanking.investment.domain.request.InvestmentCalculatorRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
+import com.techservices.digitalbanking.investment.domain.response.InvestmentCalculatorResponse;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentUpdateResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -63,6 +66,16 @@ public class InvestmentApiResource {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		BaseAppResponse investment = investmentService.fundInvestment(customerId, investmentType, request, investmentId);
 		return ResponseEntity.ok(investment);
+	}
+
+	@Operation(summary = "Calculate Investment")
+	@PostMapping("/calculate-investment")
+	public ResponseEntity<InvestmentCalculatorResponse> calculateInvestment(
+			@RequestBody InvestmentCalculatorRequest request
+			) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		InvestmentCalculatorResponse response = investmentService.calculateInvestment(customerId, request);
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "Retrieve Customer's Investments")

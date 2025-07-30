@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 @JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RecurringDepositProductsChartSlabs {
+public class AccountDepositProductsChartSlabs {
 
 	private Long id;
 	private BigDecimal annualInterestRate;

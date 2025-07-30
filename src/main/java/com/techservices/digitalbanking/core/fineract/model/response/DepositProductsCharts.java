@@ -19,9 +19,9 @@ import lombok.Setter;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RecurringDepositProductsCharts {
+public class DepositProductsCharts {
 	@Valid
-	private Set<@Valid RecurringDepositProductsChartSlabs> chartSlabs = new LinkedHashSet<>();
+	private Set<@Valid AccountDepositProductsChartSlabs> chartSlabs = new LinkedHashSet<>();
 
 	private String dateFormat;
 
