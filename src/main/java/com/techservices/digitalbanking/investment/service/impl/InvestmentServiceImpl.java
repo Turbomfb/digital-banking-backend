@@ -20,8 +20,10 @@ import com.techservices.digitalbanking.fixeddeposit.domain.request.FixedDepositC
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import com.techservices.digitalbanking.investment.domain.request.FixedDepositApplicationRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
+import com.techservices.digitalbanking.investment.domain.request.InvestmentCalculatorRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
+import com.techservices.digitalbanking.investment.domain.response.InvestmentCalculatorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,6 +59,7 @@ public class InvestmentServiceImpl implements InvestmentService {
     private final AccountTransactionService accountTransactionService;
     private final RecurringDepositTransactionService recurringDepositTransactionService;
     private final CustomerRepository customerRepository;
+    private final FixedDepositProductService fixedDepositProductService;
 
     @Override
     public InvestmentApplicationResponse submitApplication(
@@ -141,6 +147,40 @@ public class InvestmentServiceImpl implements InvestmentService {
             }
         }
         return GenericApiResponse.builder().message("Flex account has been funded successfully").build();
+    }
+
+    @Override
+    public InvestmentCalculatorResponse calculateInvestment(Long customerId, InvestmentCalculatorRequest request) {
+        GetFixedDepositProductsProductIdResponse product =
+                fixedDepositProductService.retrieveAProduct(fineractProperty.getDefaultFixedDepositProductId());
+
+        return product.getActiveChart().getChartSlabs().stream()
+                .findFirst()
+                .map(chartSlab -> {
+                    BigDecimal annualInterestRate = chartSlab.getAnnualInterestRate();
+                    BigDecimal amount = request.getAmount();
+                    Long depositPeriodMonths = request.getDepositPeriod();
+
+                    BigDecimal interest = amount
+                            .multiply(annualInterestRate)
+                            .divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(depositPeriodMonths))
+                            .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
+
+                    InvestmentCalculatorResponse response = new InvestmentCalculatorResponse();
+                    response.setInterestExpected(interest);
+                    response.setTotalPayout(amount.add(interest));
+                    response.setMaturityDate(addMonthsToCurrentDate(depositPeriodMonths));
+                    return response;
+                })
+                .orElseThrow(() -> new ValidationException("no.chart.slab.found",
+                        "Investment calculation failed. Please try again later or contact support."));
+    }
+
+
+    public String addMonthsToCurrentDate(Long monthsToAdd) {
+        LocalDate maturityDate = LocalDate.now().plusMonths(monthsToAdd);
+        return maturityDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
     @Override

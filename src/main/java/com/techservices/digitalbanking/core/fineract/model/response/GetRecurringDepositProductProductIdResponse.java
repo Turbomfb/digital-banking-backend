@@ -41,7 +41,7 @@ public class GetRecurringDepositProductProductIdResponse {
 	private Double minDepositAmount;
 	private Double depositAmount;
 	private Double maxDepositAmount;
-	private RecurringDepositProductsCharts activeChart;
+	private DepositProductsCharts activeChart;
 	private Double nominalAnnualInterestRate;
 
 	@Getter
