@@ -62,8 +62,6 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     private final RedisService redisService;
     private final AccountService accountService;
     private final FineractProperty fineractProperty;
-    private final RecurringDepositAccountService recurringDepositAccountService;
-    private final RecurringDepositProductService recurringDepositProductService;
 
     @Override
     @Transactional(rollbackOn = Exception.class)
@@ -135,7 +133,8 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             CustomerIdentityVerificationResponse customerIdentityVerificationResponse = this.identityVerificationService.verifyBvn(customerKycRequest.getBvn(), identityVerificationRequest);
             foundCustomer.setBvn(customerKycRequest.getBvn());
             if (!customerIdentityVerificationResponse.isValid()) {
-                throw new ValidationException("bvn.verification.failed", "Verification failed for bvn.", customerIdentityVerificationResponse);
+                throw new ValidationException("bvn.verification.failed", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
+                        "Please confirm that your BVN and NIN details are correct or contact your bank customer support for assistance.");
             }
         }
 
