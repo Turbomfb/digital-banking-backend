@@ -13,6 +13,7 @@ import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,15 +54,16 @@ public class IdentityVerificationService {
         identityVerificationData.setType(IdentityVerificationType.BVN.name());
         identityVerificationData.setIdentifier(bvn);
         identityVerificationDataRepository.save(identityVerificationData);
+        verificationResponse.setDataSource("EXTERNAL");
         return verificationResponse;
     }
 
 
 
-    public CustomerIdentityVerificationResponse verifyBvn(String bvn, IdentityVerificationRequest customerData) {
+    public CustomerIdentityVerificationResponse verifyBvn(String bvn, IdentityVerificationRequest customerData, Customer foundCustomer) {
         GetClientsClientIdResponse client = clientService.getCustomerByBvn(bvn);
         IdentityVerificationResponse identityVerificationResponse = client != null ? IdentityVerificationResponse.parse(client) : retrieveBvnData(bvn);
-        return processVerificationResponse(identityVerificationResponse, customerData);
+        return processVerificationResponse(identityVerificationResponse, customerData, foundCustomer);
     }
 
     @Transactional
@@ -80,14 +82,15 @@ public class IdentityVerificationService {
         identityVerificationData.setIdentifier(nin);
         log.info("Saving identity verification data: {}", identityVerificationData);
         identityVerificationDataRepository.save(identityVerificationData);
+        verificationResponse.setDataSource("EXTERNAL");
         return verificationResponse;
     }
 
-    public CustomerIdentityVerificationResponse verifyNin(String nin, IdentityVerificationRequest customerData) {
+    public CustomerIdentityVerificationResponse verifyNin(String nin, IdentityVerificationRequest customerData, Customer foundCustomer) {
         log.info("Verifying nin: {}", nin);
         GetClientsClientIdResponse client = clientService.getCustomerByNin(nin);
         IdentityVerificationResponse identityVerificationResponse = client != null ? IdentityVerificationResponse.parse(client) : retrieveNinData(nin);
-        return processVerificationResponse(identityVerificationResponse, customerData);
+        return processVerificationResponse(identityVerificationResponse, customerData, foundCustomer);
     }
 
     private String buildUrl(String endpoint) {
@@ -111,13 +114,13 @@ public class IdentityVerificationService {
         }
     }
 
-    private CustomerIdentityVerificationResponse processVerificationResponse(IdentityVerificationResponse response, IdentityVerificationRequest customerData) {
+    private CustomerIdentityVerificationResponse processVerificationResponse(IdentityVerificationResponse response, IdentityVerificationRequest customerData, Customer foundCustomer) {
         if (response == null || !response.isSuccess() || response.getData() == null) {
             log.error(String.valueOf(response));
             throw new ValidationException("verification.failed", "Verification failed for identifier.");
         }
 
-        List<String> mismatchedFields = findMismatchedFields(customerData, response);
+        List<String> mismatchedFields = findMismatchedFields(customerData, response, foundCustomer);
 
         CustomerIdentityVerificationResponse customerIdentityVerificationResponse = new CustomerIdentityVerificationResponse();
         customerIdentityVerificationResponse.setMismatchedFields(mismatchedFields);
@@ -126,7 +129,7 @@ public class IdentityVerificationService {
         return customerIdentityVerificationResponse;
     }
 
-    private List<String> findMismatchedFields(IdentityVerificationRequest customerData, IdentityVerificationResponse verificationResponse) {
+    private List<String> findMismatchedFields(IdentityVerificationRequest customerData, IdentityVerificationResponse verificationResponse, Customer foundCustomer) {
         IdentityVerificationResponse.IdentityVerificationResponseData responseData = verificationResponse.getData();
         List<String> mismatchedFields = new ArrayList<>();
         if (StringUtils.equalsIgnoreCase("EXTERNAL", verificationResponse.getDataSource())) {
@@ -139,7 +142,7 @@ public class IdentityVerificationService {
                 mismatchedFields.add("Last Name");
             }
         }
-        if (!StringUtils.equalsIgnoreCase(customerData.getPhoneNumber(), responseData.getMobile())) {
+        if (!StringUtils.equalsIgnoreCase(customerData.getPhoneNumber(), responseData.getMobile()) || !StringUtils.equalsIgnoreCase(foundCustomer.getPhoneNumber(), responseData.getMobile())) {
             mismatchedFields.add("Phone Number");
         }
         return mismatchedFields;

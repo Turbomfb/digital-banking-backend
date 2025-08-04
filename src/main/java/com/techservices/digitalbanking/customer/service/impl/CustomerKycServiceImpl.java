@@ -130,7 +130,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             }
 
             IdentityVerificationRequest identityVerificationRequest = IdentityVerificationRequest.parse(foundCustomer);
-            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = this.identityVerificationService.verifyBvn(customerKycRequest.getBvn(), identityVerificationRequest);
+            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = this.identityVerificationService.verifyBvn(customerKycRequest.getBvn(), identityVerificationRequest, foundCustomer);
             foundCustomer.setBvn(customerKycRequest.getBvn());
             if (!customerIdentityVerificationResponse.isValid()) {
                 throw new ValidationException("bvn.verification.failed", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
@@ -154,7 +154,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             }
 
             IdentityVerificationRequest identityVerificationRequest = IdentityVerificationRequest.parse(foundCustomer);
-            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyNin(customerKycRequest.getNin(), identityVerificationRequest);
+            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyNin(customerKycRequest.getNin(), identityVerificationRequest, foundCustomer);
             foundCustomer.setNin(customerKycRequest.getNin());
             if (!customerIdentityVerificationResponse.isValid()) {
                 log.error("NIN verification failed: {}", customerIdentityVerificationResponse);

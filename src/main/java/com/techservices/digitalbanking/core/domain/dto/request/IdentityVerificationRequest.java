@@ -18,7 +18,17 @@ public class IdentityVerificationRequest {
             identityVerificationRequest.setFirstName(customer.getFirstname());
             identityVerificationRequest.setLastName(customer.getLastname());
             identityVerificationRequest.setEmailAddress(customer.getEmailAddress());
-            identityVerificationRequest.setPhoneNumber(customer.getPhoneNumber());
+            String phoneNumber = customer.getPhoneNumber();
+            if (phoneNumber != null) {
+                phoneNumber = phoneNumber.trim();
+
+                if (phoneNumber.startsWith("+234")) {
+                    phoneNumber = "0" + phoneNumber.substring(4);
+                } else if (phoneNumber.startsWith("234")) {
+                    phoneNumber = "0" + phoneNumber.substring(3);
+                }
+            }
+            identityVerificationRequest.setPhoneNumber(phoneNumber);
         }
         return identityVerificationRequest;
     }
