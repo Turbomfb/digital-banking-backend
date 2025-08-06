@@ -38,12 +38,10 @@ import com.techservices.digitalbanking.core.domain.data.model.AppUser;
 import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
-import com.techservices.digitalbanking.core.service.IpLocationService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
-import eu.bitwalker.useragentutils.UserAgent;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,7 +106,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(appUser);
 
         try {
-            this.processUserLoginActivity(userAgent, request, foundCustomer);
+            this.processUserLoginActivity(userAgent, request, foundCustomer, authenticationResponse);
         } catch (Exception e) {
             log.error("Error processing user login activity: {}", e.getMessage());
         }
@@ -116,20 +114,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
 
-    private void processUserLoginActivity(String userAgent, HttpServletRequest request, Customer foundCustomer) {
+    private void processUserLoginActivity(String userAgent, HttpServletRequest request, Customer foundCustomer, AuthenticationResponse authenticationResponse) {
         log.info("userAgent: {}", userAgent);
         log.info("Processing headers: sec-ch-ua={}, sec-ch-ua-mobile={}, sec-ch-ua-platform={}",
                 request.getHeader("sec-ch-ua"), request.getHeader("sec-ch-ua-mobile"), request.getHeader("sec-ch-ua-platform"));
 
-        // Extract device information from headers and user agent
         String deviceName = UserLoginActivityUtil.extractDeviceNameFromHeaders(request, userAgent);
         String source = UserLoginActivityUtil.extractSourceFromHeaders(request, userAgent);
 
-        // Get client IP and location
         String ip = UserLoginActivityUtil.extractClientIp(request);
         String location = UserLoginActivityUtil.getLocationFromRequest(ip, request);
 
-        // Create or update user login activity
         UserLoginActivity activity;
         Optional<UserLoginActivity> foundActivity = userLoginActivityRepository
                 .findByCustomerIdAndDeviceNameAndSource(foundCustomer.getId(), deviceName, source);
@@ -147,6 +142,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         activity.setLocation(location);
+        authenticationResponse.setIp(ip);
 
         log.info("user activity: {}", activity);
         userLoginActivityRepository.save(activity);
