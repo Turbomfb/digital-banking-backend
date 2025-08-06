@@ -37,4 +37,6 @@ public interface AuthenticationService {
     GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command, UserType customerType);
 
     BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId);
+
+    GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest);
 }

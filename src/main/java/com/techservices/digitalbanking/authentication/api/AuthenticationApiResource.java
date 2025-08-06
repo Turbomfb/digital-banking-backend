@@ -73,6 +73,16 @@ public class AuthenticationApiResource {
         return ResponseEntity.ok(authenticationService.forgotPassword(passwordMgtRequest, command, customerType));
     }
 
+    @Operation(summary = "Change Password")
+    @PostMapping("/me/change-password")
+    public ResponseEntity<GenericApiResponse> changePassword(
+            @RequestBody PasswordMgtRequest passwordMgtRequest
+    ) {
+        Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+        passwordMgtRequest.setCustomerId(customerId);
+        return ResponseEntity.ok(authenticationService.changePassword(passwordMgtRequest));
+    }
+
     @Operation(summary = "Retrieve User Login Activities")
     @GetMapping("/me/login-activities")
     public ResponseEntity<BasePageResponse<UserLoginActivity>> retrieveUserLoginActivities() {
