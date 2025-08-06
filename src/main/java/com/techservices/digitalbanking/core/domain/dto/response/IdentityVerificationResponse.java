@@ -43,6 +43,7 @@ public class IdentityVerificationResponse {
         identityVerificationResponseData.setLastName(identityVerificationData.getLastName());
         identityVerificationResponseData.setMobile(identityVerificationData.getMobile());
         identityVerificationResponseData.setEmail(identityVerificationData.getEmail());
+        identityVerificationResponseData.setGender(identityVerificationData.getGender());
         identityVerificationResponse.setData(identityVerificationResponseData);
         identityVerificationResponse.setSuccess(true);
         identityVerificationResponse.setDataSource("EXTERNAL");

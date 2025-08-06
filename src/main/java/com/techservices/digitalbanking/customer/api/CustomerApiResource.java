@@ -62,7 +62,7 @@ public class CustomerApiResource {
 
 	@Operation(summary = "Retrieve Identity Data")
 	@GetMapping("identity-verification")
-	public ResponseEntity<IdentityVerificationResponse> retrieveIdentityData(
+	public ResponseEntity<IdentityVerificationResponse.IdentityVerificationResponseData> retrieveIdentityData(
 			@RequestParam(name = "identityType") IdentityVerificationType identityType,
 			@RequestParam(name = "identityValue") String identityValue
 	) {
@@ -75,7 +75,8 @@ public class CustomerApiResource {
 			log.error("Unsupported identity type: {}", identityType);
 			throw new ValidationException("validation.error.exists", "Unsupported identity type: " + identityType);
 		}
-		return new ResponseEntity<>(identityResponse, HttpStatusCode.valueOf(200));
+		identityResponse.getData().setImage(null);
+		return new ResponseEntity<>(identityResponse.getData(), HttpStatusCode.valueOf(200));
 	}
 
 	@Operation(summary = "Update Customer")
