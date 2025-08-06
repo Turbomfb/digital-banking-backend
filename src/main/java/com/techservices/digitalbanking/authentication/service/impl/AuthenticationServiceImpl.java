@@ -56,9 +56,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import static com.techservices.digitalbanking.authentication.util.UserLoginActivityUtil.extractDeviceName;
-import static com.techservices.digitalbanking.authentication.util.UserLoginActivityUtil.extractSource;
 import static com.techservices.digitalbanking.core.util.CommandUtil.*;
 
 
@@ -118,17 +115,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return authenticationResponse;
     }
 
+
     private void processUserLoginActivity(String userAgent, HttpServletRequest request, Customer foundCustomer) {
         log.info("userAgent: {}", userAgent);
-        UserAgent userAgentObject = UserAgent.parseUserAgentString(userAgent);
-        log.info("userAgentObject: {}", userAgentObject);
+        log.info("Processing headers: sec-ch-ua={}, sec-ch-ua-mobile={}, sec-ch-ua-platform={}",
+                request.getHeader("sec-ch-ua"), request.getHeader("sec-ch-ua-mobile"), request.getHeader("sec-ch-ua-platform"));
 
-        String deviceName = UserLoginActivityUtil.extractDeviceName(userAgentObject, userAgent);
-        String source = UserLoginActivityUtil.extractSource(userAgentObject, userAgent);
+        // Extract device information from headers and user agent
+        String deviceName = UserLoginActivityUtil.extractDeviceNameFromHeaders(request, userAgent);
+        String source = UserLoginActivityUtil.extractSourceFromHeaders(request, userAgent);
 
-        String ip = extractClientIp(request);
+        // Get client IP and location
+        String ip = UserLoginActivityUtil.extractClientIp(request);
         String location = UserLoginActivityUtil.getLocationFromRequest(ip, request);
 
+        // Create or update user login activity
         UserLoginActivity activity;
         Optional<UserLoginActivity> foundActivity = userLoginActivityRepository
                 .findByCustomerIdAndDeviceNameAndSource(foundCustomer.getId(), deviceName, source);
@@ -149,11 +150,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         log.info("user activity: {}", activity);
         userLoginActivityRepository.save(activity);
-    }
-
-    private String extractClientIp(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        return xfHeader == null ? request.getRemoteAddr() : xfHeader.split(",")[0];
     }
 
     private Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber, UserType customerType) {
