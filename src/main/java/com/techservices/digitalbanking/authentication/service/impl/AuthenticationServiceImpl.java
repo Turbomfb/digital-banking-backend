@@ -26,6 +26,7 @@ import com.techservices.digitalbanking.authentication.domain.request.Authenticat
 import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
 import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
 import com.techservices.digitalbanking.authentication.service.AuthenticationService;
+import com.techservices.digitalbanking.authentication.util.UserLoginActivityUtil;
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.configuration.security.JwtUtil;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
@@ -56,6 +57,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.techservices.digitalbanking.authentication.util.UserLoginActivityUtil.extractDeviceName;
+import static com.techservices.digitalbanking.authentication.util.UserLoginActivityUtil.extractSource;
 import static com.techservices.digitalbanking.core.util.CommandUtil.*;
 
 
@@ -71,7 +74,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final CustomerService customerService;
     private final RedisService redisService;
     private final UserLoginActivityRepository userLoginActivityRepository;
-    private final IpLocationService ipLocationService;
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType, String userAgent, HttpServletRequest request) {
@@ -118,52 +120,34 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private void processUserLoginActivity(String userAgent, HttpServletRequest request, Customer foundCustomer) {
         log.info("userAgent: {}", userAgent);
-
         UserAgent userAgentObject = UserAgent.parseUserAgentString(userAgent);
         log.info("userAgentObject: {}", userAgentObject);
 
-        String deviceName = userAgentObject.getOperatingSystem().getDeviceType().getName();
-        String source = userAgentObject.getBrowser().getName();
-
-        if ("Unknown".equalsIgnoreCase(deviceName) || deviceName == null) {
-            deviceName = "API Client";
-        }
-
-        if ("Unknown".equalsIgnoreCase(source) || source == null) {
-            source = (userAgent != null && !userAgent.isBlank()) ? userAgent : "Unknown";
-            if (userAgent != null) {
-                if (userAgent.toLowerCase().contains("okhttp")) {
-                    source = "Android App";
-                } else if (userAgent.toLowerCase().contains("dart")) {
-                    source = "Flutter App";
-                } else if (userAgent.toLowerCase().contains("cfnetwork")) {
-                    source = "iOS App";
-                } else if (userAgent.toLowerCase().contains("postman")) {
-                    source = "Postman";
-                } else if (StringUtils.isNotBlank(userAgent)) {
-                    source = userAgent;
-                }
-            }
-        }
-
+        String deviceName = UserLoginActivityUtil.extractDeviceName(userAgentObject, userAgent);
+        String source = UserLoginActivityUtil.extractSource(userAgentObject, userAgent);
 
         String ip = extractClientIp(request);
-        String location = ipLocationService.getLocation(ip);
+        String location = UserLoginActivityUtil.getLocationFromRequest(ip, request);
 
-        UserLoginActivity activity = new UserLoginActivity();
-        Optional<UserLoginActivity> foundActivity = userLoginActivityRepository.findByDeviceNameAndSource(deviceName, source);
+        UserLoginActivity activity;
+        Optional<UserLoginActivity> foundActivity = userLoginActivityRepository
+                .findByCustomerIdAndDeviceNameAndSource(foundCustomer.getId(), deviceName, source);
+
         if (foundActivity.isPresent()) {
             activity = foundActivity.get();
+            activity.setUpdatedAt(LocalDateTime.now());
         } else {
+            activity = new UserLoginActivity();
+            activity.setCustomerId(foundCustomer.getId());
             activity.setDeviceName(deviceName);
+            activity.setSource(source);
+            activity.setCreatedAt(LocalDateTime.now());
+            activity.setUpdatedAt(LocalDateTime.now());
         }
-        activity.setSource(source);
-        activity.setLocation(StringUtils.equalsIgnoreCase(location, "Unknown") ? "-" : location);
-        activity.setCustomerId(foundCustomer.getId());
-        activity.setCreatedAt(LocalDateTime.now());
-        activity.setUpdatedAt(LocalDateTime.now());
-        log.info("user activity: {}", activity);
 
+        activity.setLocation(location);
+
+        log.info("user activity: {}", activity);
         userLoginActivityRepository.save(activity);
     }
 

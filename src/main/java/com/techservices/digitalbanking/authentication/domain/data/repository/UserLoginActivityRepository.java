@@ -11,7 +11,7 @@ public interface UserLoginActivityRepository extends JpaRepository<UserLoginActi
 
     Optional<UserLoginActivity> findByDeviceName(String deviceName);
 
-    Optional<UserLoginActivity> findByDeviceNameAndSource(String deviceName, String source);
+    Optional<UserLoginActivity> findByCustomerIdAndDeviceNameAndSource(Long customerId, String deviceName, String source);
 
     List<UserLoginActivity> findAllByCustomerId(Long customerId);
 }
