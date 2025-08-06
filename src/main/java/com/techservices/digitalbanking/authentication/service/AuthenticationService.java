@@ -27,6 +27,7 @@ import com.techservices.digitalbanking.authentication.domain.response.Authentica
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuthenticationService {
@@ -39,4 +40,6 @@ public interface AuthenticationService {
     BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId);
 
     GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest);
+
+    GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest);
 }

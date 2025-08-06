@@ -28,6 +28,7 @@ import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -81,6 +82,16 @@ public class AuthenticationApiResource {
         Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
         passwordMgtRequest.setCustomerId(customerId);
         return ResponseEntity.ok(authenticationService.changePassword(passwordMgtRequest));
+    }
+
+    @Operation(summary = "Change Password")
+    @PostMapping("/me/change-pin")
+    public ResponseEntity<GenericApiResponse> changeTransactionPin(
+            @RequestBody CustomerTransactionPinRequest pinRequest
+    ) {
+        Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+        pinRequest.setCustomerId(customerId);
+        return ResponseEntity.ok(authenticationService.changeTransactionPin(pinRequest));
     }
 
     @Operation(summary = "Retrieve User Login Activities")

@@ -11,6 +11,7 @@ import com.techservices.digitalbanking.loan.domain.response.LoanDashboardRespons
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
@@ -44,6 +45,7 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	private final LoanService loanService;
 	private final CustomerService customerService;
 	private final ExternalLoanService externalLoanService;
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public PostLoansResponse calculateLoanScheduleOrSubmitLoanApplication(LoanApplicationRequest loanApplicationRequest,
@@ -87,7 +89,7 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 					"Transaction PIN is required for loan repayment");
 		}
 		Customer customer = customerService.getCustomerById(customerId);
-		if (!StringUtils.equals(loanRepaymentRequest.getTransactionPin(), customer.getTransactionPin())){
+		if (!passwordEncoder.matches(loanRepaymentRequest.getTransactionPin(), customer.getTransactionPin())){
 			throw new ValidationException("validation.msg.loan.repayment.transaction.pin.invalid",
 					"Invalid Transaction PIN provided for loan repayment");
 		}

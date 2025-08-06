@@ -388,7 +388,48 @@ public class UserLoginActivityUtil {
 
         String location = "-";
 
-        // Priority 1: CloudFlare country header (most reliable for user location)
+        // Priority 1: Custom client location header (highest priority - user provided)
+        String clientLocation = request.getHeader("X-Client-Location");
+        log.info("X-Client-Location header: {}", clientLocation);
+        if (clientLocation != null && !clientLocation.isEmpty() && !clientLocation.trim().equals("-")) {
+            location = clientLocation.trim();
+            log.info("Using client-provided location: {}", location);
+            return location;
+        }
+
+        // Alternative custom location headers
+        String[] customLocationHeaders = {
+                "X-User-Location",
+                "X-Geo-Location",
+                "X-Location"
+        };
+
+        for (String header : customLocationHeaders) {
+            String headerValue = request.getHeader(header);
+            log.info("Header {}: {}", header, headerValue);
+            if (headerValue != null && !headerValue.isEmpty() && !headerValue.trim().equals("-")) {
+                location = headerValue.trim();
+                log.info("Using location from {}: {}", header, location);
+                return location;
+            }
+        }
+
+        // Priority 2: Separate city and state headers
+        String clientCity = request.getHeader("X-Client-City");
+        String clientState = request.getHeader("X-Client-State");
+        log.info("X-Client-City: {}, X-Client-State: {}", clientCity, clientState);
+
+        if (clientCity != null && !clientCity.isEmpty()) {
+            if (clientState != null && !clientState.isEmpty()) {
+                location = clientCity.trim() + ", " + clientState.trim();
+            } else {
+                location = clientCity.trim();
+            }
+            log.info("Using client city/state: {}", location);
+            return location;
+        }
+
+        // Priority 3: CloudFlare country header (most reliable for country-level location)
         String cfIpCountry = request.getHeader("CF-IPCountry");
         log.info("CF-IPCountry header: {}", cfIpCountry);
         if (cfIpCountry != null && !cfIpCountry.equalsIgnoreCase("XX") && !cfIpCountry.isEmpty()) {
@@ -397,7 +438,7 @@ public class UserLoginActivityUtil {
             return location;
         }
 
-        // Priority 2: Other location headers from CDN/proxy
+        // Priority 4: Other location headers from CDN/proxy
         String[] locationHeaders = {
                 "CloudFront-Viewer-Country",
                 "X-Country-Code",
@@ -415,7 +456,7 @@ public class UserLoginActivityUtil {
             }
         }
 
-        // Priority 3: IP geolocation (only if we have a valid user IP)
+        // Priority 5: IP geolocation (only if we have a valid user IP)
         if (ip != null && isValidUserIp(ip)) {
             try {
                 log.info("Attempting IP geolocation for: {}", ip);
@@ -435,7 +476,7 @@ public class UserLoginActivityUtil {
             }
         }
 
-        // Priority 4: Accept-Language header as last resort
+        // Priority 6: Accept-Language header as last resort
         String acceptLanguage = request.getHeader("Accept-Language");
         log.info("Accept-Language header: {}", acceptLanguage);
         if (acceptLanguage != null) {

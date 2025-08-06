@@ -41,6 +41,7 @@ import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -144,7 +145,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         activity.setLocation(location);
-        authenticationResponse.setIp(ip);
 
         log.info("user activity: {}", activity);
         userLoginActivityRepository.save(activity);
@@ -237,6 +237,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return new GenericApiResponse("Password changed successfully", "success", null);
         }
         throw new ValidationException("incorrect.password", "Incorrect password provided. Please try again.");
+    }
+
+    @Override
+    public GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest) {
+        Customer foundCustomer = customerService.getCustomerById(pinRequest.getCustomerId());
+        if (passwordEncoder.matches(pinRequest.getPin(), foundCustomer.getTransactionPin())){
+            if (StringUtils.isBlank(pinRequest.getNewPin())) {
+                throw new ValidationException("Invalid.data.provided", "new pin cannot be blank");
+            }
+            foundCustomer.setTransactionPin(passwordEncoder.encode(pinRequest.getNewPin()));
+            customerRepository.save(foundCustomer);
+            return new GenericApiResponse("Transaction pin changed successfully", "success", null);
+        }
+        throw new ValidationException("incorrect.pin", "Incorrect transaction pin provided. Please try again.");
     }
 
     private String generateToken(String username, Map<String, Object> claims) {

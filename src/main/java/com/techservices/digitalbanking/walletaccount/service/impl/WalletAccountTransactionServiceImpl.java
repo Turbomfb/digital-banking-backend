@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.parameters.P;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.exception.AbstractPlatformDomainRuleException;
@@ -57,6 +58,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	private final RedisService redisService;
 	private final PaymentOrderRepository paymentOrderRepository;
 	private final ApiService apiService;
+	private final PasswordEncoder passwordEncoder;
 
 
 	@Override
@@ -93,7 +95,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 		if (GENERATE_OTP_COMMAND.equals(command)) {
 			Customer customer = this.validateCustomerAccount(request, customerId);
 			request.validateForOtpGeneration();
-			if (!StringUtils.equals(customer.getTransactionPin(), request.getTransactionPin())) {
+			if (!passwordEncoder.matches(customer.getTransactionPin(), request.getTransactionPin())) {
 				throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.mismatch",
 						"Customer transaction pin is not correct");
 			}

@@ -10,5 +10,7 @@ import java.math.BigDecimal;
 @Getter
 public class CustomerTransactionPinRequest {
 	private String pin;
+	private String newPin;
+	private Long customerId;
 
 }

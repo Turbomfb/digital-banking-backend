@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -41,6 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
 	private final AccountService accountService;
 	private final CustomerRepository customerRepository;
 	private final RedisService redisService;
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType) {
@@ -198,7 +200,7 @@ public class CustomerServiceImpl implements CustomerService {
 		if (customerTransactionPinRequest.getPin().length() < 4) {
 			throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
 		}
-		foundCustomer.setTransactionPin(customerTransactionPinRequest.getPin());
+		foundCustomer.setTransactionPin(passwordEncoder.encode(customerTransactionPinRequest.getPin()));
 		foundCustomer.setTransactionPinSet(true);
 		customerRepository.save(foundCustomer);
 		return new GenericApiResponse(null, "Transaction pin created successfully", "success", CustomerDtoResponse.parse(foundCustomer));
