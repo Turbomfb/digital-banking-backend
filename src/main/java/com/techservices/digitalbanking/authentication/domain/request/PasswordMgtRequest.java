@@ -14,4 +14,6 @@ public class PasswordMgtRequest {
     private String phoneNumber;
     private String uniqueId;
     private String otp;
+
+    private String newPassword;
 }
