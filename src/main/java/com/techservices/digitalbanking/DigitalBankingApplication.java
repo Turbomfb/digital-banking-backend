@@ -14,11 +14,13 @@ import com.techservices.digitalbanking.investment.domain.request.RecurringDeposi
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -34,6 +36,7 @@ public class DigitalBankingApplication {
     private final CustomerRepository customerRepository;
     private final RecurringDepositAccountService recurringDepositAccountService;
     private final ClientService clientService;
+    private final PasswordEncoder passwordEncoder;
 
     public static void main(String[] args) {
         SpringApplication.run(DigitalBankingApplication.class, args);
@@ -41,5 +44,12 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
+        Iterable<Customer> customers = customerRepository.findAll();
+        for (Customer customer : customers) {
+            if (StringUtils.isNotBlank(customer.getTransactionPin())) {
+                customer.setTransactionPin(passwordEncoder.encode(customer.getTransactionPin()));
+                customerRepository.save(customer);
+            }
+        }
     }
 }

@@ -17,7 +17,6 @@ public class AuthenticationResponse {
 
     private Long id;
     private String firstname;
-    private String ip;
     private String lastname;
     private String emailAddress;
     private String externalId;
