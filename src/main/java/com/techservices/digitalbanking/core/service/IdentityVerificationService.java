@@ -143,8 +143,10 @@ public class IdentityVerificationService {
             }
         }
         if (!StringUtils.equalsIgnoreCase(customerData.getPhoneNumber(), responseData.getMobile()) || !StringUtils.equalsIgnoreCase(foundCustomer.getPhoneNumber(), responseData.getMobile())) {
+            log.error("Phone number mismatch: Customer Data: {}, Response Data: {}, Found Customer Phone: {}", customerData.getPhoneNumber(), responseData.getMobile(), foundCustomer.getPhoneNumber());
             mismatchedFields.add("Phone Number");
         }
+        log.info("Mismatched fields for {} are {}", customerData.getPhoneNumber(), mismatchedFields);
         return mismatchedFields;
     }
 }

@@ -20,12 +20,15 @@
  */ 
 package com.techservices.digitalbanking.authentication.service.impl;
 
+import com.techservices.digitalbanking.authentication.domain.data.model.UserLoginActivity;
+import com.techservices.digitalbanking.authentication.domain.data.repository.UserLoginActivityRepository;
 import com.techservices.digitalbanking.authentication.domain.request.AuthenticationRequest;
 import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
 import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
 import com.techservices.digitalbanking.authentication.service.AuthenticationService;
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.configuration.security.JwtUtil;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
@@ -34,10 +37,13 @@ import com.techservices.digitalbanking.core.domain.data.model.AppUser;
 import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
+import com.techservices.digitalbanking.core.service.IpLocationService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
+import eu.bitwalker.useragentutils.UserAgent;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -45,8 +51,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.*;
 
@@ -62,9 +70,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final CustomerService customerService;
     private final RedisService redisService;
+    private final UserLoginActivityRepository userLoginActivityRepository;
+    private final IpLocationService ipLocationService;
 
     @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType) {
+    public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType, String userAgent, HttpServletRequest request) {
         Map<String, Object> claims = new HashMap<>();
         Customer foundCustomer = getCustomerByEmailOrPhoneNumber(postAuthenticationRequest.getEmailAddress(), postAuthenticationRequest.getPhoneNumber(), customerType);
 
@@ -98,7 +108,68 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
         SecurityContextHolder.getContext().setAuthentication(appUser);
 
+        try {
+            this.processUserLoginActivity(userAgent, request, foundCustomer);
+        } catch (Exception e) {
+            log.error("Error processing user login activity: {}", e.getMessage());
+        }
         return authenticationResponse;
+    }
+
+    private void processUserLoginActivity(String userAgent, HttpServletRequest request, Customer foundCustomer) {
+        log.info("userAgent: {}", userAgent);
+
+        UserAgent userAgentObject = UserAgent.parseUserAgentString(userAgent);
+        log.info("userAgentObject: {}", userAgentObject);
+
+        String deviceName = userAgentObject.getOperatingSystem().getDeviceType().getName();
+        String source = userAgentObject.getBrowser().getName();
+
+        if ("Unknown".equalsIgnoreCase(deviceName) || deviceName == null) {
+            deviceName = "API Client";
+        }
+
+        if ("Unknown".equalsIgnoreCase(source) || source == null) {
+            source = (userAgent != null && !userAgent.isBlank()) ? userAgent : "Unknown";
+            if (userAgent != null) {
+                if (userAgent.toLowerCase().contains("okhttp")) {
+                    source = "Android App";
+                } else if (userAgent.toLowerCase().contains("dart")) {
+                    source = "Flutter App";
+                } else if (userAgent.toLowerCase().contains("cfnetwork")) {
+                    source = "iOS App";
+                } else if (userAgent.toLowerCase().contains("postman")) {
+                    source = "Postman";
+                } else if (StringUtils.isNotBlank(userAgent)) {
+                    source = userAgent;
+                }
+            }
+        }
+
+
+        String ip = extractClientIp(request);
+        String location = ipLocationService.getLocation(ip);
+
+        UserLoginActivity activity = new UserLoginActivity();
+        Optional<UserLoginActivity> foundActivity = userLoginActivityRepository.findByDeviceNameAndSource(deviceName, source);
+        if (foundActivity.isPresent()) {
+            activity = foundActivity.get();
+        } else {
+            activity.setDeviceName(deviceName);
+        }
+        activity.setSource(source);
+        activity.setLocation(StringUtils.equalsIgnoreCase(location, "Unknown") ? "-" : location);
+        activity.setCustomerId(foundCustomer.getId());
+        activity.setCreatedAt(LocalDateTime.now());
+        activity.setUpdatedAt(LocalDateTime.now());
+        log.info("user activity: {}", activity);
+
+        userLoginActivityRepository.save(activity);
+    }
+
+    private String extractClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        return xfHeader == null ? request.getRemoteAddr() : xfHeader.split(",")[0];
     }
 
     private Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber, UserType customerType) {
@@ -167,6 +238,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new ValidationException("Invalid.command", "Invalid command: " + command);
         }
 
+    }
+
+    @Override
+    public BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId) {
+        return BasePageResponse.instance(
+                this.userLoginActivityRepository.findAllByCustomerId(customerId)
+        );
     }
 
     private String generateToken(String username, Map<String, Object> claims) {

@@ -19,20 +19,20 @@
  * Email: engineering@techservice.com
  */ 
 package com.techservices.digitalbanking.authentication.api;
+import com.techservices.digitalbanking.authentication.domain.data.model.UserLoginActivity;
 import com.techservices.digitalbanking.authentication.domain.request.AuthenticationRequest;
 import com.techservices.digitalbanking.authentication.domain.request.PasswordMgtRequest;
 import com.techservices.digitalbanking.authentication.domain.response.AuthenticationResponse;
 import com.techservices.digitalbanking.authentication.service.AuthenticationService;
 import com.techservices.digitalbanking.common.domain.enums.UserType;
+import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
@@ -41,14 +41,17 @@ import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP
 @RequiredArgsConstructor
 public class AuthenticationApiResource {
     private final AuthenticationService authenticationService;
+    private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
     @Operation(summary = "Authenticate User")
     @PostMapping()
     public ResponseEntity<AuthenticationResponse> authenticate(
+            @RequestHeader(value = "User-Agent", required = false) String userAgent,
             @RequestBody AuthenticationRequest postAuthenticationRequest,
-            @RequestParam (value = "customerType", required = false, defaultValue = "RETAIL") UserType customerType
+            @RequestParam (value = "customerType", required = false, defaultValue = "RETAIL") UserType customerType,
+            HttpServletRequest request
     ) {
-        return ResponseEntity.ok(authenticationService.authenticate(postAuthenticationRequest, customerType));
+        return ResponseEntity.ok(authenticationService.authenticate(postAuthenticationRequest, customerType, userAgent, request));
     }
 
     @Operation(summary = "Create Password")
@@ -68,6 +71,13 @@ public class AuthenticationApiResource {
             @RequestParam (value = "customerType", required = false, defaultValue = "RETAIL") UserType customerType
     ) {
         return ResponseEntity.ok(authenticationService.forgotPassword(passwordMgtRequest, command, customerType));
+    }
+
+    @Operation(summary = "Retrieve User Login Activities")
+    @GetMapping("/me/login-activities")
+    public ResponseEntity<BasePageResponse<UserLoginActivity>> retrieveUserLoginActivities() {
+        Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+        return ResponseEntity.ok(authenticationService.retrieveUserLoginActivities(customerId));
     }
 
 }
