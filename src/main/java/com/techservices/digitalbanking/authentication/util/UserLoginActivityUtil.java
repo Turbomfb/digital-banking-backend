@@ -24,51 +24,63 @@ public class UserLoginActivityUtil {
     );
 
     public static String extractDeviceNameFromHeaders(HttpServletRequest request, String userAgent) {
-        String deviceName = "Computer"; // Default for web browsers
+        String deviceName = "Computer"; // Default fallback
+
+        log.info("=== DEVICE NAME EXTRACTION DEBUG ===");
+        log.info("sec-ch-ua-mobile: {}", request.getHeader("sec-ch-ua-mobile"));
+        log.info("sec-ch-ua-platform: {}", request.getHeader("sec-ch-ua-platform"));
+        log.info("User-Agent: {}", userAgent);
 
         // First priority: Check sec-ch-ua-mobile header (most reliable for mobile detection)
         String secChUaMobile = request.getHeader("sec-ch-ua-mobile");
         if (secChUaMobile != null) {
             if ("?1".equals(secChUaMobile)) {
-                deviceName = "Mobile";
-            } else {
-                // Check sec-ch-ua-platform for more specific device type
+                // Mobile device - get specific mobile device name
                 String secChUaPlatform = request.getHeader("sec-ch-ua-platform");
                 if (secChUaPlatform != null) {
                     String platform = secChUaPlatform.replace("\"", "").toLowerCase();
                     switch (platform) {
                         case "android":
-                            deviceName = "Mobile";
+                            deviceName = "Android";
                             break;
                         case "ios":
-                            deviceName = "Mobile";
-                            break;
-                        case "macos":
-                        case "windows":
-                        case "linux":
-                        case "chrome os":
-                            deviceName = "Computer";
+                            deviceName = determineIosDevice(userAgent);
                             break;
                         default:
-                            deviceName = "Computer";
+                            deviceName = "Mobile";
                     }
+                } else {
+                    deviceName = "Mobile";
+                }
+            } else {
+                // Desktop device - get specific desktop device name
+                String secChUaPlatform = request.getHeader("sec-ch-ua-platform");
+                if (secChUaPlatform != null) {
+                    String platform = secChUaPlatform.replace("\"", "");
+                    switch (platform.toLowerCase()) {
+                        case "macos":
+                            deviceName = determineMacDevice(userAgent);
+                            break;
+                        case "windows":
+                            deviceName = determineWindowsDevice(userAgent);
+                            break;
+                        case "linux":
+                            deviceName = "Linux Computer";
+                            break;
+                        case "chrome os":
+                            deviceName = "Chromebook";
+                            break;
+                        default:
+                            deviceName = platform + " Computer";
+                    }
+                } else {
+                    deviceName = "Computer";
                 }
             }
         } else {
             // Fallback to user agent parsing if sec-ch-ua headers not available
             if (userAgent != null) {
-                String lowerUserAgent = userAgent.toLowerCase();
-                if (lowerUserAgent.contains("android") ||
-                        lowerUserAgent.contains("iphone") ||
-                        lowerUserAgent.contains("ipad") ||
-                        lowerUserAgent.contains("mobile")) {
-                    deviceName = "Mobile";
-                } else if (lowerUserAgent.contains("macintosh") ||
-                        lowerUserAgent.contains("windows") ||
-                        lowerUserAgent.contains("linux") ||
-                        lowerUserAgent.contains("mac os")) {
-                    deviceName = "Computer";
-                }
+                deviceName = extractDeviceFromUserAgent(userAgent);
             }
         }
 
@@ -81,14 +93,101 @@ public class UserLoginActivityUtil {
                 deviceName = "Flutter App";
             } else if (lowerUserAgent.contains("cfnetwork")) {
                 deviceName = "iOS App";
-            } else if (lowerUserAgent.contains("postman") ||
-                    lowerUserAgent.contains("insomnia") ||
-                    lowerUserAgent.contains("curl")) {
+            } else if (lowerUserAgent.contains("postman")) {
+                deviceName = "Postman";
+            } else if (lowerUserAgent.contains("insomnia")) {
+                deviceName = "Insomnia";
+            } else if (lowerUserAgent.contains("curl")) {
                 deviceName = "API Client";
             }
         }
 
+        log.info("Final device name: {}", deviceName);
         return deviceName;
+    }
+
+    private static String determineMacDevice(String userAgent) {
+        if (userAgent == null) return "Mac";
+
+        String lowerUserAgent = userAgent.toLowerCase();
+
+        // Check for specific Mac models in user agent
+        if (lowerUserAgent.contains("macbook")) {
+            return "MacBook";
+        } else if (lowerUserAgent.contains("imac")) {
+            return "iMac";
+        } else if (lowerUserAgent.contains("mac pro")) {
+            return "Mac Pro";
+        } else if (lowerUserAgent.contains("mac mini")) {
+            return "Mac Mini";
+        } else if (lowerUserAgent.contains("macintosh") || lowerUserAgent.contains("mac os")) {
+            // Generic Mac detection - could be any Mac
+            return "Mac";
+        }
+
+        return "Mac"; // Default for macOS platform
+    }
+
+    private static String determineWindowsDevice(String userAgent) {
+        if (userAgent == null) return "Windows PC";
+
+        String lowerUserAgent = userAgent.toLowerCase();
+
+        // Check Windows version
+        if (lowerUserAgent.contains("windows nt 10.0")) {
+            return "Windows 10/11 PC";
+        } else if (lowerUserAgent.contains("windows nt 6.3")) {
+            return "Windows 8.1 PC";
+        } else if (lowerUserAgent.contains("windows nt 6.1")) {
+            return "Windows 7 PC";
+        } else if (lowerUserAgent.contains("windows")) {
+            return "Windows PC";
+        }
+
+        return "Windows PC";
+    }
+
+    private static String determineIosDevice(String userAgent) {
+        if (userAgent == null) return "iOS Device";
+
+        String lowerUserAgent = userAgent.toLowerCase();
+
+        if (lowerUserAgent.contains("iphone")) {
+            return "iPhone";
+        } else if (lowerUserAgent.contains("ipad")) {
+            return "iPad";
+        } else if (lowerUserAgent.contains("ipod")) {
+            return "iPod";
+        }
+
+        return "iOS Device";
+    }
+
+    private static String extractDeviceFromUserAgent(String userAgent) {
+        String lowerUserAgent = userAgent.toLowerCase();
+
+        // Mobile devices
+        if (lowerUserAgent.contains("android")) {
+            return "Android";
+        } else if (lowerUserAgent.contains("iphone")) {
+            return "iPhone";
+        } else if (lowerUserAgent.contains("ipad")) {
+            return "iPad";
+        } else if (lowerUserAgent.contains("mobile")) {
+            return "Mobile";
+        }
+        // Desktop devices
+        else if (lowerUserAgent.contains("macintosh") || lowerUserAgent.contains("mac os")) {
+            return determineMacDevice(userAgent);
+        } else if (lowerUserAgent.contains("windows")) {
+            return determineWindowsDevice(userAgent);
+        } else if (lowerUserAgent.contains("linux")) {
+            return "Linux Computer";
+        } else if (lowerUserAgent.contains("chrome os")) {
+            return "Chromebook";
+        }
+
+        return "Computer";
     }
 
     public static String extractSourceFromHeaders(HttpServletRequest request, String userAgent) {
@@ -356,54 +455,56 @@ public class UserLoginActivityUtil {
             return countryCode;
         }
 
-        return switch (countryCode.toUpperCase()) {
-            case "NG" -> "Nigeria";
-            case "US" -> "United States";
-            case "GB" -> "United Kingdom";
-            case "IE" -> "Ireland";
-            case "DE" -> "Germany";
-            case "FR" -> "France";
-            case "CA" -> "Canada";
-            case "AU" -> "Australia";
-            case "ZA" -> "South Africa";
-            case "KE" -> "Kenya";
-            case "GH" -> "Ghana";
-            case "EG" -> "Egypt";
-            case "MA" -> "Morocco";
-            case "TN" -> "Tunisia";
-            case "SN" -> "Senegal";
-            case "UG" -> "Uganda";
-            case "TZ" -> "Tanzania";
-            case "ET" -> "Ethiopia";
-            case "RW" -> "Rwanda";
-            case "BW" -> "Botswana";
-            case "MU" -> "Mauritius";
-            case "IN" -> "India";
-            case "PK" -> "Pakistan";
-            case "BD" -> "Bangladesh";
-            case "LK" -> "Sri Lanka";
-            case "MY" -> "Malaysia";
-            case "SG" -> "Singapore";
-            case "TH" -> "Thailand";
-            case "PH" -> "Philippines";
-            case "ID" -> "Indonesia";
-            case "VN" -> "Vietnam";
-            case "CN" -> "China";
-            case "JP" -> "Japan";
-            case "KR" -> "South Korea";
-            case "BR" -> "Brazil";
-            case "MX" -> "Mexico";
-            case "AR" -> "Argentina";
-            case "CL" -> "Chile";
-            case "PE" -> "Peru";
-            case "CO" -> "Colombia";
-            default -> countryCode.toUpperCase();
-        };
+        // Map common country codes to full names
+        switch (countryCode.toUpperCase()) {
+            case "NG": return "Nigeria";
+            case "US": return "United States";
+            case "GB": return "United Kingdom";
+            case "IE": return "Ireland";
+            case "DE": return "Germany";
+            case "FR": return "France";
+            case "CA": return "Canada";
+            case "AU": return "Australia";
+            case "ZA": return "South Africa";
+            case "KE": return "Kenya";
+            case "GH": return "Ghana";
+            case "EG": return "Egypt";
+            case "MA": return "Morocco";
+            case "TN": return "Tunisia";
+            case "SN": return "Senegal";
+            case "UG": return "Uganda";
+            case "TZ": return "Tanzania";
+            case "ET": return "Ethiopia";
+            case "RW": return "Rwanda";
+            case "BW": return "Botswana";
+            case "MU": return "Mauritius";
+            case "IN": return "India";
+            case "PK": return "Pakistan";
+            case "BD": return "Bangladesh";
+            case "LK": return "Sri Lanka";
+            case "MY": return "Malaysia";
+            case "SG": return "Singapore";
+            case "TH": return "Thailand";
+            case "PH": return "Philippines";
+            case "ID": return "Indonesia";
+            case "VN": return "Vietnam";
+            case "CN": return "China";
+            case "JP": return "Japan";
+            case "KR": return "South Korea";
+            case "BR": return "Brazil";
+            case "MX": return "Mexico";
+            case "AR": return "Argentina";
+            case "CL": return "Chile";
+            case "PE": return "Peru";
+            case "CO": return "Colombia";
+            default: return countryCode.toUpperCase(); // Return code if not mapped
+        }
     }
 
     private static String getLocationFromAcceptLanguage(String acceptLanguage) {
         String lowerLang = acceptLanguage.toLowerCase();
 
+        // Check for specific locale patterns
         if (lowerLang.contains("en-ng") || lowerLang.contains("yo") || lowerLang.contains("ig") || lowerLang.contains("ha")) {
             return "Nigeria";
         } else if (lowerLang.contains("en-us")) {
