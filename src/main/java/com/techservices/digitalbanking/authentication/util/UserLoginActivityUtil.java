@@ -264,7 +264,7 @@ public class UserLoginActivityUtil {
                         Integer.parseInt(ip.split("\\.")[1]) <= 31); // private class B
     }
 
-    private String getLocationFromRequest(String ip, HttpServletRequest request) {
+    public static String getLocationFromRequest(String ip, HttpServletRequest request) {
         String location = "-";
 
         // First, try to get location from IP if we have a valid public IP
