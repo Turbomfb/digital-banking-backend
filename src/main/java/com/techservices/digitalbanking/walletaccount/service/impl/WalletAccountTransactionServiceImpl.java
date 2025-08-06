@@ -139,11 +139,6 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 
 	@Override
 	public GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request) {
-		try {
-			apiService.callExternalApi("https://webhook.site/430adecb-d4d6-4b5d-a576-373b4ff44e9b", String.class, HttpMethod.POST, request, null);
-		} catch (Exception e) {
-			log.error("Failed to send error response to webhook: {}", e.getMessage(), e);
-		}
 		Optional<PaymentOrder> paymentOrder = paymentOrderRepository.findByReference(request.getReference());
 		if (paymentOrder.isPresent()) {
 			PaymentOrder paymentOrderEntity = paymentOrder.get();
