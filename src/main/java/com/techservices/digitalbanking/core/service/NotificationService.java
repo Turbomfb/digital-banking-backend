@@ -66,7 +66,7 @@ public class NotificationService {
     }
 
     @Async
-    public String notifyUser(Customer customer, String message) {
+    public void notifyUser(Customer customer, String message) {
         if (customer == null) {
             throw new ValidationException("invalid.customer", "Customer cannot be null.");
         }
@@ -77,12 +77,15 @@ public class NotificationService {
         if (customer.getPhoneNumber() != null && !customer.getPhoneNumber().isBlank()) {
             NotificationResponse smsResponse = sendSms(customer.getPhoneNumber(), message);
             if (smsResponse != null) {
+                log.info("SMS sent successfully to {}", customer.getPhoneNumber());
                 resultLog.append("SMS sent successfully. ");
                 notificationSent = true;
             } else {
+                log.error("Failed to send SMS to {}", customer.getPhoneNumber());
                 resultLog.append("Failed to send SMS. ");
             }
         } else {
+            log.warn("No phone number available for customer {}", customer.getId());
             resultLog.append("No phone number available. ");
         }
 
@@ -97,12 +100,15 @@ public class NotificationService {
             if (customer.getEmailAddress() != null && !customer.getEmailAddress().isBlank()) {
                 boolean pushSent = sendPushNotification(customer.getEmailAddress(), message);
                 if (pushSent) {
+                    log.info("Push notification sent successfully.");
                     resultLog.append("Push notification sent successfully. ");
                     notificationSent = true;
                 } else {
+                    log.error("Failed to send push notification.");
                     resultLog.append("Failed to send push notification. ");
                 }
             } else {
+                log.warn("No device token available for push notification.");
                 resultLog.append("No device token available. ");
             }
         } catch (Exception e) {
@@ -113,8 +119,6 @@ public class NotificationService {
         if (!notificationSent) {
             throw new PlatformServiceException("notification.failed", "No notification channel succeeded.");
         }
-
-        return resultLog.toString().trim();
     }
 
     private boolean sendPushNotification(String deviceToken, String message) {
