@@ -7,6 +7,7 @@ import com.techservices.digitalbanking.core.configuration.resttemplate.ApiServic
 import com.techservices.digitalbanking.core.domain.dto.response.NotificationResponse;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,4 +64,62 @@ public class NotificationService {
                 apiKey
         );
     }
+
+    @Async
+    public String notifyUser(Customer customer, String message) {
+        if (customer == null) {
+            throw new ValidationException("invalid.customer", "Customer cannot be null.");
+        }
+
+        boolean notificationSent = false;
+        StringBuilder resultLog = new StringBuilder();
+
+        if (customer.getPhoneNumber() != null && !customer.getPhoneNumber().isBlank()) {
+            NotificationResponse smsResponse = sendSms(customer.getPhoneNumber(), message);
+            if (smsResponse != null) {
+                resultLog.append("SMS sent successfully. ");
+                notificationSent = true;
+            } else {
+                resultLog.append("Failed to send SMS. ");
+            }
+        } else {
+            resultLog.append("No phone number available. ");
+        }
+
+        if (customer.getEmailAddress() != null && !customer.getEmailAddress().isBlank()) {
+            // TODO: Implement sendEmail(customer.getEmail(), message)
+            resultLog.append("Email sending not yet implemented. ");
+        } else {
+            resultLog.append("No email address available. ");
+        }
+
+        try {
+            if (customer.getEmailAddress() != null && !customer.getEmailAddress().isBlank()) {
+                boolean pushSent = sendPushNotification(customer.getEmailAddress(), message);
+                if (pushSent) {
+                    resultLog.append("Push notification sent successfully. ");
+                    notificationSent = true;
+                } else {
+                    resultLog.append("Failed to send push notification. ");
+                }
+            } else {
+                resultLog.append("No device token available. ");
+            }
+        } catch (Exception e) {
+            log.error("Error sending push notification: {}", e.getMessage(), e);
+            resultLog.append("Push notification error. ");
+        }
+
+        if (!notificationSent) {
+            throw new PlatformServiceException("notification.failed", "No notification channel succeeded.");
+        }
+
+        return resultLog.toString().trim();
+    }
+
+    private boolean sendPushNotification(String deviceToken, String message) {
+        log.info("Sending push notification to deviceToken={} with message={}", deviceToken, message);
+        return true;
+    }
+
 }

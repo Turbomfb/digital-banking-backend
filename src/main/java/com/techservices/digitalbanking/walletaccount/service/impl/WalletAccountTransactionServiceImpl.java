@@ -10,6 +10,8 @@ import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ExternalPaymentService;
+import com.techservices.digitalbanking.core.service.NotificationService;
+import com.techservices.digitalbanking.core.util.NotificationUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.data.PaymentOrderStatus;
@@ -21,6 +23,7 @@ import com.techservices.digitalbanking.walletaccount.domain.request.WalletPaymen
 import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpGenerationResponse;
 import com.techservices.digitalbanking.walletaccount.domain.response.ExternalPaymentTransactionOtpVerificationResponse;
 import com.techservices.digitalbanking.walletaccount.domain.response.WalletPaymentOrderResponse;
+import com.techservices.digitalbanking.walletaccount.service.WalletAccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
@@ -46,6 +49,7 @@ import java.util.UUID;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
+import static com.techservices.digitalbanking.core.util.DateUtil.getFormattedCurrentDateTime;
 
 @Slf4j
 @Service
@@ -59,6 +63,9 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	private final PaymentOrderRepository paymentOrderRepository;
 	private final ApiService apiService;
 	private final PasswordEncoder passwordEncoder;
+	private final NotificationService notificationService;
+	private final NotificationUtil notificationUtil;
+	private final WalletAccountService walletAccountService;
 
 
 	@Override
@@ -161,6 +168,10 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 							paymentOrderEntity.getReference(), "Wallet Account Funding", null);
 					paymentOrderEntity.setStatus(PaymentOrderStatus.COMPLETED);
 					paymentOrderRepository.save(paymentOrderEntity);
+					GetSavingsAccountsAccountIdResponse accountResponse = walletAccountService.retrieveSavingsAccountById(customer.getId());
+					String balance = accountResponse.getAccountBalance().toString();
+					String transactionMessage = notificationUtil.getTransactionNotificationTemplate("CREDIT", paymentOrderEntity.getAmount().toString(), balance, paymentOrderEntity.getReference());
+					notificationService.notifyUser(customer, transactionMessage);
 					return new GenericApiResponse("success", "success");
 				} catch (Exception e) {
 					log.error("Error processing deposit for payment order {}: {}", paymentOrderEntity.getReference(), e.getMessage());

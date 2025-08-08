@@ -38,7 +38,9 @@ import com.techservices.digitalbanking.core.domain.data.model.AppUser;
 import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
+import com.techservices.digitalbanking.core.service.NotificationService;
 import com.techservices.digitalbanking.core.util.AppUtil;
+import com.techservices.digitalbanking.core.util.NotificationUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
@@ -57,6 +59,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import static com.techservices.digitalbanking.core.util.CommandUtil.*;
+import static com.techservices.digitalbanking.core.util.DateUtil.getFormattedCurrentDateTime;
 
 
 @Service
@@ -72,6 +75,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final RedisService redisService;
     private final UserLoginActivityRepository userLoginActivityRepository;
     private final CustomerRepository customerRepository;
+    private final NotificationService notificationService;
+    private final NotificationUtil notificationUtil;
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType, String userAgent, HttpServletRequest request) {
@@ -110,6 +115,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         try {
             this.processUserLoginActivity(userAgent, request, foundCustomer, authenticationResponse);
+            String loginMessage = notificationUtil.getLoginNotificationTemplate(foundCustomer.getFirstname()+" "+foundCustomer.getLastname(), getFormattedCurrentDateTime());
+            notificationService.notifyUser(foundCustomer, loginMessage);
         } catch (Exception e) {
             log.error("Error processing user login activity: {}", e.getMessage());
         }
