@@ -132,19 +132,13 @@ public class IdentityVerificationService {
     private List<String> findMismatchedFields(IdentityVerificationRequest customerData, IdentityVerificationResponse verificationResponse, Customer foundCustomer) {
         IdentityVerificationResponse.IdentityVerificationResponseData responseData = verificationResponse.getData();
         List<String> mismatchedFields = new ArrayList<>();
-        if (StringUtils.equalsIgnoreCase("EXTERNAL", verificationResponse.getDataSource())) {
-            if (StringUtils.getLevenshteinDistance(
-                    customerData.getFirstName().toLowerCase(),
-                    responseData.getFirstName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
-                mismatchedFields.add("First Name");
-            }
-            if (StringUtils.getLevenshteinDistance(customerData.getLastName().toLowerCase(), responseData.getLastName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
-                mismatchedFields.add("Last Name");
-            }
+        if (StringUtils.getLevenshteinDistance(
+                customerData.getFirstName().toLowerCase(),
+                responseData.getFirstName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
+            mismatchedFields.add("First Name");
         }
-        if (!StringUtils.equalsIgnoreCase(customerData.getPhoneNumber(), responseData.getMobile()) || !StringUtils.equalsIgnoreCase(foundCustomer.getPhoneNumber(), responseData.getMobile())) {
-            log.error("Phone number mismatch: Customer Data: {}, Response Data: {}, Found Customer Phone: {}", customerData.getPhoneNumber(), responseData.getMobile(), foundCustomer.getPhoneNumber());
-            mismatchedFields.add("Phone Number");
+        if (StringUtils.getLevenshteinDistance(customerData.getLastName().toLowerCase(), responseData.getLastName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
+            mismatchedFields.add("Last Name");
         }
         log.info("Mismatched fields for {} are {}", customerData.getPhoneNumber(), mismatchedFields);
         return mismatchedFields;
