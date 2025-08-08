@@ -12,5 +12,4 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InvestmentUpdateRequest {
 	private BigDecimal amount;
-
 }

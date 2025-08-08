@@ -68,6 +68,17 @@ public class InvestmentApiResource {
 		return ResponseEntity.ok(investment);
 	}
 
+	@Operation(summary = "Withdraw from an investment")
+	@PostMapping("/{investmentId}/withdraw-flex")
+	public ResponseEntity<BaseAppResponse> withdrawFlexInvestment(
+			@RequestBody(required = false) InvestmentUpdateRequest request,
+			@PathVariable Long investmentId
+	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		BaseAppResponse investment = investmentService.withdrawFlexInvestment(customerId, request, investmentId);
+		return ResponseEntity.ok(investment);
+	}
+
 	@Operation(summary = "Calculate Investment")
 	@PostMapping("/calculate-investment")
 	public ResponseEntity<InvestmentCalculatorResponse> calculateInvestment(

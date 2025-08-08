@@ -150,6 +150,27 @@ public class InvestmentServiceImpl implements InvestmentService {
     }
 
     @Override
+    public BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request, Long investmentId) {
+        Customer foundCustomer = customerService.getCustomerById(customerId);
+        GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccountById(Long.valueOf(foundCustomer.getAccountId()));
+        if (StringUtils.isBlank(foundCustomer.getRecurringDepositAccountId())) {
+            throw new ValidationException("investment.not.found",
+                    "Error withdrawing from investment. Please contact support or try again later.");
+        }
+        investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : investmentId;
+        GetRecurringDepositAccountsResponse accountsResponse = recurringDepositAccountService.retrieveInvestmentById(investmentId, null, null, null);
+        if (accountsResponse.getAccountBalance().compareTo(request.getAmount()) < 0) {
+            throw new ValidationException("insufficient.funds",
+                    "Insufficient funds in the investment account to withdraw.");
+        }
+
+        investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : investmentId;
+        accountTransactionService.handleRecurringWithdrawalAccountTransfer(savingsAccount,
+                investmentId, request.getAmount(), "Investment withdrawal");
+        return GenericApiResponse.builder().message("Withdrawal from Flex investment successful").build();
+    }
+
+    @Override
     public InvestmentCalculatorResponse calculateInvestment(Long customerId, InvestmentCalculatorRequest request) {
         GetFixedDepositProductsProductIdResponse product =
                 fixedDepositProductService.retrieveAProduct(fineractProperty.getDefaultFixedDepositProductId());
