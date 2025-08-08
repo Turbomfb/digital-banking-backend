@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AlertPreferenceRepository extends JpaRepository<AlertPreference, Long> {
-    List<AlertPreference> findByCustomer(Customer customer);
+    List<AlertPreference> findByCustomerId(Long customerId);
 
-    Optional<AlertPreference> findByCustomerAndAlertType(Customer customer, AlertType alertType);
+    Optional<AlertPreference> findByCustomerIdAndAlertType(Long customerId, AlertType alertType);
 
-    boolean existsByCustomerAndAlertType(Customer customer, AlertType alertType);
+    boolean existsByCustomerIdAndAlertType(Long customerId, AlertType alertType);
 }
