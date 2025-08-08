@@ -65,6 +65,7 @@ public class NotificationService {
         );
     }
 
+    @Async
     public String notifyUser(Customer customer, String message) {
         if (customer == null) {
             throw new ValidationException("invalid.customer", "Customer cannot be null.");
