@@ -10,6 +10,7 @@ import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerifica
 import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
@@ -142,6 +143,16 @@ public class CustomerApiResource {
 			@PathVariable Long customerId) {
 		GenericApiResponse genericApiResponse = customerService.createTransactionPin(customerId, customerTransactionPinRequest);
 
+		return ResponseEntity.ok(genericApiResponse);
+	}
+
+	@Operation(summary = "Close a customer's account")
+	@PostMapping("me/close-account")
+	public ResponseEntity<GenericApiResponse> closeAccount(
+			@RequestBody CustomerAccountClosureRequest request
+			) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		GenericApiResponse genericApiResponse = customerService.closeAccount(customerId, request);
 		return ResponseEntity.ok(genericApiResponse);
 	}
 }

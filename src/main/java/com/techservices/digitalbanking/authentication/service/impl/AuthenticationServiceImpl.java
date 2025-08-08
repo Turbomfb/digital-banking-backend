@@ -29,10 +29,13 @@ import com.techservices.digitalbanking.authentication.service.AuthenticationServ
 import com.techservices.digitalbanking.authentication.util.UserLoginActivityUtil;
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.configuration.security.JwtUtil;
+import com.techservices.digitalbanking.core.domain.data.model.CustomerStatusAudit;
+import com.techservices.digitalbanking.core.domain.data.repository.CustomerStatusAuditRepository;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.enums.CustomerStatusAuditType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.domain.data.model.AppUser;
 import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
@@ -77,6 +80,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final CustomerRepository customerRepository;
     private final NotificationService notificationService;
     private final NotificationUtil notificationUtil;
+    private final CustomerStatusAuditRepository customerStatusAuditRepository;
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType, String userAgent, HttpServletRequest request) {
@@ -88,6 +92,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (!passwordEncoder.matches(postAuthenticationRequest.getPassword(), foundCustomer.getPassword())) {
             throw new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid username or password");
         }
+
+        Optional<CustomerStatusAudit> customerStatusAudit = customerStatusAuditRepository.findByCustomerIdAndTypeAndIsActive(foundCustomer.getId(), CustomerStatusAuditType.ACCOUNT_CLOSURE, true);
+        if (customerStatusAudit.isPresent()) {
+            throw new UnAuthenticatedUserException("account.is.closed", "Your account has been closed and access is no longer available. please contact our support team.");
+        }
+
 
         claims.put("customerId", foundCustomer.getId());
         claims.put("email", foundCustomer.getEmailAddress());

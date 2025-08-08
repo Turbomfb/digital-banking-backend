@@ -8,6 +8,7 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
@@ -37,4 +38,6 @@ public interface CustomerService {
 	GenericApiResponse createTransactionPin(Long customerId, CustomerTransactionPinRequest customerTransactionPinRequest);
 
 	String getCustomerSavingsId(Long customerId);
+
+	GenericApiResponse closeAccount(Long customerId, CustomerAccountClosureRequest request);
 }

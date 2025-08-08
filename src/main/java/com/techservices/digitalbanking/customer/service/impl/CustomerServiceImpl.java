@@ -3,11 +3,14 @@ package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.domain.data.model.CustomerStatusAudit;
+import com.techservices.digitalbanking.core.domain.data.repository.CustomerStatusAuditRepository;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.enums.AccountType;
+import com.techservices.digitalbanking.core.domain.enums.CustomerStatusAuditType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
@@ -16,6 +19,7 @@ import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
@@ -28,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +48,7 @@ public class CustomerServiceImpl implements CustomerService {
 	private final CustomerRepository customerRepository;
 	private final RedisService redisService;
 	private final PasswordEncoder passwordEncoder;
+	private final CustomerStatusAuditRepository customerStatusAuditRepository;
 
 	@Override
 	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType) {
@@ -214,6 +220,31 @@ public class CustomerServiceImpl implements CustomerService {
 			throw new ValidationException("No savings account found for customer ID: " + customerId);
 		}
 		return customer.getAccountId();
+	}
+
+	@Override
+	public GenericApiResponse closeAccount(Long customerId, CustomerAccountClosureRequest request) {
+		Customer customer = this.getCustomerById(customerId);
+
+		Optional<CustomerStatusAudit> customerStatusAudit = customerStatusAuditRepository.findByCustomerIdAndTypeAndIsActive(customer.getId(), CustomerStatusAuditType.ACCOUNT_CLOSURE, true);
+		if (customerStatusAudit.isPresent()) {
+			throw new ValidationException("validation.error.exists", "Account already closed");
+		}
+		if (StringUtils.isBlank(request.getReasonForClosure())) {
+			throw new ValidationException("validation.error.reasonForClosure", "reasonForClosure is required");
+		}
+		CustomerStatusAudit audit = new CustomerStatusAudit();
+		audit.setCustomerId(customerId);
+		audit.setReason(request.getReasonForClosure());
+		audit.setType(CustomerStatusAuditType.ACCOUNT_CLOSURE);
+		audit.setActive(true);
+		customerStatusAuditRepository.save(audit);
+		customer.setActive(false);
+		customerRepository.save(customer);
+		return GenericApiResponse.builder()
+				.status(HttpStatus.OK.name())
+				.message("Account closed successfully")
+				.build();
 	}
 
 	private void validateDuplicateCustomer(String emailAddress, String phoneNumber, UserType customerType) {
