@@ -19,11 +19,11 @@ public class BankConfigurationService {
     @Value("${app.bank.address}")
     private String bankAddress;
 
-    @Value("${app.bank.phone}")
-    private String bankPhone;
+    @Value("${app.bank.supoort.phone}")
+    private String bankSupportPhone;
 
-    @Value("${app.bank.email}")
-    private String bankEmail;
+    @Value("${app.bank.supoort.email}")
+    private String bankSupportEmail;
 
     @Value("${app.bank.website}")
     private String bankWebsite;

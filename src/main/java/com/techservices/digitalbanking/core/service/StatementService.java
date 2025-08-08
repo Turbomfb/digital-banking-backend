@@ -186,7 +186,7 @@ public class StatementService {
 
                 Font addressFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.GRAY);
                 bankDetails.add(new Phrase(bankConfigurationService.getBankAddress() + "\n", addressFont));
-                bankDetails.add(new Phrase("Phone: " + bankConfigurationService.getBankPhone() + " | Email: " + bankConfigurationService.getBankEmail() + "\n", addressFont));
+                bankDetails.add(new Phrase("Phone: " + bankConfigurationService.getBankSupportPhone() + " | Email: " + bankConfigurationService.getBankSupportEmail() + "\n", addressFont));
 
                 document.add(bankDetails);
 
@@ -298,7 +298,7 @@ public class StatementService {
 
             Font footerFont = new Font(Font.FontFamily.HELVETICA, 8, Font.ITALIC, BaseColor.GRAY);
             footer.add(new Phrase("This is a computer generated statement and does not require signature.\n", footerFont));
-            footer.add(new Phrase("For any queries, please contact us at " + bankConfigurationService.getBankPhone() + " or " + bankConfigurationService.getBankEmail() + "\n", footerFont));
+            footer.add(new Phrase("For any queries, please contact us at " + bankConfigurationService.getBankSupportPhone() + " or " + bankConfigurationService.getBankSupportEmail() + "\n", footerFont));
 
             document.add(footer);
         }
