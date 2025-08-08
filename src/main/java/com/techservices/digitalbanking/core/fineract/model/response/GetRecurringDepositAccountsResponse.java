@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.fineract.model.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -73,4 +74,10 @@ public class GetRecurringDepositAccountsResponse extends BaseAppResponse {
 	private GetSavingsTimeline timeline;
 
 	List<GetRecurringDepositTransactionResponse> transactions;
+
+	public BigDecimal getAccountBalance() {
+		return summary != null && summary.getAvailableBalance() != null
+				? summary.getAccountBalance()
+				: BigDecimal.ZERO;
+	}
 }
