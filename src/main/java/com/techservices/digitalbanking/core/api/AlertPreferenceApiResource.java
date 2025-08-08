@@ -1,8 +1,8 @@
-package com.techservices.digitalbanking.core.alert.api;
+package com.techservices.digitalbanking.core.api;
 
-import com.techservices.digitalbanking.core.alert.domain.data.enums.AlertType;
-import com.techservices.digitalbanking.core.alert.domain.data.model.AlertPreference;
-import com.techservices.digitalbanking.core.alert.service.AlertPreferenceService;
+import com.techservices.digitalbanking.core.domain.enums.AlertType;
+import com.techservices.digitalbanking.core.domain.data.model.AlertPreference;
+import com.techservices.digitalbanking.core.service.AlertPreferenceService;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

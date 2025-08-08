@@ -1,9 +1,8 @@
-package com.techservices.digitalbanking.core.alert.service;
+package com.techservices.digitalbanking.core.service;
 
-import com.techservices.digitalbanking.core.alert.domain.data.enums.AlertType;
-import com.techservices.digitalbanking.core.alert.domain.data.model.AlertPreference;
-import com.techservices.digitalbanking.core.alert.domain.data.repository.AlertPreferenceRepository;
-import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.core.domain.enums.AlertType;
+import com.techservices.digitalbanking.core.domain.data.model.AlertPreference;
+import com.techservices.digitalbanking.core.domain.data.repository.AlertPreferenceRepository;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

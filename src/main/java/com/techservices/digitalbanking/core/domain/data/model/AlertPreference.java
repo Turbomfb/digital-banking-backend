@@ -1,7 +1,6 @@
-package com.techservices.digitalbanking.core.alert.domain.data.model;
+package com.techservices.digitalbanking.core.domain.data.model;
 
-import com.techservices.digitalbanking.core.alert.domain.data.enums.AlertType;
-import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.core.domain.enums.AlertType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

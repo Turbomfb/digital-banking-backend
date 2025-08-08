@@ -19,19 +19,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
 @EnableFeignClients(basePackages = "com.techservices.digitalbanking.core.fineract.api")
 @RequiredArgsConstructor
+@EnableAsync
 public class DigitalBankingApplication {
     private final CustomerRepository customerRepository;
     private final RecurringDepositAccountService recurringDepositAccountService;
@@ -44,12 +41,5 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
-        Iterable<Customer> customers = customerRepository.findAll();
-        for (Customer customer : customers) {
-            if (StringUtils.isNotBlank(customer.getTransactionPin())) {
-                customer.setTransactionPin(passwordEncoder.encode(customer.getTransactionPin()));
-                customerRepository.save(customer);
-            }
-        }
     }
 }
