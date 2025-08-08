@@ -127,11 +127,10 @@ public class InvestmentServiceImpl implements InvestmentService {
                 } else {
                     log.warn("Failed to create recurring deposit account for client ID: {}", foundCustomer.getExternalId());
                 }
-            } else {
-                investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : investmentId;
-                accountTransactionService.handleRecurringDepositAccountTransfer(savingsAccount,
-                        investmentId, request.getAmount(), "Investment funding");
             }
+            investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : investmentId;
+            accountTransactionService.handleRecurringDepositAccountTransfer(savingsAccount,
+                    investmentId, request.getAmount(), "Investment funding");
         } else if (investmentType == InvestmentType.LOCK) {
             this.retrieveInvestmentById(investmentId, null, null, investmentType.name(), customerId);
             GetFixedDepositAccountsAccountIdResponse response = fixedDepositService.retrieveInvestmentById(investmentId, null, null, null);
