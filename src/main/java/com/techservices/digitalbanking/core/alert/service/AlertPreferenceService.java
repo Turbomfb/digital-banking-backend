@@ -22,7 +22,16 @@ public class AlertPreferenceService {
 
     @Transactional(readOnly = true)
     public List<AlertPreference> getPreferencesForCustomer(Long customerId) {
-        return alertPreferenceRepository.findByCustomerId(customerId);
+        List<AlertPreference> alertPreferences = alertPreferenceRepository.findByCustomerId(customerId);
+        if (alertPreferences.isEmpty()) {
+            for (AlertType alertType : AlertType.values()) {
+                AlertPreference preference = new AlertPreference();
+                preference.setCustomerId(customerId);
+                preference.setAlertType(alertType);
+                alertPreferences.add(alertPreferenceRepository.save(preference));
+            }
+        }
+        return alertPreferences;
     }
 
 
