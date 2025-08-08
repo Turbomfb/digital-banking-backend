@@ -20,15 +20,13 @@ public class AlertPreferenceService {
     private final CustomerRepository customerRepository;
 
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AlertPreference> getPreferencesForCustomer(Long customerId) {
         List<AlertPreference> alertPreferences = alertPreferenceRepository.findByCustomerId(customerId);
         if (alertPreferences.isEmpty()) {
             for (AlertType alertType : AlertType.values()) {
-                AlertPreference preference = new AlertPreference();
-                preference.setCustomerId(customerId);
-                preference.setAlertType(alertType);
-                alertPreferences.add(alertPreferenceRepository.save(preference));
+                AlertPreference preference = this.updatePreference(customerId, alertType, false, false, false);
+                alertPreferences.add(preference);
             }
         }
         return alertPreferences;
