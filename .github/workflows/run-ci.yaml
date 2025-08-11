@@ -18,8 +18,8 @@ jobs:
       environment: staging
       image_tag: dev-latest
     secrets:
-      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id: ${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
       build_image_token: ${{ secrets.BUILD_IMAGE_TOKEN }}
       ecs_cluster: ${{ secrets.STAGING_ECS_CLUSTER }}
       ecs_service: ${{ secrets.STAGING_ECS_SERVICE }}
