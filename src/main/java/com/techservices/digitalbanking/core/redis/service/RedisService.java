@@ -112,7 +112,7 @@ public class RedisService {
                     notificationService.sendSms(notificationRequestDto.getPhoneNumber(), message);
                 } else if (notificationRequestDto.getChannel().equals(NotificationChannel.EMAIL)){
 //                    Todo: implement email notification
-                } else if (notificationRequestDto.getChannel().equals(NotificationChannel.SMS_AND_EMAIL)) {
+                } else if (notificationRequestDto.getChannel().equals(NotificationChannel.SMS_AND_EMAIL)) { 
                     notificationService.sendSms(notificationRequestDto.getPhoneNumber(), message);
 //                    Todo: implement email notification
                 }
