@@ -26,7 +26,6 @@ public class NotificationService {
     private final ApiService apiService;
     private final SystemProperty systemProperty;
 
-    @Async
     public NotificationResponse sendSms(String phoneNumber, String message) {
         try {
             String url = this.buildSmsUrl(phoneNumber, message);
