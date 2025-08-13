@@ -43,6 +43,5 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
-        verificationDataRepository.deleteAll();
     }
 }
