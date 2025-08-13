@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
+import com.techservices.digitalbanking.core.domain.data.repository.IdentityVerificationDataRepository;
 import com.techservices.digitalbanking.core.domain.enums.AccountType;
 import com.techservices.digitalbanking.core.fineract.model.request.PostRecurringDepositAccountsRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsSavingsAccounts;
@@ -31,6 +32,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableAsync
 public class DigitalBankingApplication {
     private final CustomerRepository customerRepository;
+    private final IdentityVerificationDataRepository verificationDataRepository;
     private final RecurringDepositAccountService recurringDepositAccountService;
     private final ClientService clientService;
     private final PasswordEncoder passwordEncoder;
@@ -41,5 +43,6 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
+        verificationDataRepository.deleteAll();
     }
 }
