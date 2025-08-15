@@ -6,8 +6,10 @@ import com.techservices.digitalbanking.core.configuration.resttemplate.ApiServic
 import com.techservices.digitalbanking.core.domain.data.model.IdentityVerificationData;
 import com.techservices.digitalbanking.core.domain.data.repository.IdentityVerificationDataRepository;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
+import com.techservices.digitalbanking.core.domain.dto.request.ImageComparisonRequest;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
+import com.techservices.digitalbanking.core.domain.dto.response.ImageComparisonResponse;
 import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationType;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
@@ -114,6 +116,21 @@ public class IdentityVerificationService {
         }
     }
 
+    private ImageComparisonResponse compareImage(ImageComparisonRequest imageComparisonRequest) {
+        try {
+            String url = systemProperty.getYouverifyIntegrationUrl() + "v2/api/identity/compare-image";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("token", systemProperty.getYouverifyIntegrationApiKey());
+            return apiService.callExternalApi(url, ImageComparisonResponse.class, HttpMethod.POST, imageComparisonRequest, headers);
+        } catch (PlatformServiceException e) {
+            log.error(e.getDefaultUserMessage());
+            throw new ValidationException("verification.failed","Verification failed", e.getDefaultUserMessage());
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            throw new ValidationException("verification.failed","Verification failed", e.getMessage());
+        }
+    }
+
     private CustomerIdentityVerificationResponse processVerificationResponse(IdentityVerificationResponse response, IdentityVerificationRequest customerData, Customer foundCustomer) {
         if (response == null || !response.isSuccess() || response.getData() == null) {
             log.error(String.valueOf(response));
@@ -142,5 +159,37 @@ public class IdentityVerificationService {
         }
         log.info("Mismatched fields for {} are {}", customerData.getPhoneNumber(), mismatchedFields);
         return mismatchedFields;
+    }
+
+    @Transactional
+    public void validateImageMismatch(String base64Image, String bvn, String nin) {
+        if (StringUtils.isBlank(bvn) && StringUtils.isBlank(nin)) {
+            throw new ValidationException("validation.error.imageMismatch", "Bvn or Nin is required");
+        }
+        if (StringUtils.isNotBlank(base64Image)) {
+            IdentityVerificationResponse data;
+            if (StringUtils.isNotBlank(bvn)) {
+                data = this.retrieveBvnData(bvn);
+            } else {
+                data = this.retrieveNinData(nin);
+            }
+            String image2 = data.getData().getImage();
+            ImageComparisonRequest imageComparisonRequest = ImageComparisonRequest.builder()
+                    .isSubjectConsent(true)
+                    .image1(image2)
+                    .image2(base64Image)
+                    .build();
+            ImageComparisonResponse compareResponse = this.compareImage(imageComparisonRequest);
+            log.info("Verification response: {}", compareResponse);
+            if (compareResponse.isSuccess()) {
+                if (compareResponse.getData() == null || compareResponse.getData().getImageComparison() == null ||
+                        compareResponse.getData().getImageComparison().getMatch() == null ||
+                        !compareResponse.getData().getImageComparison().getMatch()) {
+                    log.info("Provided image does not match ID image");
+                    throw new ValidationException("validation.error.imageMismatch", "Provided image does not match ID image");
+                }
+            }
+            throw new ValidationException("validation.error.imageMismatch", "Provided image does not match ID");
+        }
     }
 }

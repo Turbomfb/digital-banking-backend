@@ -47,6 +47,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 	@ExceptionHandler(AbstractPlatformResourceNotFoundException.class)
 	public final ResponseEntity<ExceptionResponse> handleTenantNotFoundException(
 			AbstractPlatformResourceNotFoundException ex, WebRequest request) {
+		log.error("Abstract Platform Resource Not Found Exception: \n {}", ex.getMessage(), ex);
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getDefaultUserMessage(),
 				request.getDescription(false), ex.getGlobalisationMessageCode());
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
@@ -55,6 +56,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 	@ExceptionHandler(AbstractPlatformDomainRuleException.class)
 	public final ResponseEntity<ExceptionResponse> handleValidationException(AbstractPlatformDomainRuleException ex,
 			WebRequest request) {
+		log.error("Abstract Platform Domain Rule Exception: \n {}", ex.getMessage(), ex);
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getDefaultUserMessage(),
 				request.getDescription(false), ex.getGlobalisationMessageCode());
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
@@ -63,6 +65,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 	@ExceptionHandler(UnAuthorizedUserException.class)
 	public final ResponseEntity<ExceptionResponse> handleInvalidUserException(UnAuthorizedUserException ex,
 			WebRequest request) {
+		log.error("Unauthorized User Exception: \n {}", ex.getMessage(), ex);
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getDefaultUserMessage(),
 				request.getDescription(false), ex.getGlobalisationMessageCode());
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.FORBIDDEN);
@@ -71,6 +74,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 	@ExceptionHandler(UnAuthenticatedUserException.class)
 	public final ResponseEntity<ExceptionResponse> handleInvalidUserException(UnAuthenticatedUserException ex,
 			WebRequest request) {
+		log.error("Unauthenticated User Exception: \n {}", ex.getMessage(), ex);
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getDefaultUserMessage(),
 				request.getDescription(false), ex.getGlobalisationMessageCode());
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.UNAUTHORIZED);
@@ -79,6 +83,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 	@ExceptionHandler(PlatformServiceException.class)
 	public final ResponseEntity<ExceptionResponse> handleInternalServiceException(PlatformServiceException ex,
 			WebRequest request) {
+		log.error("Platform Service Exception: \n {}", ex.getMessage(), ex);
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getDefaultUserMessage(),
 				request.getDescription(false), ex.getGlobalisationMessageCode());
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -87,6 +92,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 	@ExceptionHandler(ValidationException.class)
 	public final ResponseEntity<ExceptionResponse> handleInternalServiceException(ValidationException ex,
 			WebRequest request) {
+		log.error("Validation Exception: \n {}", ex.getMessage(), ex);
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getDefaultUserMessage(),
 				request.getDescription(false), ex.getGlobalisationMessageCode(), ex.getDefaultUserMessageArgs());
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
@@ -95,6 +101,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		log.error("MethodArgumentNotValidException: \n {}", ex.getMessage(), ex);
 		List<String> details = new ArrayList<>();
 		for (ObjectError error : ex.getBindingResult().getAllErrors()) {
 			details.add(error.getDefaultMessage());
@@ -106,7 +113,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 	@ExceptionHandler(RetryableException.class)
 	protected ResponseEntity<Object> handleRetryableException(RetryableException ex,
 																  HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-
+		log.error("Retryable Exception: \n {}", ex.getMessage(), ex);
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
 				request.getDescription(false), ex.getLocalizedMessage(), null);
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
