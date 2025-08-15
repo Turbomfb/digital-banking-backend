@@ -9,19 +9,15 @@ import com.techservices.digitalbanking.core.domain.dto.request.NotificationReque
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
-import com.techservices.digitalbanking.core.domain.enums.AccountType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.request.KycTier;
 import com.techservices.digitalbanking.core.fineract.model.request.PostClientNonPersonDetails;
-import com.techservices.digitalbanking.core.fineract.model.request.PostRecurringDepositAccountsRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.*;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
-import com.techservices.digitalbanking.core.fineract.service.RecurringDepositAccountService;
-import com.techservices.digitalbanking.core.fineract.service.RecurringDepositProductService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
@@ -40,15 +36,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
-import static com.techservices.digitalbanking.core.util.DateUtil.*;
 
 @Slf4j
 @Service
@@ -71,8 +63,22 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         String uniqueId = customerKycRequest.getUniqueId();
         String otp = customerKycRequest.getOtp();
         if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
-            OtpDto otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.KYC_UPGRADE);
-            customerKycRequest = (CustomerKycRequest) otpDto.getData();
+            if (StringUtils.isBlank(customerKycRequest.getBase64Image()) && StringUtils.isBlank(otp)) {
+                throw new ValidationException("validation.error.exists", "Please provide an otp or a base64Image");
+            }
+            OtpDto otpDto = this.redisService.retrieveOtpDto(uniqueId);
+            if (otpDto == null) {
+                throw new ValidationException("otp.expired", "Verification has expired or does not exist. Please initiate a new one.");
+            }
+            if (StringUtils.isNotBlank(customerKycRequest.getBase64Image())) {
+                log.info("customerKycRequest.getBase64Image(): {}", customerKycRequest.getBase64Image());
+                customerKycRequest = (CustomerKycRequest) otpDto.getData();
+                this.identityVerificationService.validateImageMismatch(customerKycRequest.getBase64Image(), customerKycRequest.getBvn(), customerKycRequest.getNin());
+                log.info("Image mismatch validated successfully");
+            } else {
+                otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.KYC_UPGRADE);
+                customerKycRequest = (CustomerKycRequest) otpDto.getData();
+            }
         }
 
         IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
@@ -100,7 +106,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
         foundCustomer.setKycTier(customerKycTier);
         foundCustomer = this.customerRepository.save(foundCustomer);
-        this.redisService.validateOtp(uniqueId, otp, OtpType.KYC_UPGRADE);
+        this.redisService.delete(uniqueId);
         return CustomerDtoResponse.parse(foundCustomer);
     }
 
@@ -132,10 +138,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             IdentityVerificationRequest identityVerificationRequest = IdentityVerificationRequest.parse(foundCustomer);
             CustomerIdentityVerificationResponse customerIdentityVerificationResponse = this.identityVerificationService.verifyBvn(customerKycRequest.getBvn(), identityVerificationRequest, foundCustomer);
             foundCustomer.setBvn(customerKycRequest.getBvn());
-            if (!customerIdentityVerificationResponse.isValid()) {
-                throw new ValidationException("bvn.verification.failed", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
-                        "Please confirm that your BVN and NIN details are correct or contact your bank customer support for assistance.");
-            }
+            finalizeValidations(customerIdentityVerificationResponse, "BVN");
         }
 
         if (StringUtils.isNotBlank(customerKycRequest.getNin())) {
@@ -156,12 +159,17 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             IdentityVerificationRequest identityVerificationRequest = IdentityVerificationRequest.parse(foundCustomer);
             CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyNin(customerKycRequest.getNin(), identityVerificationRequest, foundCustomer);
             foundCustomer.setNin(customerKycRequest.getNin());
-            if (!customerIdentityVerificationResponse.isValid()) {
-                log.error("NIN verification failed: {}", customerIdentityVerificationResponse);
-                throw new ValidationException("nin.verification.failed", "Verification failed for nin.", customerIdentityVerificationResponse);
-            }
+            finalizeValidations(customerIdentityVerificationResponse, "NIN");
         }
         return null;
+    }
+
+    private static void finalizeValidations(CustomerIdentityVerificationResponse customerIdentityVerificationResponse, String dataType) {
+        log.error("{} verification failed: {}", dataType, customerIdentityVerificationResponse);
+        if (!customerIdentityVerificationResponse.isValid()) {
+            throw new ValidationException(dataType+".verification.failed", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
+                    "Please confirm that your "+dataType+" details are correct or contact your bank customer support for assistance.");
+        }
     }
 
     private static void validateEntityClient(GetClientsClientIdResponse client) {
@@ -263,8 +271,10 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
     private void updateCustomerDetails(Customer foundCustomer, CustomerKycRequest customerKycRequest, Long customerId, CustomerKycTier customerKycTier) {
         CustomerUpdateRequest customerUpdateRequest = new CustomerUpdateRequest();
-        customerUpdateRequest.setBvn(customerKycRequest.getBvn());
-        customerUpdateRequest.setNin(customerKycRequest.getNin());
+        if (customerKycRequest != null) {
+            customerUpdateRequest.setBvn(customerKycRequest.getBvn());
+            customerUpdateRequest.setNin(customerKycRequest.getNin());
+        }
         if (customerKycTier != null) {
             customerUpdateRequest.setKycTier(customerKycTier.getCode());
         }

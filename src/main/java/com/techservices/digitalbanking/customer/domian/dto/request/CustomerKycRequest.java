@@ -26,4 +26,5 @@ public class CustomerKycRequest {
 
 	private String uniqueId;
 	private String otp;
+	private String base64Image;
 }
