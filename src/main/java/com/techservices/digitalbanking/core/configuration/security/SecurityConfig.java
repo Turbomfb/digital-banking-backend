@@ -103,6 +103,8 @@ public class SecurityConfig {
             "Accept",
             "Origin",
             "Access-Control-Request-Method",
+            "X-User-Location",
+            "User-Agent",
             "Access-Control-Request-Headers"
     ));
 
