@@ -5,8 +5,10 @@ import com.techservices.digitalbanking.core.configuration.SystemProperty;
 import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
 import com.techservices.digitalbanking.core.domain.data.model.IdentityVerificationData;
 import com.techservices.digitalbanking.core.domain.data.repository.IdentityVerificationDataRepository;
+import com.techservices.digitalbanking.core.domain.dto.request.BusinessDataRequest;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
 import com.techservices.digitalbanking.core.domain.dto.request.ImageComparisonRequest;
+import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.ImageComparisonResponse;
@@ -104,8 +106,7 @@ public class IdentityVerificationService {
             Map<String, Object> requestPayload = new HashMap<>();
             requestPayload.put("id", identifier);
             requestPayload.put("isSubjectConsent", true);
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("token", systemProperty.getYouverifyIntegrationApiKey());
+            HttpHeaders headers = getTokenHeader();
             return apiService.callExternalApi(url, IdentityVerificationResponse.class, HttpMethod.POST, requestPayload, headers);
         } catch (PlatformServiceException e) {
             log.error(e.getDefaultUserMessage());
@@ -118,9 +119,8 @@ public class IdentityVerificationService {
 
     private ImageComparisonResponse compareImage(ImageComparisonRequest imageComparisonRequest) {
         try {
-            String url = systemProperty.getYouverifyIntegrationUrl() + "v2/api/identity/compare-image";
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("token", systemProperty.getYouverifyIntegrationApiKey());
+            String url = systemProperty.getYouverifyIntegrationUrl() + "/v2/api/identity/compare-image";
+            HttpHeaders headers = getTokenHeader();
             return apiService.callExternalApi(url, ImageComparisonResponse.class, HttpMethod.POST, imageComparisonRequest, headers);
         } catch (PlatformServiceException e) {
             log.error(e.getDefaultUserMessage());
@@ -191,5 +191,32 @@ public class IdentityVerificationService {
             }
             throw new ValidationException("validation.error.imageMismatch", "Provided image does not match ID");
         }
+    }
+
+    public BusinessDataResponse retrieveBusinessData(String rcNumber) {
+        try {
+            String url = systemProperty.getYouverifyIntegrationUrl() + "/v2/api/verifications/global/company-advance-check";
+            BusinessDataRequest businessDataRequest = new BusinessDataRequest();
+            businessDataRequest.setRegistrationNumber(rcNumber);
+            HttpHeaders headers = getTokenHeader();
+            BusinessDataResponse response = apiService.callExternalApi(url, BusinessDataResponse.class, HttpMethod.POST, businessDataRequest, headers);
+            if (response == null || !response.isSuccess() || response.getData() == null) {
+                log.error("Business data retrieval failed for RC number: {}", rcNumber);
+                throw new ValidationException("verification.failed", "Verification failed for RC number.");
+            }
+            return response;
+        } catch (PlatformServiceException e) {
+            log.error(e.getDefaultUserMessage());
+            throw new ValidationException("verification.failed","Verification failed", e.getDefaultUserMessage());
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            throw new ValidationException("verification.failed","Verification failed", e.getMessage());
+        }
+    }
+
+    private HttpHeaders getTokenHeader() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("token", systemProperty.getYouverifyIntegrationApiKey());
+        return headers;
     }
 }
