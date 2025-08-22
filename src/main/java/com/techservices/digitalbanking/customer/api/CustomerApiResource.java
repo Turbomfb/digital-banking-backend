@@ -6,6 +6,7 @@ import com.techservices.digitalbanking.core.configuration.security.SpringSecurit
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
@@ -78,6 +79,15 @@ public class CustomerApiResource {
 		}
 		identityResponse.getData().setImage(null);
 		return new ResponseEntity<>(identityResponse.getData(), HttpStatusCode.valueOf(200));
+	}
+
+	@Operation(summary = "Retrieve Business Identity Data")
+	@GetMapping("business-identity-verification")
+	public ResponseEntity<BusinessDataResponse.BusinessData> retrieveIdentityData(
+			@RequestParam(name = "rcNumber") String rcNumber
+	) {
+		BusinessDataResponse businessDataResponse = identityVerificationService.retrieveBusinessData(rcNumber);
+		return new ResponseEntity<>(businessDataResponse.getData(), HttpStatusCode.valueOf(200));
 	}
 
 	@Operation(summary = "Update Customer")
