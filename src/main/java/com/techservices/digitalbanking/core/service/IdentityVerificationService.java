@@ -200,7 +200,7 @@ public class IdentityVerificationService {
             businessDataRequest.setRegistrationNumber(rcNumber);
             HttpHeaders headers = getTokenHeader();
             BusinessDataResponse response = apiService.callExternalApi(url, BusinessDataResponse.class, HttpMethod.POST, businessDataRequest, headers);
-            if (response == null || !response.isSuccess() || response.getData() == null) {
+            if (response == null || !response.isSuccess() || response.getData() == null || StringUtils.equalsIgnoreCase(response.getData().getStatus(), "not_found")) {
                 log.error("Business data retrieval failed for RC number: {}", rcNumber);
                 throw new ValidationException("verification.failed", "Verification failed for RC number.");
             }
