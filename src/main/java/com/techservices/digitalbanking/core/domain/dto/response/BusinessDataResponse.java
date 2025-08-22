@@ -22,7 +22,6 @@ public class BusinessDataResponse {
     @Getter
     @Setter
     @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public class BusinessData {
         private String businessId;
         private String parentId;
@@ -56,7 +55,7 @@ public class BusinessDataResponse {
         private String objectives;
         private String status;
         private String companyStatus;
-        private String companyContactPersons;
+        private Object companyContactPersons;
         private boolean isConsent;
         private String requestedAt;
         private String requestedById;
