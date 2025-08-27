@@ -24,6 +24,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
+
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
@@ -43,5 +45,18 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
+        customerRepository.findAll().forEach(customer -> {
+            if (StringUtils.isNotBlank(customer.getPhoneNumber())) {
+                try {
+                    String normalizedNumber = normalizePhoneNumber(customer.getPhoneNumber());
+                    if (!normalizedNumber.equals(customer.getPhoneNumber())) {
+                        customer.setPhoneNumber(normalizedNumber);
+                        customerRepository.save(customer);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error normalizing phone number for customer ID " + customer.getId() + ": " + e.getMessage());
+                }
+            }
+        });
     }
 }

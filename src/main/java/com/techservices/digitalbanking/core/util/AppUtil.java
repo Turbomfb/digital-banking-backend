@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.util;
 
+import com.techservices.digitalbanking.core.exception.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.StringJoiner;
@@ -53,6 +54,21 @@ public class AppUtil {
 		return StringUtils.isNotBlank(emailAddress) ? emailAddress.replaceAll("(?<=.{3}).(?=.*@)", "*") : null;
 	}
 
+	public static String normalizePhoneNumber(String phoneNumber) {
+		String digits = phoneNumber.replaceAll("\\D", "");
+
+		if (digits.startsWith("234") && digits.length() == 13) {
+			return "0" + digits.substring(3);
+		} else if (digits.startsWith("0") && digits.length() == 11) {
+			return digits;
+		} else if (digits.startsWith("234") && digits.length() == 10) {
+			return "0" + digits.substring(3);
+		} else if (digits.length() == 13 && phoneNumber.startsWith("+234")) {
+			return "0" + digits.substring(3);
+		}
+
+		throw new ValidationException("Invalid.phone.format", "Phone number format is invalid");
+	}
 	public static boolean isDynamicVirtualAccountDynamic(String accountNumber) {
 		return accountNumber.startsWith("9");
 	}
