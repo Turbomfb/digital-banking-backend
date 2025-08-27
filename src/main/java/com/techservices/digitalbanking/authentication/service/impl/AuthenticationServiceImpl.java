@@ -61,6 +61,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
 import static com.techservices.digitalbanking.core.util.CommandUtil.*;
 import static com.techservices.digitalbanking.core.util.DateUtil.getFormattedCurrentDateTime;
 
@@ -166,18 +168,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("user activity: {}", activity);
         userLoginActivityRepository.save(activity);
     }
-
     private Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber, UserType customerType) {
         Customer foundCustomer;
-        if (StringUtils.isNotBlank(emailAddress)){
+
+        if (StringUtils.isNotBlank(emailAddress)) {
             foundCustomer = customerService.getCustomerByEmailAddressAndUserType(emailAddress, customerType)
                     .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid email or password"));
-        } else if (StringUtils.isNotBlank(phoneNumber)){
+        } else if (StringUtils.isNotBlank(phoneNumber)) {
             foundCustomer = customerService.getCustomerByPhoneNumberAndUserType(phoneNumber, customerType)
-                    .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid phoneNumber or password"));
+                    .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid phone number or password"));
         } else {
             throw new ValidationException("Invalid.credentials.provided", "Email or phone number must be provided");
         }
+
         return foundCustomer;
     }
 

@@ -38,6 +38,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -54,26 +56,7 @@ public class CustomerServiceImpl implements CustomerService {
 	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType) {
 		if ("generate-otp".equalsIgnoreCase(command)) {
 			createCustomerRequest.setCustomerType(customerType != null ? customerType : UserType.RETAIL);
-			if (customerType == UserType.RETAIL) {
-				if (StringUtils.isBlank(createCustomerRequest.getEmailAddress()) && StringUtils.isBlank(createCustomerRequest.getPhoneNumber())) {
-					throw new ValidationException("email.or.phone.required", "Either email address or phone number is required for retail customers.");
-				}
-				if (StringUtils.isNotBlank(createCustomerRequest.getBusinessName())) {
-					throw new ValidationException("business.name.not.allowed", "Business name is not allowed for retail customers.");
-				}
-				if (StringUtils.isNotBlank(createCustomerRequest.getRcNumber())) {
-					throw new ValidationException("rc.number.not.allowed", "RC number is not allowed for retail customers.");
-				}
-			} else if (customerType == UserType.CORPORATE) {
-				if (StringUtils.isBlank(createCustomerRequest.getBusinessName())) {
-					throw new ValidationException("business.name.required", "Business name is required for corporate customers.");
-				}
-				if (StringUtils.isBlank(createCustomerRequest.getRcNumber())) {
-					throw new ValidationException("rc.number.required", "RC number is required for corporate customers.");
-				}
-			} else {
-				throw new ValidationException("invalid.customer.type", "Invalid customer type provided.");
-			}
+			validateCreateCustomer(createCustomerRequest, customerType);
 			log.info("Generating otp");
 			if (StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()) && createCustomerRequest.getTransactionPin().length() < 4) {
 				throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
@@ -89,6 +72,32 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 		else {
 			throw new ValidationException("invalid.command", "Invalid command: " + command);
+		}
+	}
+
+	private static void validateCreateCustomer(CreateCustomerRequest createCustomerRequest, UserType customerType) {
+		if (StringUtils.isNotBlank(createCustomerRequest.getPhoneNumber())) {
+			createCustomerRequest.setPhoneNumber(normalizePhoneNumber(createCustomerRequest.getPhoneNumber()));
+		}
+		if (customerType == UserType.RETAIL) {
+			if (StringUtils.isBlank(createCustomerRequest.getEmailAddress()) && StringUtils.isBlank(createCustomerRequest.getPhoneNumber())) {
+				throw new ValidationException("email.or.phone.required", "Either email address or phone number is required for retail customers.");
+			}
+			if (StringUtils.isNotBlank(createCustomerRequest.getBusinessName())) {
+				throw new ValidationException("business.name.not.allowed", "Business name is not allowed for retail customers.");
+			}
+			if (StringUtils.isNotBlank(createCustomerRequest.getRcNumber())) {
+				throw new ValidationException("rc.number.not.allowed", "RC number is not allowed for retail customers.");
+			}
+		} else if (customerType == UserType.CORPORATE) {
+			if (StringUtils.isBlank(createCustomerRequest.getBusinessName())) {
+				throw new ValidationException("business.name.required", "Business name is required for corporate customers.");
+			}
+			if (StringUtils.isBlank(createCustomerRequest.getRcNumber())) {
+				throw new ValidationException("rc.number.required", "RC number is required for corporate customers.");
+			}
+		} else {
+			throw new ValidationException("invalid.customer.type", "Invalid customer type provided.");
 		}
 	}
 
@@ -121,7 +130,8 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber, UserType customerType) {
-		return customerRepository.findByPhoneNumberAndUserType(phoneNumber, customerType);
+		String normalizedPhone = normalizePhoneNumber(phoneNumber);
+		return customerRepository.findByPhoneNumberAndUserType(normalizedPhone, customerType);
 	}
 
 	@Override
@@ -131,7 +141,8 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public Optional<Customer> getCustomerByPhoneNumber(String phoneNumber) {
-		return customerRepository.findByPhoneNumber(phoneNumber);
+		String normalizedPhone = normalizePhoneNumber(phoneNumber);
+		return customerRepository.findByPhoneNumber(normalizedPhone);
 	}
 
 	@Override
