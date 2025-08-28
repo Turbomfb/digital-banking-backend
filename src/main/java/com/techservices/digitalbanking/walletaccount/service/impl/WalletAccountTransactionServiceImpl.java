@@ -5,6 +5,7 @@ import com.techservices.digitalbanking.core.configuration.resttemplate.ApiServic
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.enums.AlertType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
@@ -26,8 +27,6 @@ import com.techservices.digitalbanking.walletaccount.domain.response.WalletPayme
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +48,6 @@ import java.util.UUID;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
-import static com.techservices.digitalbanking.core.util.DateUtil.getFormattedCurrentDateTime;
 
 @Slf4j
 @Service
@@ -171,7 +169,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 					GetSavingsAccountsAccountIdResponse accountResponse = walletAccountService.retrieveSavingsAccountById(customer.getId());
 					String balance = accountResponse.getAccountBalance().toString();
 					String transactionMessage = notificationUtil.getTransactionNotificationTemplate("CREDIT", paymentOrderEntity.getAmount().toString(), balance, paymentOrderEntity.getReference());
-					notificationService.notifyUser(customer, transactionMessage);
+					notificationService.notifyUser(customer, transactionMessage, AlertType.TRANSACTION);
 					return new GenericApiResponse("success", "success");
 				} catch (Exception e) {
 					log.error("Error processing deposit for payment order {}: {}", paymentOrderEntity.getReference(), e.getMessage());
