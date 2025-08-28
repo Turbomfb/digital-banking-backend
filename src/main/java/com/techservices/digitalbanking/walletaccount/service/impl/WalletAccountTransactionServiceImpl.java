@@ -41,6 +41,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Optional;
@@ -167,8 +169,11 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 					paymentOrderEntity.setStatus(PaymentOrderStatus.COMPLETED);
 					paymentOrderRepository.save(paymentOrderEntity);
 					GetSavingsAccountsAccountIdResponse accountResponse = walletAccountService.retrieveSavingsAccountById(customer.getId());
-					String balance = accountResponse.getAccountBalance().toString();
-					String transactionMessage = notificationUtil.getTransactionNotificationTemplate("CREDIT", paymentOrderEntity.getAmount().toString(), balance, paymentOrderEntity.getReference());
+					BigDecimal balance = accountResponse.getAccountBalance();
+					balance = balance.setScale(2, RoundingMode.DOWN);
+					DecimalFormat df = new DecimalFormat("#,##0.00");
+					String formattedBalance = df.format(balance);
+					String transactionMessage = notificationUtil.getTransactionNotificationTemplate("CREDIT", paymentOrderEntity.getAmount().toString(), formattedBalance, paymentOrderEntity.getReference());
 					notificationService.notifyUser(customer, transactionMessage, AlertType.TRANSACTION);
 					return new GenericApiResponse("success", "success");
 				} catch (Exception e) {
