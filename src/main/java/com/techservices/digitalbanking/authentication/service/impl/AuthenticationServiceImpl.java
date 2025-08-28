@@ -35,6 +35,7 @@ import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.enums.AlertType;
 import com.techservices.digitalbanking.core.domain.enums.CustomerStatusAuditType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.domain.data.model.AppUser;
@@ -128,7 +129,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
             this.processUserLoginActivity(userAgent, request, foundCustomer, authenticationResponse);
             String loginMessage = notificationUtil.getLoginNotificationTemplate(foundCustomer.getFirstname()+" "+foundCustomer.getLastname(), getFormattedCurrentDateTime());
-            notificationService.notifyUser(foundCustomer, loginMessage);
+            notificationService.notifyUser(foundCustomer, loginMessage, AlertType.LOGIN);
         } catch (Exception e) {
             log.error("Error processing user login activity: {}", e.getMessage());
         }

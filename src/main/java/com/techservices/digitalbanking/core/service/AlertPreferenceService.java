@@ -31,6 +31,11 @@ public class AlertPreferenceService {
         return alertPreferences;
     }
 
+    @Transactional
+    public Optional<AlertPreference> getPreferencesForCustomerByAlertType(Long customerId, AlertType alertType) {
+        return alertPreferenceRepository.findByCustomerIdAndAlertType(customerId, alertType);
+    }
+
 
     @Transactional
     public AlertPreference updatePreference(Long customerId, AlertType alertType,
