@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.service;
 import com.techservices.digitalbanking.core.domain.data.model.Address;
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +20,15 @@ public class AddressService {
 
     public Address getAddressByCustomerAndType(Long customerId, String type) {
         return addressRepository.findByCustomerIdAndType(customerId, type)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new PlatformServiceException("address.not-found",
+                        "Address with type " + type + " not found for this customer"));
     }
 
     @Transactional
     public Address createAddress(Address address) {
         if (addressRepository.existsByCustomerIdAndType(address.getCustomerId(), address.getType())) {
-            throw new RuntimeException("Address with type " + address.getType() + " already exists for this customer");
+            throw new PlatformServiceException("address.address-type.exists",
+                    "Address with type " + address.getType() + " already exists for this customer");
         }
         return addressRepository.save(address);
     }
