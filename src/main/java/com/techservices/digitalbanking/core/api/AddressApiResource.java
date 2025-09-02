@@ -58,4 +58,16 @@ public class AddressApiResource {
         addressService.deleteAddress(customerId, type);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/states")
+    public ResponseEntity<BasePageResponse<String>> getAllStates() {
+        BasePageResponse<String> states = addressService.getAllStates();
+        return ResponseEntity.ok(states);
+    }
+
+    @GetMapping("/states/{state}/lgas")
+    public ResponseEntity<BasePageResponse<String>> getLgasForState(@PathVariable String state) {
+        BasePageResponse<String> lgas = addressService.getLgasForState(state);
+        return ResponseEntity.ok(lgas);
+    }
 }
