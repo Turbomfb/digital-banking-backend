@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.domain.data.model.IdentityVerificationData;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
+import io.micrometer.common.util.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,6 +22,10 @@ public class IdentityVerificationResponse {
     private String statusCode;
     private String message;
     private String dataSource;
+
+    public boolean isSuccess() {
+        return success && errors == null && data != null && StringUtils.isNotBlank(data.firstName) && StringUtils.isNotBlank(data.lastName);
+    }
 
     public static IdentityVerificationResponse parse(GetClientsClientIdResponse client) {
         IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
@@ -55,6 +60,7 @@ public class IdentityVerificationResponse {
     @Setter
     @Getter
     @ToString
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class IdentityVerificationResponseData {
         private String id;
         private String firstName;
@@ -67,5 +73,19 @@ public class IdentityVerificationResponse {
         private String image;
         private String religion;
         private String signature;
+
+        private Address address;
+
+
+        @Setter
+        @Getter
+        @ToString
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Address {
+            private String town;
+            private String lga;
+            private String state;
+            private String addressLine;
+        }
     }
 }

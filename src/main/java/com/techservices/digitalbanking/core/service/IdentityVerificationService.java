@@ -97,11 +97,11 @@ public class IdentityVerificationService {
         return processVerificationResponse(identityVerificationResponse, customerData, foundCustomer);
     }
 
-    private String buildUrl(String endpoint) {
+    public String buildUrl(String endpoint) {
         return systemProperty.getYouverifyIntegrationUrl() + IDENTITY_VERIFICATION_URL + endpoint;
     }
 
-    private IdentityVerificationResponse fetchIdentityVerificationResponse(String url, String identifier) {
+    public IdentityVerificationResponse fetchIdentityVerificationResponse(String url, String identifier) {
         try {
             Map<String, Object> requestPayload = new HashMap<>();
             requestPayload.put("id", identifier);

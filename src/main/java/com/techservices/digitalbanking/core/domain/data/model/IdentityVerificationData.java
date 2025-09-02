@@ -103,6 +103,12 @@ public class IdentityVerificationData {
             verificationData.setReligion(data.getReligion());
             verificationData.setImage(data.getImage());
             verificationData.setSignature(data.getSignature());
+            if (data.getAddress() != null) {
+                verificationData.setTown(data.getAddress().getTown());
+                verificationData.setLga(data.getAddress().getLga());
+                verificationData.setState(data.getAddress().getState());
+                verificationData.setAddressLine(data.getAddress().getAddressLine());
+            }
         }
         return verificationData;
     }
