@@ -59,7 +59,7 @@ public class AddressApiResource {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/states")
+    @GetMapping("/states/all")
     public ResponseEntity<BasePageResponse<String>> getAllStates() {
         BasePageResponse<String> states = addressService.getAllStates();
         return ResponseEntity.ok(states);
