@@ -3,12 +3,15 @@ package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.domain.data.model.Address;
+import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
+import com.techservices.digitalbanking.core.domain.enums.AddressType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
@@ -36,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -54,6 +58,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     private final RedisService redisService;
     private final AccountService accountService;
     private final FineractProperty fineractProperty;
+    private final AddressRepository addressRepository;
 
     @Override
     @Transactional(rollbackOn = Exception.class)
@@ -103,11 +108,29 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         } else {
             this.updateCustomerDetails(foundCustomer, customerKycRequest, customerId, customerKycTier);
         }
+        if (verificationResponse != null && verificationResponse.getData() != null && verificationResponse.getData().getAddress() != null && StringUtils.isNotBlank(foundCustomer.getExternalId())) {
+            updateCustomerAddress(foundCustomer, verificationResponse.getData().getAddress());
+        }
 
         foundCustomer.setKycTier(customerKycTier);
         foundCustomer = this.customerRepository.save(foundCustomer);
         this.redisService.delete(uniqueId);
         return CustomerDtoResponse.parse(foundCustomer);
+    }
+
+    private void updateCustomerAddress(Customer foundCustomer, IdentityVerificationResponse.IdentityVerificationResponseData.Address address) {
+        List<Address> customerAddress = addressRepository.findByCustomerId(foundCustomer.getId());
+        if (!customerAddress.isEmpty()) {
+            return;
+        }
+        Address newAddress = new Address();
+        newAddress.setCustomerId(foundCustomer.getId());
+        newAddress.setType(AddressType.RESIDENTIAL.toString());
+        newAddress.setAddressLine(address.getAddressLine());
+        newAddress.setTown(address.getTown());
+        newAddress.setLga(address.getLga());
+        newAddress.setState(address.getState());
+        addressRepository.save(newAddress);
     }
 
     @Override
