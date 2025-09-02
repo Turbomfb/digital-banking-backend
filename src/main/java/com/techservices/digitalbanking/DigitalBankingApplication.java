@@ -54,31 +54,6 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
-        customerRepository.findAll().forEach(foundCustomer -> {
-            if (StringUtils.isNotBlank(foundCustomer.getNin())) {
-                String url = identityVerificationService.buildUrl("nin");
-                System.err.println("url = " + url);
-                try {
-                    List<Address> customerAddress = addressRepository.findByCustomerId(foundCustomer.getId());
-                    if (customerAddress.isEmpty()) {
-                        IdentityVerificationResponse response = identityVerificationService.fetchIdentityVerificationResponse(url, foundCustomer.getNin());
-                        IdentityVerificationResponse.IdentityVerificationResponseData data = response.getData();
-                        if (response.isSuccess() && data != null && data.getAddress() != null) {
-                            IdentityVerificationResponse.IdentityVerificationResponseData.Address address = data.getAddress();
-                            Address newAddress = new Address();
-                            newAddress.setCustomerId(foundCustomer.getId());
-                            newAddress.setAddressLine(address.getAddressLine());
-                            newAddress.setType(AddressType.RESIDENTIAL.toString());
-                            newAddress.setTown(address.getTown());
-                            newAddress.setLga(address.getLga());
-                            newAddress.setState(address.getState());
-                            addressRepository.save(newAddress);
-                        }
-                    }
-                } catch (Exception e) {
-                    System.err.println("e = " + e.getMessage());
-                }
-            }
-        });
+
     }
 }

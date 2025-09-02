@@ -2,6 +2,7 @@ package com.techservices.digitalbanking.core.api;
 
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.data.model.Address;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.service.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class AddressApiResource {
     private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
     @GetMapping
-    public ResponseEntity<List<Address>> getAddresses() {
+    public ResponseEntity<BasePageResponse<Address>> getAddresses() {
         Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
         return ResponseEntity.ok(addressService.getAddressesByCustomer(customerId));
     }
