@@ -33,7 +33,9 @@ public class AppUtil {
 			"/api/v1/customers/business-identity-verification",
 			"api/v1/loan-products",
 			"api/v1/system/codes/**",
-			"api/v1/privacy-policy"
+			"api/v1/privacy-policy",
+			"api/v1/customers/me/addresses/states",
+			"api/v1/customers/me/addresses/states/**"
 	};
 
 	public static String concatenate(String... strings) {
