@@ -2,11 +2,10 @@ package com.techservices.digitalbanking.core.service;
 
 import com.techservices.digitalbanking.core.domain.data.model.Address;
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -14,8 +13,8 @@ public class AddressService {
 
     private final AddressRepository addressRepository;
 
-    public List<Address> getAddressesByCustomer(Long customerId) {
-        return addressRepository.findByCustomerId(customerId);
+    public BasePageResponse<Address> getAddressesByCustomer(Long customerId) {
+        return BasePageResponse.instance(addressRepository.findByCustomerId(customerId));
     }
 
     public Address getAddressByCustomerAndType(Long customerId, String type) {
