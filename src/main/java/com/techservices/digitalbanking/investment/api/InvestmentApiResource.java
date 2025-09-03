@@ -61,7 +61,7 @@ public class InvestmentApiResource {
 	public ResponseEntity<BaseAppResponse> fundInvestment(
 			@RequestBody(required = false) InvestmentUpdateRequest request,
 			@RequestParam(required = false) InvestmentType investmentType,
-			@PathVariable Long investmentId
+			@PathVariable String investmentId
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		BaseAppResponse investment = investmentService.fundInvestment(customerId, investmentType, request, investmentId);
