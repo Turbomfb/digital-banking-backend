@@ -38,7 +38,7 @@ public interface InvestmentService {
 
 	BaseAppResponse updateAnInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, String investmentId);
 
-	BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, Long investmentId);
+	BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, String investmentId);
 
 	InvestmentCalculatorResponse calculateInvestment(Long customerId, InvestmentCalculatorRequest request);
 

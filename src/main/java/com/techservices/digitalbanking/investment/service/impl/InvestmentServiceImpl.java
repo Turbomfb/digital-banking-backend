@@ -98,7 +98,7 @@ public class InvestmentServiceImpl implements InvestmentService {
     }
 
     @Override
-    public BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, Long investmentId) {
+    public BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, String investmentId) {
         Customer foundCustomer = customerService.getCustomerById(customerId);
         GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccountById(Long.valueOf(foundCustomer.getAccountId()));
         if (investmentType == InvestmentType.FLEX) {
@@ -128,19 +128,19 @@ public class InvestmentServiceImpl implements InvestmentService {
                     log.warn("Failed to create recurring deposit account for client ID: {}", foundCustomer.getExternalId());
                 }
             }
-            investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : investmentId;
+            investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? foundCustomer.getRecurringDepositAccountId() : investmentId;
             accountTransactionService.handleRecurringDepositAccountTransfer(savingsAccount,
-                    investmentId, request.getAmount(), "Investment funding");
+                    Long.valueOf(investmentId), request.getAmount(), "Investment funding");
         } else if (investmentType == InvestmentType.LOCK) {
-            this.retrieveInvestmentById(investmentId, null, null, investmentType.name(), customerId);
-            GetFixedDepositAccountsAccountIdResponse response = fixedDepositService.retrieveInvestmentById(investmentId, null, null, null);
+            this.retrieveInvestmentById(Long.valueOf(investmentId), null, null, investmentType.name(), customerId);
+            GetFixedDepositAccountsAccountIdResponse response = fixedDepositService.retrieveInvestmentById(Long.valueOf(investmentId), null, null, null);
             if (savingsAccount.getAccountBalance().compareTo(response.getDepositAmount()) < 0) {
                 throw new ValidationException("insufficient.funds",
                         "Insufficient funds in the customer's savings account to create an investment.");
             }
             try {
-                fixedDepositService.processInvestmentCommand(investmentId, null, APPROVE);
-                fixedDepositService.processInvestmentCommand(investmentId, null, ACTIVATE);
+                fixedDepositService.processInvestmentCommand(Long.valueOf(investmentId), null, APPROVE);
+                fixedDepositService.processInvestmentCommand(Long.valueOf(investmentId), null, ACTIVATE);
             } catch (Exception e) {
                 throw new PlatformServiceException("investment.funding.failed", "You have already funded this investment or the investment is currently active.", e);
             }

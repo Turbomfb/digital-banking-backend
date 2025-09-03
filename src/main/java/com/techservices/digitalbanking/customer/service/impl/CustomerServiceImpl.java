@@ -10,12 +10,14 @@ import com.techservices.digitalbanking.core.domain.dto.request.NotificationReque
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.enums.AccountType;
+import com.techservices.digitalbanking.core.domain.enums.AlertType;
 import com.techservices.digitalbanking.core.domain.enums.CustomerStatusAuditType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
+import com.techservices.digitalbanking.core.service.AlertPreferenceService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
@@ -51,6 +53,7 @@ public class CustomerServiceImpl implements CustomerService {
 	private final RedisService redisService;
 	private final PasswordEncoder passwordEncoder;
 	private final CustomerStatusAuditRepository customerStatusAuditRepository;
+	private final AlertPreferenceService alertPreferenceService;
 
 	@Override
 	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType) {
@@ -106,7 +109,10 @@ public class CustomerServiceImpl implements CustomerService {
 		PostClientsResponse postClientsResponse = isInitialRegistration ? new PostClientsResponse() : clientService.createCustomer(createCustomerRequest);
 
 		Customer customer = buildCustomer(createCustomerRequest, postClientsResponse, isInitialRegistration);
-		return CustomerDtoResponse.parse(customerRepository.save(customer), clientService);
+		Customer savedCustomer = customerRepository.save(customer);
+		alertPreferenceService.updatePreference(savedCustomer.getId(), AlertType.LOGIN, true, false, false);
+		alertPreferenceService.updatePreference(savedCustomer.getId(), AlertType.TRANSACTION, true, false, false);
+		return CustomerDtoResponse.parse(savedCustomer, clientService);
 	}
 
 	@Override
