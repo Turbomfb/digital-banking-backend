@@ -63,8 +63,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
-import static com.techservices.digitalbanking.core.util.CommandUtil.*;
+import static com.techservices.digitalbanking.core.util.CommandUtil.CHANGE_PASSWORD_COMMAND;
+import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
+import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.DateUtil.getFormattedCurrentDateTime;
 
 
@@ -122,9 +123,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 accessToken,
                 true,
                 foundCustomer.isActive(),
+                foundCustomer.getUserType(),
                 null
         );
         SecurityContextHolder.getContext().setAuthentication(appUser);
+        foundCustomer.setAuthenticated(true);
 
         try {
             this.processUserLoginActivity(userAgent, request, foundCustomer, authenticationResponse);
@@ -133,7 +136,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (Exception e) {
             log.error("Error processing user login activity: {}", e.getMessage());
         }
+        customerRepository.save(foundCustomer);
         return authenticationResponse;
+    }
+
+    public boolean isTokenValid(String token) {
+        return jwtUtil.isTokenValid(token);
     }
 
 
@@ -272,6 +280,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return new GenericApiResponse("Transaction pin changed successfully", "success", null);
         }
         throw new ValidationException("incorrect.pin", "Incorrect transaction pin provided. Please try again.");
+    }
+
+    @Override
+    public void logout(Long customerId) {
+        Customer foundCustomer = customerService.getCustomerById(customerId);
+        foundCustomer.setAuthenticated(false);
+        customerRepository.save(foundCustomer);
     }
 
     private String generateToken(String username, Map<String, Object> claims) {

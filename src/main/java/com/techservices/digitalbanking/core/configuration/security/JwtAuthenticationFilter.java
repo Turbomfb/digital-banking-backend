@@ -20,6 +20,7 @@
  */ 
 package com.techservices.digitalbanking.core.configuration.security;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.data.model.AppUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -59,9 +60,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String token = authHeader.substring(7);
-
             if (jwtUtil.isTokenValid(token)) {
-                AppUser appUser = extractUserInfoFromJwt(token);
+                AppUser appUser = jwtUtil.extractUserInfoFromJwt(token);
+
 
                 Collection<GrantedAuthority> authorities = mapAuthorities(appUser);
 
@@ -76,17 +77,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private AppUser extractUserInfoFromJwt(String token) {
-        return new AppUser(
-                jwtUtil.extractClaim(token, "customerId", Long.class),
-                jwtUtil.extractClaim(token, "email"),
-                jwtUtil.extractClaim(token, "userType"),
-                true,
-                jwtUtil.extractClaim(token, "isActive", Boolean.class),
-                Collections.emptyList()
-        );
     }
 
     private Collection<GrantedAuthority> mapAuthorities(AppUser appUser) {

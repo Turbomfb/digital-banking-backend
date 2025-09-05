@@ -42,6 +42,9 @@ public class Customer extends BaseEntity {
     @Column(name = "external_id")
     private String externalId;
 
+    @Column(name = "is_authenticated")
+    private boolean isAuthenticated;
+
     @Column(name = "phone_number", unique = true, nullable = false)
     private String phoneNumber;
 
