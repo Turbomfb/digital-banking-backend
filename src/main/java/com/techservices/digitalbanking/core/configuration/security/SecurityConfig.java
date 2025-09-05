@@ -21,6 +21,7 @@
 package com.techservices.digitalbanking.core.configuration.security;
 
 import com.techservices.digitalbanking.core.configuration.SystemProperty;
+import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -52,6 +53,7 @@ import static com.techservices.digitalbanking.core.util.AppUtil.*;
 public class SecurityConfig {
 
   private final SystemProperty systemProperty;
+  private final CustomerRepository customerRepository;
 
   @Value("${jwt.secret}")
   private String secretKey;
@@ -130,7 +132,7 @@ public class SecurityConfig {
 
   @Bean
   public JwtUtil jwtUtil() {
-    return new JwtUtil(secretKey);
+    return new JwtUtil(secretKey, customerRepository);
   }
 
   @Bean

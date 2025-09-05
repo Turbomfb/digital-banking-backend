@@ -20,8 +20,13 @@
  */ 
 package com.techservices.digitalbanking.core.configuration.security;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
+import com.techservices.digitalbanking.core.domain.data.model.AppUser;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -33,14 +38,17 @@ import static com.techservices.digitalbanking.core.util.AppUtil.ROLES;
 
 
 @Component
+@Slf4j
 public class JwtUtil {
 
     private final SecretKey secretKey;
     private final long jwtExpirationMs = 86400000; // 24 hours
     public static final long MAX_AGE_SECONDS = 3600L;
+    private final CustomerRepository customerRepository;
     public static final long HSTS_MAX_AGE_SECONDS = 31536000L;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret) {
+    public JwtUtil(@Value("${jwt.secret}") String secret, CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
         if (secret == null || secret.trim().isEmpty()) {
             throw new IllegalStateException("JWT secret key cannot be null or empty");
         }
@@ -136,8 +144,11 @@ public class JwtUtil {
 
     public boolean isTokenValid(String token) {
         try {
-            return !isTokenExpired(token);
-        } catch (JwtException e) {
+            AppUser appUser = extractUserInfoFromJwt(token);
+            Customer foundCustomer = customerRepository.findById(appUser.getUserId()).orElse(null);
+            return foundCustomer != null && foundCustomer.isAuthenticated() && !isTokenExpired(token);
+        } catch (Exception e) {
+            log.error("Token validation error: {}", e.getMessage());
             return false;
         }
     }
@@ -145,5 +156,18 @@ public class JwtUtil {
     public boolean validateToken(String token, String username) {
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
+
+
+    public AppUser extractUserInfoFromJwt(String token) {
+        return new AppUser(
+                this.extractClaim(token, "customerId", Long.class),
+                this.extractClaim(token, "email"),
+                this.extractClaim(token, "userType"),
+                true,
+                this.extractClaim(token, "isActive", Boolean.class),
+                UserType.valueOf(this.extractClaim(token, "userType")),
+                Collections.emptyList()
+        );
     }
 }

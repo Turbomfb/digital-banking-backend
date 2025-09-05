@@ -32,8 +32,13 @@ import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTrans
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
@@ -54,6 +59,30 @@ public class AuthenticationApiResource {
     ) {
         return ResponseEntity.ok(authenticationService.authenticate(postAuthenticationRequest, customerType, userAgent, request));
     }
+
+    @Operation(summary = "Logout User")
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "No token provided"));
+        }
+
+        String token = authHeader.substring(7);
+
+        if (!authenticationService.isTokenValid(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Invalid or expired token"));
+        }
+
+        Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+        authenticationService.logout(customerId);
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok(Map.of("message", "Successfully logged out"));
+    }
+
+
 
     @Operation(summary = "Create Password")
     @PostMapping("/create-password")

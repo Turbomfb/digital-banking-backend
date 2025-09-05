@@ -32,7 +32,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuthenticationService {
     AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType, String userAgent, HttpServletRequest request);
-
+    boolean isTokenValid(String token);
     GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest);
 
     GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command, UserType customerType);
@@ -42,4 +42,6 @@ public interface AuthenticationService {
     GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest);
 
     GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest);
+
+    void logout(Long customerId);
 }

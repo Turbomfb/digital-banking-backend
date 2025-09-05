@@ -20,6 +20,7 @@
  */ 
 package com.techservices.digitalbanking.core.domain.data.model;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import lombok.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -37,6 +38,7 @@ public class AppUser extends AbstractAuthenticationToken {
     private String accessToken;
     private boolean isAuthenticated;
     private boolean isActive;
+    private UserType userType;
     private List<String> permissions;
 
     public AppUser() {
@@ -46,7 +48,7 @@ public class AppUser extends AbstractAuthenticationToken {
         this.permissions = new ArrayList<>();
     }
 
-    public AppUser(Long userId, String emailAddress, String accessToken, boolean isAuthenticated, boolean isActive, List<String> permissions) {
+    public AppUser(Long userId, String emailAddress, String accessToken, boolean isAuthenticated, boolean isActive, UserType userType, List<String> permissions) {
         super(permissions != null
                 ? permissions.stream()
                 .map(SimpleGrantedAuthority::new)
@@ -57,6 +59,7 @@ public class AppUser extends AbstractAuthenticationToken {
         this.accessToken = accessToken;
         this.isAuthenticated = isAuthenticated;
         this.isActive = isActive;
+        this.userType = userType;
         this.permissions = new ArrayList<>();
     }
 
