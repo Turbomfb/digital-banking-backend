@@ -102,7 +102,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 		if (GENERATE_OTP_COMMAND.equals(command)) {
 			Customer customer = this.validateCustomerAccount(request, customerId);
 			request.validateForOtpGeneration();
-			if (!passwordEncoder.matches(customer.getTransactionPin(), request.getTransactionPin())) {
+			if (!passwordEncoder.matches(request.getTransactionPin(), customer.getTransactionPin())) {
 				throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.mismatch",
 						"Customer transaction pin is not correct");
 			}

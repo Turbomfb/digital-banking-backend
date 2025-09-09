@@ -276,11 +276,12 @@ public class InvestmentServiceImpl implements InvestmentService {
                         account != null && account.getDepositType() != null && Objects.equals(account.getDepositType().getId(), accountType.getCode())
                 ).toList();
 
-        if (investmentType.equalsIgnoreCase("flex") && StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId())) {
+        if (investmentType.equalsIgnoreCase("flex")) {
+//            if (StringUtils.isBlank(foundCustomer.getRecurringDepositAccountId())) {
+//                return BasePageResponse.instance(List.of());
+//            }
             return BasePageResponse.instance(
-                    response.stream()
-                            .filter(account -> Objects.equals(account.getId(), Long.valueOf(foundCustomer.getRecurringDepositAccountId())))
-                            .toList()
+                    response
             );
         } else {
             return BasePageResponse.instance(
