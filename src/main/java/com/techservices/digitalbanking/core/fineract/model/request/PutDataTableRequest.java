@@ -24,4 +24,31 @@ public class PutDataTableRequest {
 
 	@JsonProperty("bank_name")
 	private String bankName;
+
+
+	@JsonProperty("locale")
+	private String locale;
+
+
+//	Directors datatable
+	@JsonProperty("nin")
+	private String nin;
+
+	@JsonProperty("bvn")
+	private String bvn;
+
+	@JsonProperty("firstName")
+	private String firstName;
+
+	@JsonProperty("middleName")
+	private String middleName;
+
+	@JsonProperty("lastName")
+	private String lastName;
+
+	@JsonProperty("emailAddress")
+	private String emailAddress;
+
+	@JsonProperty("mobileNumber")
+	private String mobileNumber;
 }

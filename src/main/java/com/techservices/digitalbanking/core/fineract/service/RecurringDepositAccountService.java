@@ -35,6 +35,7 @@ public class RecurringDepositAccountService {
 		postRecurringDepositAccountsRequest.setLocale(DEFAULT_LOCALE);
 		postRecurringDepositAccountsRequest.setDateFormat(getDefaultDateFormat());
 		postRecurringDepositAccountsRequest.setSubmittedOnDate(getCurrentDate());
+		postRecurringDepositAccountsRequest.setAllowWithdrawal(true);
 		PostRecurringDepositAccountsResponse response = recurringDepositAccountApiClient.create(postRecurringDepositAccountsRequest);
 		if (activate) {
 			RecurringDepositCommandRequest request = new RecurringDepositCommandRequest();

@@ -42,5 +42,5 @@ public interface InvestmentService {
 
 	InvestmentCalculatorResponse calculateInvestment(Long customerId, InvestmentCalculatorRequest request);
 
-    BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request, Long investmentId);
+    BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request, String investmentId);
 }

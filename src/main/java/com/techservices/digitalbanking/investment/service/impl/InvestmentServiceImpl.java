@@ -114,9 +114,9 @@ public class InvestmentServiceImpl implements InvestmentService {
                 PostRecurringDepositAccountsRequest recurringDepositAccountsRequest = new PostRecurringDepositAccountsRequest();
 				recurringDepositAccountsRequest.setProductId(fineractProperty.getDefaultRecurringDepositProductId());
 				recurringDepositAccountsRequest.setClientId(String.valueOf(foundCustomer.getExternalId()));
-				recurringDepositAccountsRequest.setDepositPeriodFrequencyId(0L);
-				recurringDepositAccountsRequest.setDepositPeriod(1L);
-				recurringDepositAccountsRequest.setMandatoryRecommendedDepositAmount(request.getAmount());
+				recurringDepositAccountsRequest.setDepositPeriodFrequencyId(3L);
+				recurringDepositAccountsRequest.setDepositPeriod(5L);
+				recurringDepositAccountsRequest.setMandatoryRecommendedDepositAmount(BigDecimal.ONE);
 				recurringDepositAccountsRequest.setRecurringFrequency(1L);
 				recurringDepositAccountsRequest.setRecurringFrequencyType(0L);
                 PostRecurringDepositAccountsResponse response = recurringDepositAccountService.submitApplication(recurringDepositAccountsRequest, true);
@@ -149,14 +149,14 @@ public class InvestmentServiceImpl implements InvestmentService {
     }
 
     @Override
-    public BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request, Long investmentId) {
+    public BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request, String flexInvestmentId) {
         Customer foundCustomer = customerService.getCustomerById(customerId);
         GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccountById(Long.valueOf(foundCustomer.getAccountId()));
         if (StringUtils.isBlank(foundCustomer.getRecurringDepositAccountId())) {
             throw new ValidationException("investment.not.found",
                     "Error withdrawing from investment. Please contact support or try again later.");
         }
-        investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : investmentId;
+        Long investmentId = StringUtils.isNotBlank(foundCustomer.getRecurringDepositAccountId()) ? Long.valueOf(foundCustomer.getRecurringDepositAccountId()) : Long.valueOf(flexInvestmentId);
         GetRecurringDepositAccountsResponse accountsResponse = recurringDepositAccountService.retrieveInvestmentById(investmentId, null, null, null);
         if (accountsResponse.getAccountBalance().compareTo(request.getAmount()) < 0) {
             throw new ValidationException("insufficient.funds",

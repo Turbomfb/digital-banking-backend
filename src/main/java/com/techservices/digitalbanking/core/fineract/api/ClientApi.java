@@ -87,7 +87,7 @@ public interface ClientApi {
 	List<GetDataTablesResponse> getClientDataTables(
 			@PathVariable(name = "registeredTableName") String registeredTableName,
 			@PathVariable(name = "clientId") Long clientId,
-			@RequestParam(name = "genericResultSet", defaultValue = "false") String genericResultSet);
+			@RequestParam(name = "genericResultSet", defaultValue = "false") boolean genericResultSet);
 
 	@PutMapping(value = "/datatables/{registeredTableName}/{clientId}")
 	PutClientsClientIdResponse updateClientDataTables(
@@ -95,6 +95,20 @@ public interface ClientApi {
 			@PathVariable(name = "clientId") Long clientId,
 			@RequestParam(name = "genericResultSet", defaultValue = "true") String genericResultSet,
 			@Valid @RequestBody PutDataTableRequest putDataTableRequest);
+
+	@PutMapping(value = "/datatables/{registeredTableName}/{clientId}/{datatableId}")
+	PutClientsClientIdResponse updateAClientDataTable(
+			@PathVariable(name = "registeredTableName") String registeredTableName,
+			@PathVariable(name = "clientId") Long clientId,
+			@PathVariable(name = "datatableId") Long datatableId,
+			@Valid @RequestBody PutDataTableRequest putDataTableRequest);
+
+	@PostMapping(value = "/datatables/{registeredTableName}/{clientId}")
+	PutClientsClientIdResponse postAClientDataTable(
+			@PathVariable(name = "registeredTableName") String registeredTableName,
+			@PathVariable(name = "clientId") Long clientId,
+			@Valid @RequestBody PutDataTableRequest putDataTableRequest
+	);
 
 	@GetMapping(value = "/clients/tiers")
 	List<KycTier> retrieveAllKycTier();

@@ -9,16 +9,11 @@ import java.util.Map;
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.request.*;
+import com.techservices.digitalbanking.core.fineract.model.response.*;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.api.ClientApiClient;
 import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientsClientIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutClientsClientIdResponse;
 import com.techservices.digitalbanking.core.util.DateUtil;
 import com.techservices.digitalbanking.customer.domian.dto.request.ClientKycRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
@@ -230,5 +225,29 @@ public class ClientService {
 	public FineractPageResponse<KycTier> retrieveAllKycTier() {
 		List<KycTier> kycTiers = clientApiClient.retrieveAllKycTier();
         return new FineractPageResponse<>(kycTiers);
+	}
+
+	public PutClientsClientIdResponse postAClientDataTable(
+			String registeredTableName,
+			Long clientId,
+			PutDataTableRequest putDataTableRequest
+	) {
+		return clientApiClient.postAClientDataTable(registeredTableName, clientId, putDataTableRequest);
+	}
+
+	public PutClientsClientIdResponse updateAClientDataTable(
+			String registeredTableName,
+			Long clientId,
+			Long datatableId,
+			PutDataTableRequest putDataTableRequest
+	) {
+		return clientApiClient.updateAClientDataTable(registeredTableName, clientId, datatableId, putDataTableRequest);
+	}
+
+	public List<GetDataTablesResponse> retrieveClientDataTables(
+			String registeredTableName,
+			Long clientId
+	) {
+		return clientApiClient.getClientDataTables(registeredTableName, clientId, false);
 	}
 }
