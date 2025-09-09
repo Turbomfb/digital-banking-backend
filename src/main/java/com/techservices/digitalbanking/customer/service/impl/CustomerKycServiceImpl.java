@@ -365,8 +365,9 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     }
 
     private void updateCustomerDetails(Customer foundCustomer, CustomerKycRequest customerKycRequest, Long customerId, CustomerKycTier customerKycTier) {
+        boolean customerIsACorporateUser = foundCustomer.getUserType() == UserType.CORPORATE;
         CustomerUpdateRequest customerUpdateRequest = new CustomerUpdateRequest();
-        if (customerKycRequest != null) {
+        if (customerKycRequest != null && !customerIsACorporateUser) {
             customerUpdateRequest.setBvn(customerKycRequest.getBvn());
             customerUpdateRequest.setNin(customerKycRequest.getNin());
         }
@@ -374,7 +375,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             customerUpdateRequest.setKycTier(customerKycTier.getCode());
         }
         customerService.updateCustomer(customerUpdateRequest, customerId, foundCustomer);
-        if (foundCustomer.getUserType() == UserType.CORPORATE && StringUtils.isNotBlank(foundCustomer.getExternalId())) {
+        if (customerIsACorporateUser && StringUtils.isNotBlank(foundCustomer.getExternalId())) {
             this.updateDirectorDataTable(foundCustomer, Long.valueOf(foundCustomer.getExternalId()));
         }
     }
