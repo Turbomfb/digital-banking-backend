@@ -28,6 +28,8 @@ public class AppUtil {
 			"/api/v1/auth/forgot-password"
 	};
 
+	public static final String DIRECTORS_DATATABLE_NAME = "Directors";
+
 	public static final String[] PUBLIC_GET_ENDPOINTS = {
 			"/api/v1/customers/identity-verification",
 			"/api/v1/customers/business-identity-verification",

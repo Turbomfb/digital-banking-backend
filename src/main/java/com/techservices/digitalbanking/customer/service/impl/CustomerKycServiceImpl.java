@@ -18,6 +18,7 @@ import com.techservices.digitalbanking.core.fineract.configuration.FineractPrope
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.request.KycTier;
 import com.techservices.digitalbanking.core.fineract.model.request.PostClientNonPersonDetails;
+import com.techservices.digitalbanking.core.fineract.model.request.PutDataTableRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.*;
 import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
@@ -43,8 +44,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.techservices.digitalbanking.core.util.AppUtil.DIRECTORS_DATATABLE_NAME;
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
+import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_LOCALE;
 
 @Slf4j
 @Service
@@ -228,8 +231,14 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         PostClientsResponse createCustomerResponse = null;
         if (client == null) {
             createCustomerResponse = clientService.createCustomer(createCustomerRequest);
+            if (foundCustomer.getUserType() == UserType.CORPORATE && createCustomerResponse != null) {
+                this.postDirectorDataTable(foundCustomer, createCustomerResponse.getClientId());
+            }
         } else {
-            this.upgradeClientTier(customerKycTier, client.getId(), foundCustomer);
+            PutClientsClientIdResponse response = this.upgradeClientTier(customerKycTier, client.getId(), foundCustomer);
+            if (foundCustomer.getUserType() == UserType.CORPORATE && response != null) {
+                this.updateDirectorDataTable(foundCustomer, client.getId());
+            }
         }
 
         Long clientId = client != null && client.getId() != null ? client.getId() : createCustomerResponse != null ? createCustomerResponse.getClientId() : null;
@@ -258,6 +267,52 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         }
     }
 
+    private void updateDirectorDataTable(Customer foundCustomer, Long externalId) {
+        List<GetDataTablesResponse> datatableResponse = clientService.retrieveClientDataTables(DIRECTORS_DATATABLE_NAME, externalId);
+        if (datatableResponse != null && !datatableResponse.isEmpty()) {
+            log.info("Directors datatable already exists for client ID {}", externalId);
+            GetDataTablesResponse directorsTable = datatableResponse.stream()
+                    .filter(data -> foundCustomer.getFirstname().equalsIgnoreCase(data.getFirstName()))
+                    .findFirst()
+                    .orElse(null);
+            if (directorsTable != null) {
+                PutDataTableRequest request = new PutDataTableRequest();
+                request.setBvn(foundCustomer.getBvn());
+                request.setNin(foundCustomer.getNin());
+                request.setFirstName(foundCustomer.getFirstname());
+                request.setLastName(foundCustomer.getLastname());
+                request.setEmailAddress(foundCustomer.getEmailAddress());
+                request.setMobileNumber(foundCustomer.getPhoneNumber());
+                request.setLocale(DEFAULT_LOCALE);
+                try {
+                    clientService.updateAClientDataTable(DIRECTORS_DATATABLE_NAME, externalId, directorsTable.getId(), request);
+                } catch (Exception e) {
+                    log.error("Error updating director to datatable for client ID {}: {}", externalId, e.getMessage());
+                }
+            } else {
+                this.postDirectorDataTable(foundCustomer, externalId);
+            }
+        } else {
+            this.postDirectorDataTable(foundCustomer, externalId);
+        }
+    }
+
+    private void postDirectorDataTable(Customer foundCustomer, Long clientId) {
+        PutDataTableRequest request = new PutDataTableRequest();
+        request.setBvn(foundCustomer.getBvn());
+        request.setNin(foundCustomer.getNin());
+        request.setFirstName(foundCustomer.getFirstname());
+        request.setLastName(foundCustomer.getLastname());
+        request.setEmailAddress(foundCustomer.getEmailAddress());
+        request.setMobileNumber(foundCustomer.getPhoneNumber());
+        request.setLocale(DEFAULT_LOCALE);
+        try {
+            clientService.postAClientDataTable(DIRECTORS_DATATABLE_NAME, clientId, request);
+        } catch (Exception e) {
+            log.error("Error adding director to datatable for client ID {}: {}", clientId, e.getMessage());
+        }
+    }
+
     private GetClientsClientIdResponse fetchCbaClientByEmailOrPhoneNumber(Customer foundCustomer) {
         GetClientsClientIdResponse client;
         client = clientService.searchClients(null, null, foundCustomer.getEmailAddress(), null, foundCustomer.getUserType());
@@ -267,10 +322,10 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         return client;
     }
 
-    private void upgradeClientTier(CustomerKycTier customerKycTier, Long clientId, Customer foundCustomer) {
+    private PutClientsClientIdResponse upgradeClientTier(CustomerKycTier customerKycTier, Long clientId, Customer foundCustomer) {
         CustomerUpdateRequest updateRequest = new CustomerUpdateRequest();
         updateRequest.setKycTier(customerKycTier.getCode());
-        clientService.updateCustomer(updateRequest, clientId, foundCustomer.getUserType());
+        return clientService.updateCustomer(updateRequest, clientId, foundCustomer.getUserType());
     }
 
     private CustomerKycTier getCustomerKycTier(Customer foundCustomer) {
@@ -285,8 +340,6 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
     private CreateCustomerRequest buildCreateCustomerRequest(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier) {
         CreateCustomerRequest createCustomerRequest = new CreateCustomerRequest();
-        createCustomerRequest.setBvn(customerKycRequest.getBvn());
-        createCustomerRequest.setNin(customerKycRequest.getNin());
         createCustomerRequest.setCustomerType(foundCustomer.getUserType());
         if (foundCustomer.getUserType() == UserType.CORPORATE) {
             createCustomerRequest.setBusinessName(foundCustomer.getBusinessName());
@@ -296,6 +349,8 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             postClientNonPersonDetails.setMainBusinessLineId(Long.valueOf(foundCustomer.getIndustryId()));
             createCustomerRequest.setClientNonPersonDetails(postClientNonPersonDetails);
         } else {
+            createCustomerRequest.setBvn(customerKycRequest.getBvn());
+            createCustomerRequest.setNin(customerKycRequest.getNin());
             createCustomerRequest.setFirstname(createCustomerRequest.getFirstname());
             createCustomerRequest.setLastname(createCustomerRequest.getLastname());
         }
@@ -319,5 +374,8 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             customerUpdateRequest.setKycTier(customerKycTier.getCode());
         }
         customerService.updateCustomer(customerUpdateRequest, customerId, foundCustomer);
+        if (foundCustomer.getUserType() == UserType.CORPORATE && StringUtils.isNotBlank(foundCustomer.getExternalId())) {
+            this.updateDirectorDataTable(foundCustomer, Long.valueOf(foundCustomer.getExternalId()));
+        }
     }
 }

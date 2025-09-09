@@ -12,6 +12,9 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetDataTablesResponse {
 
+	@JsonProperty("id")
+	private Long id;
+
 	@JsonProperty("account_number")
 	private String accountNumber;
 
@@ -23,4 +26,28 @@ public class GetDataTablesResponse {
 
 	@JsonProperty("bank_name")
 	private String bankName;
+
+
+
+	//	Directors datatable
+	@JsonProperty("nin")
+	private String nin;
+
+	@JsonProperty("bvn")
+	private String bvn;
+
+	@JsonProperty("firstName")
+	private String firstName;
+
+	@JsonProperty("middleName")
+	private String middleName;
+
+	@JsonProperty("lastName")
+	private String lastName;
+
+	@JsonProperty("emailAddress")
+	private String emailAddress;
+
+	@JsonProperty("mobileNumber")
+	private String mobileNumber;
 }

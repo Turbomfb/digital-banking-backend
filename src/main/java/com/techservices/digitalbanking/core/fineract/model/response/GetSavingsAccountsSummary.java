@@ -19,4 +19,11 @@ public class GetSavingsAccountsSummary {
 	private BigDecimal totalDeposits;
 	private BigDecimal totalWithdrawals;
 	private BigDecimal totalInterestEarned;
+
+	public BigDecimal getAvailableBalance() {
+		if (availableBalance == null) {
+			return accountBalance;
+		}
+		return availableBalance;
+	}
 }

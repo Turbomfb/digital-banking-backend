@@ -8,15 +8,20 @@ import com.techservices.digitalbanking.core.domain.data.repository.IdentityVerif
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.enums.AccountType;
 import com.techservices.digitalbanking.core.domain.enums.AddressType;
+import com.techservices.digitalbanking.core.fineract.api.ClientApiClient;
 import com.techservices.digitalbanking.core.fineract.model.request.PostRecurringDepositAccountsRequest;
 import com.techservices.digitalbanking.core.fineract.model.response.GetClientsSavingsAccounts;
+import com.techservices.digitalbanking.core.fineract.model.response.GetRecurringDepositAccountsResponse;
 import com.techservices.digitalbanking.core.fineract.model.response.PostRecurringDepositAccountsResponse;
 import com.techservices.digitalbanking.core.fineract.service.ClientService;
 import com.techservices.digitalbanking.core.fineract.service.RecurringDepositAccountService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
+import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
+import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
 import com.techservices.digitalbanking.investment.domain.request.RecurringDepositCommandRequest;
+import com.techservices.digitalbanking.investment.service.InvestmentService;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +34,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+import static com.techservices.digitalbanking.core.util.AppUtil.DIRECTORS_DATATABLE_NAME;
 import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
 
 @SpringBootApplication
@@ -47,6 +54,8 @@ public class DigitalBankingApplication {
     private final PasswordEncoder passwordEncoder;
     private final IdentityVerificationService identityVerificationService;
     private final AddressRepository addressRepository;
+    private final ClientApiClient clientApiClient;
+    private final InvestmentService investmentService;
 
     public static void main(String[] args) {
         SpringApplication.run(DigitalBankingApplication.class, args);
@@ -54,6 +63,11 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
-
+        customerRepository.findAll().forEach(customer -> {
+            if (customer.isActive() && StringUtils.isNotBlank(customer.getRecurringDepositAccountId())) {
+                customer.setRecurringDepositAccountId(null);
+                customerRepository.save(customer);
+            }
+        });
     }
 }
