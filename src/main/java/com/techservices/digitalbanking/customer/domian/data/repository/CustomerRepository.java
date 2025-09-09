@@ -20,9 +20,9 @@ public interface CustomerRepository extends CrudRepository<Customer, Long> {
 
     Page<Customer> findAll(Pageable pageable);
 
-    Optional<Customer> findByBvn(String bvn);
+    Optional<Customer> findByBvnAndUserType(String bvn, UserType userType);
 
-    Optional<Customer> findByNin(String nin);
+    Optional<Customer> findByNinAndUserType(String nin, UserType userType);
 
     @Query("SELECT c FROM Customer c WHERE LOWER(c.emailAddress) = LOWER(:emailAddress) and c.userType = :userType")
     Optional<Customer> findByEmailAddressAndUserType(String emailAddress, UserType userType);
