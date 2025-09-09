@@ -12,9 +12,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GetFixedDepositProductsProductIdResponse {
-	private Object accountingMappings;
 
-	private DepositProductsCharts activeChart;
+
+	private Integer id;
+
+	private String shortName;
 
 	private GetSavingsCurrency currency;
 
@@ -24,8 +26,6 @@ public class GetFixedDepositProductsProductIdResponse {
 
 	@Valid
 	private Set<@Valid Object> feeToIncomeAccountMappings = new LinkedHashSet<>();
-
-	private Integer id;
 
 	private EnumOptionData interestCalculationDaysInYearType;
 
@@ -40,6 +40,9 @@ public class GetFixedDepositProductsProductIdResponse {
 	private EnumOptionData maxDepositTermType;
 
 	private Integer minDepositTerm;
+	private BigDecimal minDepositAmount;
+	private BigDecimal depositAmount;
+	private BigDecimal maxDepositAmount;
 
 	private EnumOptionData minDepositTermType;
 
@@ -54,5 +57,7 @@ public class GetFixedDepositProductsProductIdResponse {
 
 	private EnumOptionData preClosurePenalInterestOnType;
 
-	private String shortName;
+	private Object accountingMappings;
+
+	private DepositProductsCharts activeChart;
 }

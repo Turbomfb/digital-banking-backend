@@ -13,6 +13,7 @@ import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdat
 import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentCalculatorResponse;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentUpdateResponse;
+import com.techservices.digitalbanking.investment.service.InvestmentProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,7 @@ import java.util.Comparator;
 public class InvestmentApiResource {
 	private final InvestmentService investmentService;
 	private final SpringSecurityAuditorAware springSecurityAuditorAware;
+	private final InvestmentProductService investmentProductService;
 
 	@Operation(summary = "Create an investment")
 	@PostMapping
@@ -116,6 +118,15 @@ public class InvestmentApiResource {
 		BaseAppResponse investment = investmentService.retrieveInvestmentById(id,
 				staffInSelectedOfficeOnly, chargeStatus, investmentType, customerId);
 		return ResponseEntity.ok(investment);
+	}
+
+	@Operation(summary = "Retrieve Current Investment Product")
+	@GetMapping("products/current")
+	public ResponseEntity<Object> retrieveCurrentInvestmentProduct(
+			@RequestParam(required = false, defaultValue = "FLEX") String investmentType
+	) {
+		Object product = investmentProductService.retrieveCurrentInvestmentProduct(investmentType);
+		return ResponseEntity.ok(product);
 	}
 
 	@Operation(summary = "Retrieve an Investment Transactions")

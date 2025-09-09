@@ -3,6 +3,10 @@ package com.techservices.digitalbanking.investment.service.impl;
 
 import java.util.List;
 
+import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
+import com.techservices.digitalbanking.core.fineract.service.FixedDepositProductService;
+import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.model.request.PostRecurringDepositProductsRequest;
@@ -20,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvestmentProductServiceImpl implements InvestmentProductService {
 	private final RecurringDepositProductService recurringDepositProductService;
+	private final FineractProperty fineractProperty;
+	private final FixedDepositProductService fixedDepositProductService;
 
 	@Override
 	public PostRecurringDepositProductResponse createProduct(
@@ -30,6 +36,17 @@ public class InvestmentProductServiceImpl implements InvestmentProductService {
 	@Override
 	public List<GetRecurringDepositProductProductIdResponse> retrieveAllProducts() {
 		return recurringDepositProductService.retrieveAllProducts();
+	}
+
+	@Override
+	public Object retrieveCurrentInvestmentProduct(String investmentType) {
+		if (InvestmentType.FLEX.name().equals(investmentType)) {
+			return recurringDepositProductService.retrieveAProduct(fineractProperty.getDefaultRecurringDepositProductId());
+		} else if (InvestmentType.LOCK.name().equals(investmentType)) {
+			return fixedDepositProductService.retrieveAProduct(fineractProperty.getDefaultFixedDepositProductId());
+		} else {
+			throw new ValidationException("invalid.investment.type", "The investment type provided is invalid");
+		}
 	}
 
 	@Override
