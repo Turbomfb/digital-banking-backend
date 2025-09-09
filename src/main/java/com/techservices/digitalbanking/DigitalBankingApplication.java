@@ -65,34 +65,5 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
-        customerRepository.findAll().forEach(customer -> {
-            if (customer.isActive()) {
-                BasePageResponse<GetClientsSavingsAccounts> accountResponse = investmentService.retrieveAllCustomerInvestments(customer.getId(), InvestmentType.FLEX.name());
-                System.err.println("accountResponse: " + accountResponse.getData());
-                if (!accountResponse.getData().isEmpty()) {
-                    try {
-                        accountResponse.getData().forEach(response -> {
-                            Long investmentId = response.getId();
-                            RecurringDepositCommandRequest commandRequest = new RecurringDepositCommandRequest();
-                            commandRequest.setOnAccountClosureId(200L);
-                            commandRequest.setToSavingsAccountId(Long.valueOf(customer.getAccountId()));
-                            commandRequest.setNote("Close please");
-                            String command = response.getStatus().getActive() ? PREMATURE_CLOSE : response.getStatus().getMatured() ? "CLOSE" : null;
-                            if (StringUtils.isNotBlank(command)) {
-                                recurringDepositAccountService.processInvestmentCommand(investmentId, commandRequest, command);
-                                BigDecimal balance = response.getAccountBalance();
-                                customer.setRecurringDepositAccountId(null);
-                                customerRepository.save(customer);
-                                InvestmentUpdateRequest updateRequest = new InvestmentUpdateRequest();
-                                updateRequest.setAmount(balance);
-                                investmentService.fundInvestment(customer.getId(), InvestmentType.FLEX, updateRequest, String.valueOf(investmentId));
-                            }
-                        });
-                    } catch (Exception e) {
-                        System.err.println("Error processing investment for customer ID " + customer.getId() + ": " + e.getMessage());
-                    }
-                }
-            }
-        });
     }
 }
