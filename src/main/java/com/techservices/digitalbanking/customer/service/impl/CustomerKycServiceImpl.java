@@ -67,41 +67,37 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         Customer foundCustomer = this.customerService.getCustomerById(customerId);
         String uniqueId = customerKycRequest.getUniqueId();
         String otp = customerKycRequest.getOtp();
-        if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
-            if (StringUtils.isBlank(customerKycRequest.getBase64Image()) && StringUtils.isBlank(otp)) {
-                throw new ValidationException("validation.error.exists", "Please provide an otp or a base64Image");
-            }
-            OtpDto otpDto = this.redisService.retrieveOtpDto(uniqueId);
-            if (otpDto == null) {
-                throw new ValidationException("otp.expired", "Verification has expired or does not exist. Please initiate a new one.");
-            }
-            if (StringUtils.isNotBlank(customerKycRequest.getBase64Image())) {
-                log.info("customerKycRequest.getBase64Image(): {}", customerKycRequest.getBase64Image());
-                customerKycRequest = (CustomerKycRequest) otpDto.getData();
-                this.identityVerificationService.validateImageMismatch(customerKycRequest.getBase64Image(), customerKycRequest.getBvn(), customerKycRequest.getNin());
-                log.info("Image mismatch validated successfully");
-            } else {
-                otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.KYC_UPGRADE);
-                customerKycRequest = (CustomerKycRequest) otpDto.getData();
-            }
-        }
 
         IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
         boolean isIdentityDataRetrieved = verificationResponse != null && GENERATE_OTP_COMMAND.equalsIgnoreCase(command);
         if (isIdentityDataRetrieved) {
-            if (verificationResponse.getData() != null) {
-                IdentityVerificationResponse.IdentityVerificationResponseData data = verificationResponse.getData();
-                if ("EXTERNAL".equalsIgnoreCase(verificationResponse.getDataSource()) && (StringUtils.isBlank(data.getMobile()) || StringUtils.isBlank(data.getFirstName()) || StringUtils.isBlank(data.getLastName()))) {
-                    log.error("Data source: {}, Identity verification failed for customer id: {}. Null fields were identified", verificationResponse.getDataSource(), data);
-                    String dataType = StringUtils.isNotBlank(customerKycRequest.getBvn()) ? "BVN" : "NIN";
-                    throw new ValidationException("validation.error.exists", "Unable to validate your " + dataType + " at the moment. Please try again later.");
-                }
-            }
-            NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse);
-            OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto, null);
-            String message = notificationRequestDto.getOtpResponseMessage();
-            return new GenericApiResponse(otpDto.getUniqueId(), message, "success", null);
+            return processKycOtpGeneration(customerKycRequest, verificationResponse);
         }
+
+        else if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
+            return processKycVerification(customerKycRequest, customerId, otp, uniqueId, foundCustomer, verificationResponse);
+        }
+        throw new ValidationException("invalid.command", "Invalid command provided.");
+    }
+
+    private CustomerDtoResponse processKycVerification(CustomerKycRequest customerKycRequest, Long customerId, String otp, String uniqueId, Customer foundCustomer, IdentityVerificationResponse verificationResponse) {
+        if (StringUtils.isBlank(customerKycRequest.getBase64Image()) && StringUtils.isBlank(otp)) {
+            throw new ValidationException("validation.error.exists", "Please provide an otp or a base64Image");
+        }
+        OtpDto otpDto = this.redisService.retrieveOtpDto(uniqueId);
+        if (otpDto == null) {
+            throw new ValidationException("otp.expired", "Verification has expired or does not exist. Please initiate a new one.");
+        }
+        if (StringUtils.isNotBlank(customerKycRequest.getBase64Image())) {
+            log.info("customerKycRequest.getBase64Image(): {}", customerKycRequest.getBase64Image());
+            customerKycRequest = (CustomerKycRequest) otpDto.getData();
+            this.identityVerificationService.validateImageMismatch(customerKycRequest.getBase64Image(), customerKycRequest.getBvn(), customerKycRequest.getNin());
+            log.info("Image mismatch validated successfully");
+        } else {
+            otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.KYC_UPGRADE);
+            customerKycRequest = (CustomerKycRequest) otpDto.getData();
+        }
+
         CustomerKycTier customerKycTier = this.getCustomerKycTier(foundCustomer);
         if (!foundCustomer.isActive()) {
             this.activateCustomer(foundCustomer, customerKycRequest, customerKycTier);
@@ -116,6 +112,21 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         foundCustomer = this.customerRepository.save(foundCustomer);
         this.redisService.delete(uniqueId);
         return CustomerDtoResponse.parse(foundCustomer);
+    }
+
+    private GenericApiResponse processKycOtpGeneration(CustomerKycRequest customerKycRequest, IdentityVerificationResponse verificationResponse) {
+        if (verificationResponse.getData() != null) {
+            IdentityVerificationResponse.IdentityVerificationResponseData data = verificationResponse.getData();
+            if ("EXTERNAL".equalsIgnoreCase(verificationResponse.getDataSource()) && (StringUtils.isBlank(data.getMobile()) || StringUtils.isBlank(data.getFirstName()) || StringUtils.isBlank(data.getLastName()))) {
+                log.error("Data source: {}, Identity verification failed for customer id: {}. Null fields were identified", verificationResponse.getDataSource(), data);
+                String dataType = StringUtils.isNotBlank(customerKycRequest.getBvn()) ? "BVN" : "NIN";
+                throw new ValidationException("validation.error.exists", "Unable to validate your " + dataType + " at the moment. Please try again later.");
+            }
+        }
+        NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse);
+        OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto, null);
+        String message = notificationRequestDto.getOtpResponseMessage();
+        return new GenericApiResponse(otpDto.getUniqueId(), message, "success", null);
     }
 
     private void updateCustomerAddress(Customer foundCustomer, IdentityVerificationResponse.IdentityVerificationResponseData.Address address) {
@@ -146,9 +157,11 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
         if (StringUtils.isNotBlank(customerKycRequest.getBvn())) {
             log.info("Validating BVN: {}", customerKycRequest.getBvn());
-            customerRepository.findByBvn(customerKycRequest.getBvn()).ifPresent(existedCustomer -> {
-                throw new ValidationException("bvn.already.exists", "You have entered and invalid BVN");
-            });
+            customerRepository.findByBvnAndUserType(customerKycRequest.getBvn(), foundCustomer.getUserType())
+                    .ifPresent(existedCustomer -> {
+                        log.error("BVN {} already exists for customer id: {}", customerKycRequest.getBvn(), existedCustomer.getId());
+                        throw new ValidationException("bvn.already.exists", "You have entered an invalid BVN");
+                    });
 
             if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
                 GetClientsClientIdResponse client = clientService.getCustomerByBvn(customerKycRequest.getBvn());
@@ -166,9 +179,10 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
         if (StringUtils.isNotBlank(customerKycRequest.getNin())) {
             log.info("Validating NIN: {}", customerKycRequest.getNin());
-            customerRepository.findByNin(customerKycRequest.getNin())
+            customerRepository.findByNinAndUserType(customerKycRequest.getNin(), foundCustomer.getUserType())
                     .ifPresent(existingCustomer -> {
-                        throw new ValidationException("nin.already.exists", "You have entered and invalid NIN.");
+                        log.error("NIN {} already exists for customer id: {}", customerKycRequest.getNin(), existingCustomer.getId());
+                        throw new ValidationException("nin.already.exists", "You have entered an invalid NIN.");
                     });
 
             if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
