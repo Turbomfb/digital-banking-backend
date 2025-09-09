@@ -68,19 +68,20 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         String uniqueId = customerKycRequest.getUniqueId();
         String otp = customerKycRequest.getOtp();
 
-        IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
-        boolean isIdentityDataRetrieved = verificationResponse != null && GENERATE_OTP_COMMAND.equalsIgnoreCase(command);
-        if (isIdentityDataRetrieved) {
-            return processKycOtpGeneration(customerKycRequest, verificationResponse);
+        if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+            IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
+            if (verificationResponse != null) {
+                return processKycOtpGeneration(customerKycRequest, verificationResponse);
+            }
         }
 
         else if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
-            return processKycVerification(customerKycRequest, customerId, otp, uniqueId, foundCustomer, verificationResponse);
+            return processKycVerification(customerKycRequest, customerId, otp, uniqueId, foundCustomer, command);
         }
         throw new ValidationException("invalid.command", "Invalid command provided.");
     }
 
-    private CustomerDtoResponse processKycVerification(CustomerKycRequest customerKycRequest, Long customerId, String otp, String uniqueId, Customer foundCustomer, IdentityVerificationResponse verificationResponse) {
+    private CustomerDtoResponse processKycVerification(CustomerKycRequest customerKycRequest, Long customerId, String otp, String uniqueId, Customer foundCustomer, String command) {
         if (StringUtils.isBlank(customerKycRequest.getBase64Image()) && StringUtils.isBlank(otp)) {
             throw new ValidationException("validation.error.exists", "Please provide an otp or a base64Image");
         }
@@ -97,6 +98,8 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.KYC_UPGRADE);
             customerKycRequest = (CustomerKycRequest) otpDto.getData();
         }
+        IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
+
 
         CustomerKycTier customerKycTier = this.getCustomerKycTier(foundCustomer);
         if (!foundCustomer.isActive()) {
