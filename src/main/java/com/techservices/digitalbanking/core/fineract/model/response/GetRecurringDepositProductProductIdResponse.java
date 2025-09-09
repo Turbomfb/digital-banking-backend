@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2025 */
 package com.techservices.digitalbanking.core.fineract.model.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -38,9 +39,9 @@ public class GetRecurringDepositProductProductIdResponse {
 	private GetRecurringDepositAccountingMappings accountingMappings;
 	private List<RecurringDepositFeeToIncomeAccountMapping> feeToIncomeAccountMappings;
 	private List<RecurringDepositPenaltyToIncomeAccountMapping> penaltyToIncomeAccountMappings;
-	private Double minDepositAmount;
-	private Double depositAmount;
-	private Double maxDepositAmount;
+	private BigDecimal minDepositAmount;
+	private BigDecimal depositAmount;
+	private BigDecimal maxDepositAmount;
 	private DepositProductsCharts activeChart;
 	private Double nominalAnnualInterestRate;
 

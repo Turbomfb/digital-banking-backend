@@ -24,4 +24,5 @@ public interface InvestmentProductService {
 	DeleteRecurringDepositProductResponse deleteProduct(Long productId);
 
 	Object retrieveProductTemplate();
+	Object retrieveCurrentInvestmentProduct(String investmentType);
 }
