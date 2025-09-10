@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
+import com.techservices.digitalbanking.core.fineract.api.ClientApiClientV2;
 import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.fineract.model.request.*;
 import com.techservices.digitalbanking.core.fineract.model.response.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.fineract.api.ClientApiClient;
@@ -30,6 +32,7 @@ import static com.techservices.digitalbanking.core.util.DateUtil.*;
 public class ClientService {
 
 	private final ClientApiClient clientApiClient;
+	private final ClientApiClientV2 clientApiClientV2;
 	private final FineractProperty fineractProperty;
 
 	public PostClientsResponse createCustomer(CreateCustomerRequest createCustomerRequest) {
@@ -161,7 +164,8 @@ public class ClientService {
 		putClientsClientIdRequest.setFirstname(customerUpdateRequest.getFirstname());
 		putClientsClientIdRequest.setLastname(customerUpdateRequest.getLastname());
 		putClientsClientIdRequest.setMiddleName(customerUpdateRequest.getMiddleName());
-		putClientsClientIdRequest.setFullName(customerUpdateRequest.getFullName());
+		putClientsClientIdRequest.setFullName(StringUtils.isNotBlank(customerUpdateRequest.getFullName()) ?
+				customerUpdateRequest.getFullName() : customerUpdateRequest.getBusinessName());
 		putClientsClientIdRequest.setEmailAddress(customerUpdateRequest.getEmailAddress());
 		putClientsClientIdRequest.setMobileNo(customerUpdateRequest.getPhoneNumber());
 		putClientsClientIdRequest.setNin(customerUpdateRequest.getNin());
@@ -179,6 +183,13 @@ public class ClientService {
 
 	public GetClientsClientIdResponse getCustomerById(Long customerId) {
 		return clientApiClient.retrieveOne(customerId, false);
+	}
+
+	public ClientSearchResponse searchClientByText(String text) {
+		ClientSearchRequest clientSearchRequest = new ClientSearchRequest(
+				new ClientSearchRequest.Request(text), 0L, 50L
+		);
+		return clientApiClientV2.searchClient(clientSearchRequest);
 	}
 
 	public GetClientsResponse getAllCustomers(Integer offset, Integer limit, String nin, String bvn) {

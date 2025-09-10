@@ -1,0 +1,2 @@
+ALTER TABLE customer
+    add COLUMN tin VARCHAR(255) NULL

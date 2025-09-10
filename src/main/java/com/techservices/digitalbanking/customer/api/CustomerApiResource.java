@@ -18,6 +18,7 @@ import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoR
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import com.techservices.digitalbanking.loan.service.LoanApplicationService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -84,9 +85,16 @@ public class CustomerApiResource {
 	@Operation(summary = "Retrieve Business Identity Data")
 	@GetMapping("business-identity-verification")
 	public ResponseEntity<BusinessDataResponse.BusinessData> retrieveIdentityData(
-			@RequestParam(name = "rcNumber") String rcNumber
+			@RequestParam(name = "rcNumber", required = false) String rcNumber,
+			@RequestParam(name = "tin", required = false) String tin
 	) {
-		BusinessDataResponse businessDataResponse = identityVerificationService.retrieveBusinessData(rcNumber);
+		BusinessDataResponse businessDataResponse = null;
+
+		if (StringUtils.isNotBlank(rcNumber)) {
+			businessDataResponse = identityVerificationService.retrieveRcNumberData(rcNumber);
+		} else if (StringUtils.isNotBlank(tin)) {
+			businessDataResponse = identityVerificationService.retrieveTinData(tin);
+		} else throw new ValidationException("validation.error.exists", "No Business Identity Data found");
 		return new ResponseEntity<>(businessDataResponse.getData(), HttpStatusCode.valueOf(200));
 	}
 

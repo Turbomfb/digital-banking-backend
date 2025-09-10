@@ -46,6 +46,7 @@ public interface ClientApi {
 	GetClientsClientIdResponse retrieveOne(@PathVariable("clientId") Long clientId,
 			@Valid @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly);
 
+
 	@PostMapping(value = "/clients/{clientId}/images")
 	PostClientClientIdImagesResponse uploadImageDataUri(@PathVariable String clientId, String dataUri);
 
