@@ -12,6 +12,7 @@ import lombok.Data;
 public class FineractProperty {
 
 	private String baseUrl;
+	private String baseUrlV2;
 	private String username;
 	private String password;
 	private String tenantId;

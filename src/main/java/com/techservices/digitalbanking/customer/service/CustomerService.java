@@ -40,4 +40,6 @@ public interface CustomerService {
 	String getCustomerSavingsId(Long customerId);
 
 	GenericApiResponse closeAccount(Long customerId, CustomerAccountClosureRequest request);
+
+	void validateDuplicateCustomerByRcNumber(String rcNumber);
 }

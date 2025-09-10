@@ -38,6 +38,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
@@ -64,14 +65,17 @@ public class CustomerServiceImpl implements CustomerService {
 			if (StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()) && createCustomerRequest.getTransactionPin().length() < 4) {
 				throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
 			}
-			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber(), createCustomerRequest.getCustomerType());
+			validateDuplicateCustomer(createCustomerRequest, createCustomerRequest.getCustomerType());
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(createCustomerRequest.getPhoneNumber(), createCustomerRequest.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(createCustomerRequest, OtpType.ONBOARDING, notificationRequestDto, null);
 			return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(createCustomerRequest.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(createCustomerRequest.getEmailAddress()), "success", null);
 		} else if ("verify-otp".equalsIgnoreCase(command)) {
-			OtpDto otpDto = this.redisService.validateOtp(createCustomerRequest.getUniqueId(), createCustomerRequest.getOtp(), OtpType.ONBOARDING);
+			String uniqueId = createCustomerRequest.getUniqueId();
+			OtpDto otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, createCustomerRequest.getOtp(), OtpType.ONBOARDING);
 			createCustomerRequest = (CreateCustomerRequest) otpDto.getData();
-			return this.completeCustomerRegistration(createCustomerRequest);
+			BaseAppResponse response = this.completeCustomerRegistration(createCustomerRequest);
+			this.redisService.delete(uniqueId);
+			return response;
 		}
 		else {
 			throw new ValidationException("invalid.command", "Invalid command: " + command);
@@ -138,6 +142,14 @@ public class CustomerServiceImpl implements CustomerService {
 	public Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber, UserType customerType) {
 		String normalizedPhone = normalizePhoneNumber(phoneNumber);
 		return customerRepository.findByPhoneNumberAndUserType(normalizedPhone, customerType);
+	}
+
+	public Optional<Customer> getCustomerByBusinessName(String businessName) {
+		return customerRepository.findByBusinessName(businessName);
+	}
+
+	public Optional<Customer> getCustomerByRcNumber(String rcNumber) {
+		return customerRepository.findByRcNumber(rcNumber);
 	}
 
 	@Override
@@ -264,11 +276,16 @@ public class CustomerServiceImpl implements CustomerService {
 				.build();
 	}
 
-	private void validateDuplicateCustomer(String emailAddress, String phoneNumber, UserType customerType) {
+	private void validateDuplicateCustomer(CreateCustomerRequest createCustomerRequest, UserType customerType) {
+		String emailAddress = createCustomerRequest.getEmailAddress();
+		String phoneNumber = createCustomerRequest.getPhoneNumber();
 		log.info("Validating duplicate customer email address: {}", emailAddress);
 		validateDuplicateCustomerByEmailAddress(emailAddress, customerType);
 		log.info("Validating duplicate customer phone number: {}", phoneNumber);
 		validateDuplicateCustomerByPhoneNumber(phoneNumber, customerType);
+		if (customerType.isCorporate()) {
+			validateDuplicateCustomerByRcNumber(createCustomerRequest.getRcNumber());
+		}
 	}
 
 	private void validateDuplicateCustomerByEmailAddress(String emailAddress, UserType customerType) {
@@ -281,6 +298,21 @@ public class CustomerServiceImpl implements CustomerService {
 		log.info("Validating duplicate customer phone number: {}", phoneNumber);
 		getCustomerByPhoneNumberAndUserType(phoneNumber, customerType).ifPresent(existingCustomer -> {
 			throw new ValidationException("customer.exist", "Customer already exists. Please proceed to login");
+		});
+	}
+
+	private void validateDuplicateCustomerByBusinessName(String businessName, UserType customerType) {
+		log.info("Validating duplicate customer business name: {}", businessName);
+		getCustomerByBusinessName(businessName).ifPresent(existingCustomer -> {
+			throw new ValidationException("customer.exist", "Customer already exists. Please proceed to login");
+		});
+	}
+
+	@Override
+	public void validateDuplicateCustomerByRcNumber(String rcNumber) {
+		log.info("Validating duplicate customer rcNumber: {}", rcNumber);
+		getCustomerByRcNumber(rcNumber).ifPresent(existingCustomer -> {
+			throw new ValidationException("customer.with.rcNumber.exist", "Customer already exists. Please proceed to login");
 		});
 	}
 
@@ -340,6 +372,12 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 		if (StringUtils.isNotBlank(customerUpdateRequest.getNin())) {
 			customer.setNin(customerUpdateRequest.getNin());
+		}
+		if (StringUtils.isNotBlank(customerUpdateRequest.getRcNumber())) {
+			customer.setRcNumber(customerUpdateRequest.getRcNumber());
+		}
+		if (StringUtils.isNotBlank(customerUpdateRequest.getBusinessName())) {
+			customer.setBusinessName(customerUpdateRequest.getBusinessName());
 		}
 	}
 }

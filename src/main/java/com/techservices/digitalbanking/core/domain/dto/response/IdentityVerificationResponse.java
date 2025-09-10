@@ -23,8 +23,58 @@ public class IdentityVerificationResponse {
     private String message;
     private String dataSource;
 
+
+    @Setter
+    @Getter
+    @ToString
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class IdentityVerificationResponseData {
+        private String id;
+        private String firstName;
+        private String middleName;
+        private String lastName;
+        private String mobile;
+        private String email;
+        private String dateOfBirth;
+        private String gender;
+        private String image;
+        private String religion;
+        private String signature;
+
+        private Address address;
+
+//        for business
+        private String name;
+
+
+        @Setter
+        @Getter
+        @ToString
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Address {
+            private String town;
+            private String lga;
+            private String state;
+            private String addressLine;
+        }
+    }
+
+
+    public static IdentityVerificationResponse parse(BusinessDataResponse.BusinessData businessData) {
+        IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
+        IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData = new IdentityVerificationResponse.IdentityVerificationResponseData();
+        identityVerificationResponseData.setName(businessData.getName());
+        identityVerificationResponseData.setMobile(businessData.getPhone());
+        identityVerificationResponseData.setEmail(businessData.getEmail());
+        identityVerificationResponse.setData(identityVerificationResponseData);
+        identityVerificationResponse.setSuccess(true);
+        identityVerificationResponse.setDataSource("INTERNAL");
+        return identityVerificationResponse;
+    }
+
     public boolean isSuccess() {
-        return success && errors == null && data != null && StringUtils.isNotBlank(data.firstName) && StringUtils.isNotBlank(data.lastName);
+        return success && errors == null && data != null && ((StringUtils.isNotBlank(data.firstName) && StringUtils.isNotBlank(data.lastName) || StringUtils.isNotBlank(data.name)));
     }
 
     public static IdentityVerificationResponse parse(GetClientsClientIdResponse client) {
@@ -33,6 +83,7 @@ public class IdentityVerificationResponse {
         identityVerificationResponseData.setFirstName(client.getFirstname());
         identityVerificationResponseData.setLastName(client.getLastname());
         identityVerificationResponseData.setMobile(client.getMobileNo());
+        identityVerificationResponseData.setEmail(client.getEmailAddress());
         identityVerificationResponse.setData(identityVerificationResponseData);
         identityVerificationResponse.setSuccess(true);
         identityVerificationResponse.setDataSource("INTERNAL");
@@ -55,37 +106,5 @@ public class IdentityVerificationResponse {
         identityVerificationResponse.setSuccess(true);
         identityVerificationResponse.setDataSource("EXTERNAL");
         return identityVerificationResponse;
-    }
-
-    @Setter
-    @Getter
-    @ToString
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class IdentityVerificationResponseData {
-        private String id;
-        private String firstName;
-        private String middleName;
-        private String lastName;
-        private String mobile;
-        private String email;
-        private String dateOfBirth;
-        private String gender;
-        private String image;
-        private String religion;
-        private String signature;
-
-        private Address address;
-
-
-        @Setter
-        @Getter
-        @ToString
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Address {
-            private String town;
-            private String lga;
-            private String state;
-            private String addressLine;
-        }
     }
 }

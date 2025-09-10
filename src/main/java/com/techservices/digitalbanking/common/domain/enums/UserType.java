@@ -13,4 +13,8 @@ public enum UserType {
     UserType(Long id) {
         this.id = id;
     }
+
+    public boolean isCorporate() {
+        return this == CORPORATE;
+    }
 }

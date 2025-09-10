@@ -15,7 +15,8 @@ import java.util.List;
 public class BusinessDataRequest {
 
     private String registrationNumber;
-    private String countryCode = "NG";
+    private String countryCode;
+    private String tin;
     @JsonProperty("isConsent")
     private boolean isConsent = true;
 

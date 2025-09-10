@@ -60,6 +60,9 @@ public class Customer extends BaseEntity {
     @Column(name = "rc_number")
     private String rcNumber;
 
+    @Column(name = "tin")
+    private String tin;
+
     @Column(name = "industry_id")
     private String industryId;
 
@@ -110,5 +113,9 @@ public class Customer extends BaseEntity {
 
     public void setExternalId(String id) {
         this.externalId = id;
+    }
+
+    public boolean isCorporateUser() {
+        return this.userType == UserType.CORPORATE;
     }
 }

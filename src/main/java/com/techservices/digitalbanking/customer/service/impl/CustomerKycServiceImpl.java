@@ -9,9 +9,11 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.enums.AddressType;
+import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
@@ -156,12 +158,15 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     }
 
     private IdentityVerificationResponse validateKycParameters(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
-        boolean includesNoKycParameter = StringUtils.isAllBlank(customerKycRequest.getBvn(), customerKycRequest.getNin());
+        boolean includesNoKycParameter = StringUtils.isAllBlank(customerKycRequest.getBvn(), customerKycRequest.getNin(), customerKycRequest.getRcNumber(), customerKycRequest.getTin());
         if (!foundCustomer.isActive() && includesNoKycParameter) {
-            throw new ValidationException("no.kyc.parameter.provided", "At least one KYC parameter (BVN or NIN) must be provided.");
+            throw new ValidationException("no.kyc.parameter.provided", "At least one KYC parameter (BVN, NIN, TIN or RCNUMBER) must be provided.");
         }
 
         if (StringUtils.isNotBlank(customerKycRequest.getBvn())) {
+            if (StringUtils.isNotBlank(foundCustomer.getBvn())) {
+                throw new ValidationException("bvn.validation.exists", "BVN already exists on your profile.");
+            }
             log.info("Validating BVN: {}", customerKycRequest.getBvn());
             customerRepository.findByBvnAndUserType(customerKycRequest.getBvn(), foundCustomer.getUserType())
                     .ifPresent(existedCustomer -> {
@@ -177,13 +182,16 @@ public class CustomerKycServiceImpl implements CustomerKycService {
                 return this.identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
             }
 
-            IdentityVerificationRequest identityVerificationRequest = IdentityVerificationRequest.parse(foundCustomer);
-            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = this.identityVerificationService.verifyBvn(customerKycRequest.getBvn(), identityVerificationRequest, foundCustomer);
+            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = this.identityVerificationService.verifyBvn(customerKycRequest.getBvn(), foundCustomer);
             foundCustomer.setBvn(customerKycRequest.getBvn());
-            finalizeValidations(customerIdentityVerificationResponse, "BVN");
+            finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.BVN);
+            return this.identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
         }
 
         if (StringUtils.isNotBlank(customerKycRequest.getNin())) {
+            if (StringUtils.isNotBlank(foundCustomer.getNin())) {
+                throw new ValidationException("nin.validation.exists", "NIN already exists on your profile.");
+            }
             log.info("Validating NIN: {}", customerKycRequest.getNin());
             customerRepository.findByNinAndUserType(customerKycRequest.getNin(), foundCustomer.getUserType())
                     .ifPresent(existingCustomer -> {
@@ -199,19 +207,51 @@ public class CustomerKycServiceImpl implements CustomerKycService {
                 return this.identityVerificationService.retrieveNinData(customerKycRequest.getNin());
             }
 
-            IdentityVerificationRequest identityVerificationRequest = IdentityVerificationRequest.parse(foundCustomer);
-            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyNin(customerKycRequest.getNin(), identityVerificationRequest, foundCustomer);
+            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyNin(customerKycRequest.getNin(), foundCustomer);
             foundCustomer.setNin(customerKycRequest.getNin());
-            finalizeValidations(customerIdentityVerificationResponse, "NIN");
+            finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
+            return this.identityVerificationService.retrieveNinData(customerKycRequest.getNin());
+        }
+
+        if (StringUtils.isNotBlank(customerKycRequest.getRcNumber()) && foundCustomer.isCorporateUser()) {
+            if (!StringUtils.equalsIgnoreCase(foundCustomer.getRcNumber(), customerKycRequest.getRcNumber())) {
+                customerService.validateDuplicateCustomerByRcNumber(customerKycRequest.getRcNumber());
+            }
+            log.info("Validating RC Number: {}", customerKycRequest.getRcNumber());
+            customerRepository.findByRcNumberAndUserType(customerKycRequest.getRcNumber(), foundCustomer.getUserType())
+                    .ifPresent(existingCustomer -> {
+                        log.error("RC Number {} already exists for customer id: {}", customerKycRequest.getRcNumber(), existingCustomer.getId());
+                        throw new ValidationException("rc-number.already.exists", "You have entered an invalid RC Number.");
+                    });
+
+            if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+                BusinessDataResponse businessData = this.identityVerificationService.retrieveRcNumberData(customerKycRequest.getRcNumber());
+                return IdentityVerificationResponse.parse(businessData.getData());
+            }
+
+            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyRcNumber(customerKycRequest.getRcNumber(), foundCustomer);
+            foundCustomer.setRcNumber(customerKycRequest.getRcNumber());
+            finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.RC_NUMBER);
+        }
+
+        if (StringUtils.isNotBlank(customerKycRequest.getTin()) && foundCustomer.isCorporateUser()) {
+            if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+                BusinessDataResponse businessData = this.identityVerificationService.retrieveTinData(customerKycRequest.getTin());
+                return IdentityVerificationResponse.parse(businessData.getData());
+            }
+
+            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyTin(customerKycRequest.getTin(), foundCustomer);
+            foundCustomer.setTin(customerKycRequest.getTin());
+            finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.TIN);
         }
         return null;
     }
 
-    private static void finalizeValidations(CustomerIdentityVerificationResponse customerIdentityVerificationResponse, String dataType) {
-        log.error("{} verification failed: {}", dataType, customerIdentityVerificationResponse);
+    private static void finalizeValidations(CustomerIdentityVerificationResponse customerIdentityVerificationResponse, IdentityVerificationDataType dataType) {
+        log.error("{} verification failed: {}", dataType.name(), customerIdentityVerificationResponse);
         if (!customerIdentityVerificationResponse.isValid()) {
-            throw new ValidationException(dataType+".verification.failed", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
-                    "Please confirm that your "+dataType+" details are correct or contact your bank customer support for assistance.");
+            throw new ValidationException(dataType.name()+".verification.failed", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
+                    "Please confirm that your "+dataType.name()+" details are correct or contact your bank customer support for assistance.");
         }
     }
 
@@ -330,6 +370,11 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
     private CustomerKycTier getCustomerKycTier(Customer foundCustomer) {
         if (!StringUtils.isAllBlank(foundCustomer.getNin(), foundCustomer.getBvn())) {
+            if (foundCustomer.isCorporateUser() && !StringUtils.isAllBlank(foundCustomer.getRcNumber(), foundCustomer.getTin())) {
+                if (StringUtils.isNoneBlank(foundCustomer.getRcNumber(), foundCustomer.getTin())) {
+                    return CustomerKycTier.TIER_3;
+                }
+            }
             if (StringUtils.isNoneBlank(foundCustomer.getBvn(), foundCustomer.getNin())) {
                 return CustomerKycTier.TIER_2;
             }
