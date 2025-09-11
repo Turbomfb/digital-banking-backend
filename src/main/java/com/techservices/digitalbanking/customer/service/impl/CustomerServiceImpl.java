@@ -68,7 +68,7 @@ public class CustomerServiceImpl implements CustomerService {
 			validateDuplicateCustomer(createCustomerRequest, createCustomerRequest.getCustomerType());
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(createCustomerRequest.getPhoneNumber(), createCustomerRequest.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(createCustomerRequest, OtpType.ONBOARDING, notificationRequestDto, null);
-			return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(createCustomerRequest.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(createCustomerRequest.getEmailAddress()), "success", null);
+			return new GenericApiResponse(otpDto.getUniqueId(), createCustomerRequest.getPhoneNumber(), createCustomerRequest.getEmailAddress(), true);
 		} else if ("verify-otp".equalsIgnoreCase(command)) {
 			String uniqueId = createCustomerRequest.getUniqueId();
 			OtpDto otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, createCustomerRequest.getOtp(), OtpType.ONBOARDING);

@@ -2,9 +2,11 @@ package com.techservices.digitalbanking.core.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.util.AppUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 @Setter
 @Getter
@@ -37,4 +39,17 @@ public class GenericApiResponse extends BaseAppResponse {
         this.data = data;
     }
 
+    public GenericApiResponse(String uniqueId, String phoneNumber, String emailAddress, boolean isOtp) {
+        this.uniqueId = uniqueId;
+        this.status = "success";
+        if (isOtp) {
+            if (StringUtils.isNoneBlank(phoneNumber, emailAddress)) {
+                this.message = "We sent an OTP to " + AppUtil.maskPhoneNumber(phoneNumber) + " and " + AppUtil.maskEmailAddress(emailAddress);
+            } else if (StringUtils.isNotBlank(emailAddress)) {
+                this.message = "We sent an OTP to " + AppUtil.maskEmailAddress(emailAddress);
+            } else if (StringUtils.isNotBlank(phoneNumber)) {
+                this.message = "We sent an OTP to " + AppUtil.maskPhoneNumber(phoneNumber);
+            }
+        }
+    }
 }

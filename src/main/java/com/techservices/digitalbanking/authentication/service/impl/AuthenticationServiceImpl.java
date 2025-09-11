@@ -212,9 +212,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command, UserType customerType) {
         if (StringUtils.equals(GENERATE_OTP_COMMAND, command)){
             Customer foundCustomer = getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber(), customerType);
-            NotificationRequestDto notificationRequestDto = new NotificationRequestDto(foundCustomer.getPhoneNumber(), foundCustomer.getEmailAddress());
-            OtpDto otpDto = this.redisService.generateOtpRequest(foundCustomer, OtpType.FORGOT_PASSWORD, notificationRequestDto, null);
-          return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(foundCustomer.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(foundCustomer.getEmailAddress()), "success", null);
+            NotificationRequestDto notificationRequestDto = new NotificationRequestDto(passwordMgtRequest.getPhoneNumber(), passwordMgtRequest.getEmailAddress());
+            passwordMgtRequest.setCustomerId(foundCustomer.getId());
+            OtpDto otpDto = this.redisService.generateOtpRequest(passwordMgtRequest, OtpType.FORGOT_PASSWORD, notificationRequestDto, null);
+          return new GenericApiResponse(otpDto.getUniqueId(), passwordMgtRequest.getPhoneNumber(), passwordMgtRequest.getEmailAddress(), true);
         } else if (StringUtils.equals(VERIFY_OTP_COMMAND, command)) {
             if (StringUtils.isBlank(passwordMgtRequest.getOtp())){
                 throw new ValidationException("Invalid.data.provided", "otp must be provided");
@@ -237,7 +238,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
             OtpDto otpDto = redisService.validateOtpWithoutOtp(passwordMgtRequest.getUniqueId());
             String password = passwordEncoder.encode(passwordMgtRequest.getPassword());
-            Customer foundCustomer = (Customer) otpDto.getData();
+            PasswordMgtRequest passwordRequest = (PasswordMgtRequest) otpDto.getData();
+            Customer foundCustomer = customerService.getCustomerById(passwordRequest.getCustomerId());
             foundCustomer.setPassword(password);
             customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer);
             return new GenericApiResponse("Password has been changed successfully", "success", null);
