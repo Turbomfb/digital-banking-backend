@@ -73,6 +73,13 @@ public class IdentityVerificationResponse {
         return identityVerificationResponse;
     }
 
+
+    public static IdentityVerificationResponse parse(BusinessDataResponse.BusinessData businessData, String source) {
+        IdentityVerificationResponse identityVerificationResponse =IdentityVerificationResponse.parse(businessData);
+        identityVerificationResponse.setDataSource(source);
+        return identityVerificationResponse;
+    }
+
     public boolean isSuccess() {
         return success && errors == null && data != null && ((StringUtils.isNotBlank(data.firstName) && StringUtils.isNotBlank(data.lastName) || StringUtils.isNotBlank(data.name)));
     }

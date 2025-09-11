@@ -8,6 +8,8 @@ import java.util.StringJoiner;
 
 public class AppUtil {
 	public static final String ROLES = "roles";
+	public static final String EXTERNAL = "External";
+	public static final String INTERNAL = "Internal";
 
 	public static final String[] PUBLIC_ENDPOINTS = {
 			"/api-docs/**",
