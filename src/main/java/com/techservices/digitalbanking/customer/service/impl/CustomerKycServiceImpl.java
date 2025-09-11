@@ -6,7 +6,6 @@ import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.data.model.Address;
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
-import com.techservices.digitalbanking.core.domain.dto.request.IdentityVerificationRequest;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
@@ -47,6 +46,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.techservices.digitalbanking.core.util.AppUtil.DIRECTORS_DATATABLE_NAME;
+import static com.techservices.digitalbanking.core.util.AppUtil.EXTERNAL;
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_LOCALE;
@@ -76,7 +76,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
             IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
             if (verificationResponse != null) {
-                return processKycOtpGeneration(customerKycRequest, verificationResponse);
+                return processKycOtpGeneration(customerKycRequest, verificationResponse, foundCustomer.getUserType());
             }
         }
 
@@ -122,13 +122,17 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         return CustomerDtoResponse.parse(foundCustomer);
     }
 
-    private GenericApiResponse processKycOtpGeneration(CustomerKycRequest customerKycRequest, IdentityVerificationResponse verificationResponse) {
+    private GenericApiResponse processKycOtpGeneration(CustomerKycRequest customerKycRequest, IdentityVerificationResponse verificationResponse, UserType userType) {
         if (verificationResponse.getData() != null) {
             IdentityVerificationResponse.IdentityVerificationResponseData data = verificationResponse.getData();
-            if ("EXTERNAL".equalsIgnoreCase(verificationResponse.getDataSource()) && (StringUtils.isBlank(data.getMobile()) || StringUtils.isBlank(data.getFirstName()) || StringUtils.isBlank(data.getLastName()))) {
-                log.error("Data source: {}, Identity verification failed for customer id: {}. Null fields were identified", verificationResponse.getDataSource(), data);
-                String dataType = StringUtils.isNotBlank(customerKycRequest.getBvn()) ? "BVN" : "NIN";
-                throw new ValidationException("validation.error.exists", "Unable to validate your " + dataType + " at the moment. Please try again later.");
+            if ("EXTERNAL".equalsIgnoreCase(verificationResponse.getDataSource())) {
+                if ((userType.isCorporate() && (StringUtils.isBlank(data.getName()) || StringUtils.isBlank(data.getMobile())))
+                        || (!userType.isCorporate() && (StringUtils.isBlank(data.getFirstName()) || StringUtils.isBlank(data.getLastName())) || StringUtils.isBlank(data.getMobile()))) {
+                    log.error("Data source: {}, Identity verification failed for customer id: {}. Null fields were identified", verificationResponse.getDataSource(), data);
+                    String dataType = StringUtils.isNotBlank(customerKycRequest.getBvn()) ? "BVN" : StringUtils.isNotBlank(customerKycRequest.getNin()) ? "NIN" : StringUtils.isNotBlank(customerKycRequest.getRcNumber()) ? "RC Number" : "TIN";
+                    throw new ValidationException("validation.error.exists", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
+                            "Please confirm that your "+dataType+" details are correct or contact your bank customer support for assistance.");
+                }
             }
         }
         NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse);
@@ -226,7 +230,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
             if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
                 BusinessDataResponse businessData = this.identityVerificationService.retrieveRcNumberData(customerKycRequest.getRcNumber());
-                return IdentityVerificationResponse.parse(businessData.getData());
+                return IdentityVerificationResponse.parse(businessData.getData(), EXTERNAL);
             }
 
             CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyRcNumber(customerKycRequest.getRcNumber(), foundCustomer);
@@ -237,7 +241,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         if (StringUtils.isNotBlank(customerKycRequest.getTin()) && foundCustomer.isCorporateUser()) {
             if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
                 BusinessDataResponse businessData = this.identityVerificationService.retrieveTinData(customerKycRequest.getTin());
-                return IdentityVerificationResponse.parse(businessData.getData());
+                return IdentityVerificationResponse.parse(businessData.getData(), EXTERNAL);
             }
 
             CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyTin(customerKycRequest.getTin(), foundCustomer);
