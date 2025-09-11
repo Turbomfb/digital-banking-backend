@@ -1,5 +1,6 @@
 package com.techservices.digitalbanking.customer.domian.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.common.domain.model.BaseEntity;
 import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Customer extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "customer_seq_gen")
