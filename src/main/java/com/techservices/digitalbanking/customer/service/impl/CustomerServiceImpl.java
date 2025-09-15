@@ -283,9 +283,6 @@ public class CustomerServiceImpl implements CustomerService {
 		validateDuplicateCustomerByEmailAddress(emailAddress, customerType);
 		log.info("Validating duplicate customer phone number: {}", phoneNumber);
 		validateDuplicateCustomerByPhoneNumber(phoneNumber, customerType);
-		if (customerType.isCorporate()) {
-			validateDuplicateCustomerByRcNumber(createCustomerRequest.getRcNumber());
-		}
 	}
 
 	private void validateDuplicateCustomerByEmailAddress(String emailAddress, UserType customerType) {
