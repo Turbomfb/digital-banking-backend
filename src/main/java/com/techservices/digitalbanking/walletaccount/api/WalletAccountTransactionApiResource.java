@@ -3,6 +3,12 @@ package com.techservices.digitalbanking.walletaccount.api;
 
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
+import com.techservices.digitalbanking.core.domain.dto.request.ReceiptRequest;
+import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.redis.service.RedisService;
+import com.techservices.digitalbanking.core.service.ReceiptService;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
@@ -14,10 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -38,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -53,6 +57,8 @@ public class WalletAccountTransactionApiResource {
 	private final WalletAccountStatementService statementService;
 	private final CustomerService customerService;
 	private final SpringSecurityAuditorAware springSecurityAuditorAware;
+	private final RedisService redisService;
+	private final ReceiptService receiptService;
 
 	@PostMapping
 	public ResponseEntity<GenericApiResponse> processTransactionCommand(
@@ -162,10 +168,66 @@ public class WalletAccountTransactionApiResource {
 
 	@GetMapping("/{transactionId}")
 	public ResponseEntity<SavingsAccountTransactionData> retrieveSavingsAccountTransactionById(
-			@PathVariable(required = false) Long transactionId,
-			@RequestParam(required = false) Long productId) {
+			@PathVariable(required = false) Long transactionId
+	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		return ResponseEntity.ok(walletAccountTransactionService
-				.retrieveSavingsAccountTransactionById(customerId, transactionId, productId));
+				.retrieveSavingsAccountTransactionById(customerId, transactionId));
+	}
+
+	@GetMapping("/receipt")
+	@Operation(summary = "Generate Transaction Receipt",
+			description = "Generate and export transaction receipt in various formats (PDF, PNG, JPEG)")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Receipt generated successfully"),
+			@ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+			@ApiResponse(responseCode = "404", description = "Transaction not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+	})
+	public ResponseEntity<Void> generateTransactionReceipt(
+			@RequestParam(value = "format", required = false, defaultValue = "PDF") @Pattern(regexp = "PDF|PNG|JPEG") String format,
+			@RequestParam(value = "reference") String reference,
+			HttpServletRequest request,
+			HttpServletResponse response
+	) {
+		SavingsAccountTransactionRequest savingsAccountTransactionRequest = this.redisService.retrieveData(reference, SavingsAccountTransactionRequest.class);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+
+		try {
+			log.info("Generating receipt for transaction: {} for customer: {} in format: {}",
+					reference, customerId, format);
+
+			ReceiptRequest receiptRequest = ReceiptRequest.builder()
+					.transactionId(reference)
+					.amount(savingsAccountTransactionRequest.getAmount())
+					.recipientBankName(savingsAccountTransactionRequest.getBankName())
+					.recipientAccountNumber(savingsAccountTransactionRequest.getAccountNumber())
+					.recipientAccountName(savingsAccountTransactionRequest.getAccountName())
+					.currency("NGN")
+					.receiptFormat(format)
+					.build();
+
+			switch (format.toUpperCase()) {
+				case "PDF":
+					receiptService.generatePdfReceipt(receiptRequest, customerId, response);
+					break;
+				case "PNG":
+				case "JPEG":
+					receiptService.generateImageReceipt(receiptRequest, customerId, response, format);
+					break;
+				default:
+					throw new IllegalArgumentException("Unsupported format: " + format);
+			}
+
+			log.info("Receipt generated successfully for transaction: {}", reference);
+			return ResponseEntity.ok().build();
+
+		} catch (InvalidParameterException e) {
+			log.error("Invalid parameters for receipt generation: {}", e.getMessage(), e);
+			return ResponseEntity.badRequest().build();
+		} catch (Exception e) {
+			log.error("Error generating receipt for transaction: {}", reference, e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 }

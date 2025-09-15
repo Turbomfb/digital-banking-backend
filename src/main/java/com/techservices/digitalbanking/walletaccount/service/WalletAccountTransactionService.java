@@ -19,8 +19,7 @@ public interface WalletAccountTransactionService {
 	FineractPageResponse<SavingsAccountTransactionData> retrieveSavingsAccountTransactions(Long customerId,
 																						   String startDate, String endDate, String dateFormat, Long productId, @Valid Long limit, @Valid Long offset, @Valid String transactionType);
 
-	SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long customerId, Long transactionId,
-			Long productId);
+	SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long customerId, Long transactionId);
 
 	BigDecimal getBalanceAsOfDate(Long savingsId, LocalDate localDate);
 
