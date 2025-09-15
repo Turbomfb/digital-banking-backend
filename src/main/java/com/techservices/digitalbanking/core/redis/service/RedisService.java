@@ -27,6 +27,7 @@ import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.configuration.RedisProperty;
 import com.techservices.digitalbanking.core.service.NotificationService;
+import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -87,6 +88,16 @@ public class RedisService {
     public boolean isOtpValid(OtpDto otpDto, OtpType otpType, String otp) {
         return !otpDto.getOtp().equals(otp) && !"123456".equals(otp)
                 && otpDto.getOtpType().equals(otpType);
+    }
+
+    public void save(Object request, OtpType otpType, String uniqueId) {
+        OtpDto otpDto = new OtpDto();
+        otpDto.setUniqueId(uniqueId);
+        otpDto.setOtpType(otpType);
+        int otp = new SecureRandom().nextInt(900000) + 100000;
+        otpDto.setOtp(String.valueOf(otp));
+        otpDto.setData(request);
+        this.save(otpDto.getUniqueId(), otpDto);
     }
 
     public OtpDto generateOtpRequest(Object request, OtpType otpType, NotificationRequestDto notificationRequestDto, BigDecimal amount) {
@@ -159,6 +170,16 @@ public class RedisService {
         }
         this.delete(otpDto.getUniqueId());
         return otpDto;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T retrieveData(String uniqueId, Class<T> clazz) {
+        OtpDto otpDto = retrieveOtpDto(uniqueId);
+        if (otpDto == null) {
+            throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
+        }
+        Object data = otpDto.getData();
+        return clazz.cast(data);
     }
 
     public OtpDto retrieveOtpDto(String uniqueId) {

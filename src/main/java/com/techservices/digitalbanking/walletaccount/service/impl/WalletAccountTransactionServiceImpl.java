@@ -79,7 +79,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 
 	@Override
 	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long customerId,
-			Long transactionId, Long productId) {
+			Long transactionId) {
 		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
 		return accountTransactionService.retrieveSavingsAccountTransactionById(savingsAccountId, transactionId);
 	}
@@ -121,7 +121,8 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			this.validateCustomerAccount(request, customerId);
 			request.validateForOtpVerification();
 			ExternalPaymentTransactionOtpVerificationResponse response = externalPaymentService.initiateTransfer(request);
-			this.redisService.validateOtp(request.getReference(), request.getOtp(), OtpType.KYC_UPGRADE);
+			this.redisService.validateOtp(request.getReference(), request.getOtp(), OtpType.TRANSFER);
+			this.redisService.save(request, OtpType.TRANSFER, request.getReference());
 			return new GenericApiResponse(
 					response.getMessage(),
 					response.getStatus(),

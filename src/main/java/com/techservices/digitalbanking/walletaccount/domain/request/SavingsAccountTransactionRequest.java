@@ -23,6 +23,8 @@ public class SavingsAccountTransactionRequest {
 	private String otp;
 	private String bankNipCode;
 	private String transactionPin;
+	private String accountName;
+	private String bankName;
 
 	public void validateForOtpGeneration() {
 		this.validateAmount();

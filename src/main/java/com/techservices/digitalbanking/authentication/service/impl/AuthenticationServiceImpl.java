@@ -43,7 +43,6 @@ import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserExcepti
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.NotificationService;
-import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.core.util.NotificationUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
