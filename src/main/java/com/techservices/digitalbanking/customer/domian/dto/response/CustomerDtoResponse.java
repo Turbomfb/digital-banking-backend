@@ -1,6 +1,7 @@
 package com.techservices.digitalbanking.customer.domian.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomerDtoResponse extends BaseAppResponse {
     private Long id;
     private String accountId;
@@ -32,6 +34,8 @@ public class CustomerDtoResponse extends BaseAppResponse {
     private String referralCode;
     private String nin;
     private String bvn;
+    private String rcNumber;
+    private String tin;
     private boolean isActive;
     private boolean isTransactionPinSet;
     @JsonProperty("isPreQualifiedForLoan")
@@ -72,6 +76,8 @@ public class CustomerDtoResponse extends BaseAppResponse {
         customerDtoResponse.setActive(customer.isActive());
         customerDtoResponse.setUserType(customer.getUserType());
         customerDtoResponse.setKycTier(customer.getKycTier());
+        customerDtoResponse.setRcNumber(customer.getRcNumber());
+        customerDtoResponse.setTin(customer.getTin());
         customerDtoResponse.setTransactionPinSet(customer.isTransactionPinSet());
         customerDtoResponse.setCreatedAt(customer.getCreatedAt());
         customerDtoResponse.setUpdatedAt(customer.getUpdatedAt());

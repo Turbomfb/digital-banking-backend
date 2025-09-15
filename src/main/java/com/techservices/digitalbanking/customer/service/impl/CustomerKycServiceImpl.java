@@ -218,9 +218,6 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         }
 
         if (StringUtils.isNotBlank(customerKycRequest.getRcNumber()) && foundCustomer.isCorporateUser()) {
-            if (!StringUtils.equalsIgnoreCase(foundCustomer.getRcNumber(), customerKycRequest.getRcNumber())) {
-                customerService.validateDuplicateCustomerByRcNumber(customerKycRequest.getRcNumber());
-            }
             log.info("Validating RC Number: {}", customerKycRequest.getRcNumber());
             customerRepository.findByRcNumberAndUserType(customerKycRequest.getRcNumber(), foundCustomer.getUserType())
                     .ifPresent(existingCustomer -> {
