@@ -161,7 +161,10 @@ public class BankDataService {
         String directMapping = DIRECT_MAPPINGS.get(localBankName.toLowerCase());
         if (directMapping != null) {
             log.info("Found direct mapping for \"{}\": \"{}\"", localBankName, directMapping);
-            return findYouverifyBankByName(yResp, directMapping);
+            String resp = findYouverifyBankByName(yResp, directMapping);
+            if (resp != null) {
+                return resp;
+            }
         }
 
         String expandedLocal = expandAcronym(localBankName);
