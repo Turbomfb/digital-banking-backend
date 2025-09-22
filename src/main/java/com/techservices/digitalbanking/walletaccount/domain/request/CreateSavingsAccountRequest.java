@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateSavingsAccountRequest{
-	private Long clientId;
+	private String clientId;
 	private String accountNumber;
 	private String accountName;
 	private String externalId;

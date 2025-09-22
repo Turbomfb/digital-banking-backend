@@ -8,7 +8,7 @@ import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
-import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationType;
+import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetClientsClientIdAccountsResponse;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
@@ -66,13 +66,13 @@ public class CustomerApiResource {
 	@Operation(summary = "Retrieve Identity Data")
 	@GetMapping("identity-verification")
 	public ResponseEntity<IdentityVerificationResponse.IdentityVerificationResponseData> retrieveIdentityData(
-			@RequestParam(name = "identityType") IdentityVerificationType identityType,
+			@RequestParam(name = "identityType") IdentityVerificationDataType identityType,
 			@RequestParam(name = "identityValue") String identityValue
 	) {
 		IdentityVerificationResponse identityResponse;
-		if (identityType == IdentityVerificationType.NIN) {
+		if (identityType == IdentityVerificationDataType.NIN) {
 			identityResponse = identityVerificationService.retrieveNinData(identityValue);
-		} else if (identityType == IdentityVerificationType.BVN) {
+		} else if (identityType == IdentityVerificationDataType.BVN) {
 			identityResponse = identityVerificationService.retrieveBvnData(identityValue);
 		} else {
 			log.error("Unsupported identity type: {}", identityType);
@@ -104,7 +104,7 @@ public class CustomerApiResource {
 			@Validated @RequestBody CustomerUpdateRequest customerUpdateRequest, @PathVariable Long customerId) {
 		CustomerDtoResponse customerDtoResponse = CustomerDtoResponse.parse(
 				customerService.updateCustomer(customerUpdateRequest,
-				customerId, null)
+				customerId, null, true)
 		);
 
 		return ResponseEntity.ok(customerDtoResponse);

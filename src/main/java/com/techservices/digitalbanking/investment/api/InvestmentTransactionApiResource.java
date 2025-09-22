@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techservices.digitalbanking.core.fineract.model.response.GetRecurringDepositTransactionResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostRecurringDepositTransactionCommandResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetRecurringDepositTransactionResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostRecurringDepositTransactionCommandResponse;
 import com.techservices.digitalbanking.investment.domain.request.RecurringDepositTransactionCommandRequest;
 import com.techservices.digitalbanking.investment.service.InvestmentTransactionService;
 

@@ -5,14 +5,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.techservices.digitalbanking.core.fineract.model.request.PostFixedDepositProductsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.DeleteFixedDepositProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositProductsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostFixedDepositProductsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutFixedDepositProductsProductIdRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.PutFixedDepositProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.service.FixedDepositProductService;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostFixedDepositProductsRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.DeleteFixedDepositProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetFixedDepositProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetFixedDepositProductsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostFixedDepositProductsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PutFixedDepositProductsProductIdRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.PutFixedDepositProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.service.FixedDepositProductService;
 import com.techservices.digitalbanking.fixeddeposit.service.FixedDepositInvestmentProductService;
 
 import lombok.RequiredArgsConstructor;

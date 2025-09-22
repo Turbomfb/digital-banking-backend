@@ -7,18 +7,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techservices.digitalbanking.core.fineract.model.request.PostFixedDepositProductsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.DeleteFixedDepositProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositProductsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostFixedDepositProductsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutFixedDepositProductsProductIdRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.DeleteFixedDepositProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetFixedDepositProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetFixedDepositProductsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PutFixedDepositProductsProductIdRequest;
 import com.techservices.digitalbanking.fixeddeposit.service.FixedDepositInvestmentProductService;
 
 import io.swagger.v3.oas.annotations.Operation;

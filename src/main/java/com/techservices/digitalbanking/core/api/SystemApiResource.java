@@ -1,7 +1,7 @@
 package com.techservices.digitalbanking.core.api;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetCodeValuesDataResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetCodeValuesDataResponse;
 import com.techservices.digitalbanking.core.service.SystemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

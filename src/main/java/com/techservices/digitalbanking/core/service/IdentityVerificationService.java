@@ -12,11 +12,9 @@ import com.techservices.digitalbanking.core.domain.dto.response.CustomerIdentity
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.ImageComparisonResponse;
 import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType;
-import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationType;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
-import com.techservices.digitalbanking.core.fineract.service.ClientService;
+import com.techservices.digitalbanking.core.eBanking.service.ClientService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -46,16 +44,17 @@ public class IdentityVerificationService {
         log.info("Retrieving BVN data for: {}", bvn);
 
         String url = buildUrl(BVN_DETAIL);
-        Optional<IdentityVerificationData> data = identityVerificationDataRepository.findByIdentifierAndType(bvn, IdentityVerificationType.BVN.name());
+        Optional<IdentityVerificationData> data = identityVerificationDataRepository.findByIdentifierAndType(bvn, IdentityVerificationDataType.BVN.name());
         if (data.isPresent()) {
+            log.info("Bvn data found for: {} <==> {}", bvn, data.get());
             return IdentityVerificationResponse.parse(data.get());
         }
         IdentityVerificationResponse verificationResponse = fetchIdentityVerificationResponse(url, bvn);
         if (!verificationResponse.isSuccess()) {
-            throw new ValidationException("validation.error.exists", "BVN is invalid");
+            throw new ValidationException(IdentityVerificationDataType.BVN);
         }
         IdentityVerificationData identityVerificationData = IdentityVerificationData.parse(verificationResponse);
-        identityVerificationData.setType(IdentityVerificationType.BVN.name());
+        identityVerificationData.setType(IdentityVerificationDataType.BVN.name());
         identityVerificationData.setIdentifier(bvn);
         identityVerificationDataRepository.save(identityVerificationData);
         verificationResponse.setDataSource("EXTERNAL");
@@ -65,24 +64,24 @@ public class IdentityVerificationService {
 
 
     public CustomerIdentityVerificationResponse verifyBvn(String bvn, Customer foundCustomer) {
-        GetClientsClientIdResponse client = clientService.getCustomerByBvn(bvn);
-        IdentityVerificationResponse identityVerificationResponse = client != null ? IdentityVerificationResponse.parse(client) : retrieveBvnData(bvn);
+        IdentityVerificationResponse identityVerificationResponse = retrieveBvnData(bvn);
         return processVerificationResponse(identityVerificationResponse, foundCustomer, IdentityVerificationDataType.BVN);
     }
 
     @Transactional
     public IdentityVerificationResponse retrieveNinData(String nin) {
         String url = buildUrl(NIN_DETAIL);
-        Optional<IdentityVerificationData> data = identityVerificationDataRepository.findByIdentifierAndType(nin, IdentityVerificationType.NIN.name());
+        Optional<IdentityVerificationData> data = identityVerificationDataRepository.findByIdentifierAndType(nin, IdentityVerificationDataType.NIN.name());
         if (data.isPresent()) {
+            log.info("Nin data found for: {} <==> {}", nin, data.get());
             return IdentityVerificationResponse.parse(data.get());
         }
         IdentityVerificationResponse verificationResponse = fetchIdentityVerificationResponse(url, nin);
         if (!verificationResponse.isSuccess()) {
-            throw new ValidationException("validation.error.exists", "NIN is invalid");
+            throw new ValidationException(IdentityVerificationDataType.NIN);
         }
         IdentityVerificationData identityVerificationData = IdentityVerificationData.parse(verificationResponse);
-        identityVerificationData.setType(IdentityVerificationType.NIN.name());
+        identityVerificationData.setType(IdentityVerificationDataType.NIN.name());
         identityVerificationData.setIdentifier(nin);
         log.info("Saving identity verification data: {}", identityVerificationData);
         identityVerificationDataRepository.save(identityVerificationData);
@@ -92,8 +91,7 @@ public class IdentityVerificationService {
 
     public CustomerIdentityVerificationResponse verifyNin(String nin, Customer foundCustomer) {
         log.info("Verifying nin: {}", nin);
-        GetClientsClientIdResponse client = clientService.getCustomerByNin(nin);
-        IdentityVerificationResponse identityVerificationResponse = client != null ? IdentityVerificationResponse.parse(client) : retrieveNinData(nin);
+        IdentityVerificationResponse identityVerificationResponse = retrieveNinData(nin);
         return processVerificationResponse(identityVerificationResponse, foundCustomer, IdentityVerificationDataType.NIN);
     }
 

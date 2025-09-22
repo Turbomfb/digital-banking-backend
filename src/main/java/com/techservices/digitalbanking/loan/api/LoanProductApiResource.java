@@ -2,11 +2,11 @@
 package com.techservices.digitalbanking.loan.api;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.fineract.model.request.PostLoanProductsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoanProductsResponse;
-import com.techservices.digitalbanking.core.fineract.service.LoanService;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostLoanProductsRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsTemplateResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostLoanProductsResponse;
+import com.techservices.digitalbanking.core.eBanking.service.LoanService;
 import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
 import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
 import com.techservices.digitalbanking.loan.service.LoanProductService;

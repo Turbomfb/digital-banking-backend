@@ -2,7 +2,7 @@ package com.techservices.digitalbanking.core.domain.enums;
 
 public enum ProductType {
     ALL("All"),
-    RETAIL("Retail"),
+    INDIVIDUAL("Individual"),
     BUSINESS_BANKING("Business Banking");
 
     private final String displayName;

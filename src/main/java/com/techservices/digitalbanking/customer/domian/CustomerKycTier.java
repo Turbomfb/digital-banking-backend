@@ -1,14 +1,15 @@
 package com.techservices.digitalbanking.customer.domian;
 
 public enum CustomerKycTier {
-    TIER_1("1", "Tier 1"),
-    TIER_2("2", "Tier 2"),
-    TIER_3("3", "Tier 3");
+    INVALID(0L, "Invalid Tier"),
+    TIER_1(1L, "Tier 1"),
+    TIER_2(2L, "Tier 2"),
+    TIER_3(3L, "Tier 3");
 
-    private final String code;
+    private final Long code;
     private final String description;
 
-    CustomerKycTier(String code, String description) {
+    CustomerKycTier(Long code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -26,7 +27,7 @@ public enum CustomerKycTier {
         return CustomerKycTier.TIER_1.equals(kycTier);
     }
 
-    public String getCode() {
+    public Long getCode() {
         return code;
     }
 

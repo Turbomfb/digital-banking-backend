@@ -4,19 +4,13 @@ package com.techservices.digitalbanking.fixeddeposit.api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostFixedDepositAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
-import com.techservices.digitalbanking.fixeddeposit.domain.request.FixedDepositCommandRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetFixedDepositAccountsAccountIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetFixedDepositAccountsResponse;
 import com.techservices.digitalbanking.fixeddeposit.service.FixedDepositInvestmentService;
-import com.techservices.digitalbanking.investment.domain.request.FixedDepositApplicationRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

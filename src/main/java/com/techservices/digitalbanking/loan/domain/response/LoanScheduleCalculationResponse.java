@@ -3,8 +3,8 @@ package com.techservices.digitalbanking.loan.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoansResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostLoansResponse;
 import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
 import jakarta.validation.Valid;
 import lombok.Data;

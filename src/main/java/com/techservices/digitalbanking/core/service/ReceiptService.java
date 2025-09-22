@@ -6,9 +6,9 @@ import com.itextpdf.text.pdf.*;
 import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.dto.request.ReceiptRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
-import com.techservices.digitalbanking.core.fineract.service.AccountService;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
+import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor

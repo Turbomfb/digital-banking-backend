@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoansResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.LoanTransactionResponse;
+import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoansLoanIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoansResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.LoanTransactionResponse;
 import com.techservices.digitalbanking.loan.domain.request.LoanApplicationRequest;
 import com.techservices.digitalbanking.loan.domain.request.LoanRepaymentRequest;
 import com.techservices.digitalbanking.loan.service.LoanApplicationService;

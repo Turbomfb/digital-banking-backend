@@ -2,8 +2,8 @@
 package com.techservices.digitalbanking.walletaccount.service;
 
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
-import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
+import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
 
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.WalletInboundWebhookRequest;

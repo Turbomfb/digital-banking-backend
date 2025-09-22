@@ -7,9 +7,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.common.domain.enums.UserType;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientNonPersonDetails;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientsAddressRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientsDatatable;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostClientNonPersonDetails;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsDatatable;
 
 import jakarta.validation.Valid;
 import lombok.Data;
@@ -48,7 +48,8 @@ public class CreateCustomerRequest {
 	private Long savingsProductId;
 
 	private String phoneNumber;
-	private String kycTier;
+	private String gender;
+	private Long kycTier;
 	private String emailAddress;
 	private String firstname;
 	private String lastname;
@@ -56,6 +57,7 @@ public class CreateCustomerRequest {
 
 	private String businessName;
 	private Long industryId;
+	private String businessSector;
 	private String rcNumber;
 	private UserType customerType = UserType.RETAIL;
 }

@@ -3,7 +3,7 @@ package com.techservices.digitalbanking.core.domain.dto.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.domain.data.model.IdentityVerificationData;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetClientsClientIdResponse;
 import io.micrometer.common.util.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -87,9 +87,9 @@ public class IdentityVerificationResponse {
     public static IdentityVerificationResponse parse(GetClientsClientIdResponse client) {
         IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
         IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData = new IdentityVerificationResponse.IdentityVerificationResponseData();
-        identityVerificationResponseData.setFirstName(client.getFirstname());
-        identityVerificationResponseData.setLastName(client.getLastname());
-        identityVerificationResponseData.setMobile(client.getMobileNo());
+        identityVerificationResponseData.setFirstName(client.getFirstName());
+        identityVerificationResponseData.setLastName(client.getLastName());
+        identityVerificationResponseData.setMobile(client.getPhoneNumber());
         identityVerificationResponseData.setEmail(client.getEmailAddress());
         identityVerificationResponse.setData(identityVerificationResponseData);
         identityVerificationResponse.setSuccess(true);
@@ -109,6 +109,19 @@ public class IdentityVerificationResponse {
         identityVerificationResponseData.setEmail(identityVerificationData.getEmail());
         identityVerificationResponseData.setGender(identityVerificationData.getGender());
         identityVerificationResponseData.setDateOfBirth(identityVerificationData.getDateOfBirth());
+        IdentityVerificationResponseData.Address address = null;
+        if (StringUtils.isNotBlank(identityVerificationData.getAddressLine())
+                || StringUtils.isNotBlank(identityVerificationData.getTown())
+                || StringUtils.isNotBlank(identityVerificationData.getLga())
+                || StringUtils.isNotBlank(identityVerificationData.getState())) {
+
+            address = new IdentityVerificationResponseData.Address();
+            address.setAddressLine(identityVerificationData.getAddressLine());
+            address.setTown(identityVerificationData.getTown());
+            address.setLga(identityVerificationData.getLga());
+            address.setState(identityVerificationData.getState());
+        }
+        identityVerificationResponseData.setAddress(address);
         identityVerificationResponse.setData(identityVerificationResponseData);
         identityVerificationResponse.setSuccess(true);
         identityVerificationResponse.setDataSource("EXTERNAL");

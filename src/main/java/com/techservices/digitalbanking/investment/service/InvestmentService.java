@@ -3,7 +3,7 @@ package com.techservices.digitalbanking.investment.service;
 
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.*;
+import com.techservices.digitalbanking.core.eBanking.model.response.*;
 import com.techservices.digitalbanking.fixeddeposit.domain.request.FixedDepositCommandRequest;
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import com.techservices.digitalbanking.investment.domain.request.FixedDepositApplicationRequest;

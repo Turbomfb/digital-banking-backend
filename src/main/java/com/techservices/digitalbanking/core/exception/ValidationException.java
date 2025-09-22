@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.exception;
 
+import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType;
 import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
@@ -18,6 +19,13 @@ public class ValidationException extends RuntimeException {
 		this.globalisationMessageCode = globalisationMessageCode;
 		this.defaultUserMessage = defaultUserMessage;
 		this.defaultUserMessageArgs = defaultUserMessageArgs;
+	}
+
+	public ValidationException(final IdentityVerificationDataType dataType) {
+		this.globalisationMessageCode = dataType.name() + ".verification.failed";
+		this.defaultUserMessage = "We're unable to complete your tier upgrade because the information provided does not match our records. " +
+				"Please confirm that your " + dataType.name() + " details are correct or contact your bank customer support for assistance.";
+		this.defaultUserMessageArgs = null;
 	}
 
 	public ValidationException() {

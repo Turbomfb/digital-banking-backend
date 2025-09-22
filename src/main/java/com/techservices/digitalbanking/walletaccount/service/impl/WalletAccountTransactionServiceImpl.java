@@ -8,7 +8,7 @@ import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.enums.AlertType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.service.AccountService;
+import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ExternalPaymentService;
 import com.techservices.digitalbanking.core.service.NotificationService;
@@ -31,10 +31,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.exception.AbstractPlatformDomainRuleException;
-import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
-import com.techservices.digitalbanking.core.fineract.service.AccountTransactionService;
+import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
+import com.techservices.digitalbanking.core.eBanking.service.AccountTransactionService;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 
 import jakarta.validation.Valid;

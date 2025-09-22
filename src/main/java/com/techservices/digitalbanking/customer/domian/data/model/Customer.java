@@ -120,4 +120,8 @@ public class Customer extends BaseEntity {
     public boolean isCorporateUser() {
         return this.userType == UserType.CORPORATE;
     }
+
+    public boolean isIndividualUser() {
+        return this.userType == UserType.RETAIL || this.userType == UserType.INDIVIDUAL;
+    }
 }

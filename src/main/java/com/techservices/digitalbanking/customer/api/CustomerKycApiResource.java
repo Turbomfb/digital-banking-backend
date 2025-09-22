@@ -4,22 +4,13 @@ package com.techservices.digitalbanking.customer.api;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.fineract.model.request.KycTier;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientsClientIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutClientsClientIdResponse;
-import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
+import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.domain.dto.KycTierDto;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
-import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerKycService;
-import com.techservices.digitalbanking.customer.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,8 +38,8 @@ public class CustomerKycApiResource {
 
 	@Operation(summary = "Retrieve all KYC Tiers", description = "This endpoint allows you to retrieve the KYC tiers for a specific customer.")
 	@GetMapping("kyc-tiers")
-	public ResponseEntity<FineractPageResponse<KycTier>> retrieveAllKycTier() {
-		FineractPageResponse<KycTier> postClientsResponse = customerKycService.retrieveAllKycTier();
+	public ResponseEntity<BasePageResponse<KycTierDto>> retrieveAllKycTier() {
+		BasePageResponse<KycTierDto> postClientsResponse = customerKycService.retrieveAllKycTier();
 
 		return new ResponseEntity<>(postClientsResponse, HttpStatus.OK);
 	}

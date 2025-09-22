@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techservices.digitalbanking.core.fineract.model.response.GetFixedDepositTransactionResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostFixedDepositTransactionCommandResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetFixedDepositTransactionResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostFixedDepositTransactionCommandResponse;
 import com.techservices.digitalbanking.fixeddeposit.domain.request.FixedDepositTransactionCommandRequest;
 import com.techservices.digitalbanking.fixeddeposit.service.FixedDepositInvestmentTransactionService;
 

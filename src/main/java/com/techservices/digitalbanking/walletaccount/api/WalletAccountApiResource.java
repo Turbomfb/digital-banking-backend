@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountsResponse;
 import com.techservices.digitalbanking.walletaccount.domain.request.CreateSavingsAccountRequest;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountService;
 
@@ -34,7 +34,7 @@ public class WalletAccountApiResource {
 	public ResponseEntity<PostSavingsAccountsResponse> createSavingsAccount(
 			@RequestBody CreateSavingsAccountRequest createAccountRequest) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		createAccountRequest.setClientId(customerId);
+		createAccountRequest.setClientId(String.valueOf(customerId));
 		PostSavingsAccountsResponse postSavingsAccountsResponse = walletAccountService
 				.createSavingsAccount(createAccountRequest);
 

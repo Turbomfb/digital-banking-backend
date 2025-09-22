@@ -1,32 +1,16 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking;
 
-import com.techservices.digitalbanking.common.domain.enums.UserType;
-import com.techservices.digitalbanking.core.domain.data.model.Address;
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.IdentityVerificationDataRepository;
-import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
-import com.techservices.digitalbanking.core.domain.enums.AccountType;
-import com.techservices.digitalbanking.core.domain.enums.AddressType;
-import com.techservices.digitalbanking.core.fineract.api.ClientApiClient;
-import com.techservices.digitalbanking.core.fineract.model.request.PostRecurringDepositAccountsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsSavingsAccounts;
-import com.techservices.digitalbanking.core.fineract.model.response.GetRecurringDepositAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostRecurringDepositAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.service.ClientService;
-import com.techservices.digitalbanking.core.fineract.service.RecurringDepositAccountService;
+import com.techservices.digitalbanking.core.eBanking.api.ClientApiClient;
+import com.techservices.digitalbanking.core.eBanking.service.ClientService;
+import com.techservices.digitalbanking.core.eBanking.service.RecurringDepositAccountService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
-import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
-import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
-import com.techservices.digitalbanking.investment.domain.request.InvestmentUpdateRequest;
-import com.techservices.digitalbanking.investment.domain.request.RecurringDepositCommandRequest;
 import com.techservices.digitalbanking.investment.service.InvestmentService;
 import jakarta.annotation.PostConstruct;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -35,17 +19,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import static com.techservices.digitalbanking.core.util.AppUtil.DIRECTORS_DATATABLE_NAME;
-import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
-import static com.techservices.digitalbanking.core.util.CommandUtil.PREMATURE_CLOSE;
-
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
-@EnableFeignClients(basePackages = "com.techservices.digitalbanking.core.fineract.api")
+@EnableFeignClients(basePackages = "com.techservices.digitalbanking.core.eBanking.api")
 @RequiredArgsConstructor
 @EnableAsync
 public class DigitalBankingApplication {
@@ -65,5 +42,6 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
+//        customerRepository.deleteAll();
     }
 }

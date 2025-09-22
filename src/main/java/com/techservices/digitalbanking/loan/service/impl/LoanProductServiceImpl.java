@@ -4,11 +4,11 @@ package com.techservices.digitalbanking.loan.service.impl;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import org.springframework.stereotype.Service;
 
-import com.techservices.digitalbanking.core.fineract.model.request.PostLoanProductsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoanProductsResponse;
-import com.techservices.digitalbanking.core.fineract.service.LoanService;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostLoanProductsRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsTemplateResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostLoanProductsResponse;
+import com.techservices.digitalbanking.core.eBanking.service.LoanService;
 import com.techservices.digitalbanking.loan.service.LoanProductService;
 
 import lombok.RequiredArgsConstructor;

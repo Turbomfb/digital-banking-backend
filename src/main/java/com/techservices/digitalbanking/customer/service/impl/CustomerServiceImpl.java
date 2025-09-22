@@ -15,18 +15,17 @@ import com.techservices.digitalbanking.core.domain.enums.CustomerStatusAuditType
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.service.AccountService;
+import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.AlertPreferenceService;
-import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.*;
-import com.techservices.digitalbanking.core.fineract.service.ClientService;
+import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.core.eBanking.service.ClientService;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
@@ -38,7 +37,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
@@ -120,9 +118,9 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	@Override
-	public Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer customer) {
+	public Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer customer, boolean isExternalServiceUpdateAllowed) {
 		customer = customer == null ? getCustomerById(customerId) : customer;
-		updateCustomerDetails(customerUpdateRequest, customer);
+		updateCustomerDetails(customerUpdateRequest, customer, isExternalServiceUpdateAllowed);
 		return getCustomerById(customerId);
 	}
 
@@ -283,6 +281,10 @@ public class CustomerServiceImpl implements CustomerService {
 		validateDuplicateCustomerByEmailAddress(emailAddress, customerType);
 		log.info("Validating duplicate customer phone number: {}", phoneNumber);
 		validateDuplicateCustomerByPhoneNumber(phoneNumber, customerType);
+		if (customerType.isCorporate()) {
+			String rcNumber = createCustomerRequest.getRcNumber();
+			validateDuplicateCustomerByRcNumber(rcNumber);
+		}
 	}
 
 	private void validateDuplicateCustomerByEmailAddress(String emailAddress, UserType customerType) {
@@ -309,7 +311,11 @@ public class CustomerServiceImpl implements CustomerService {
 	public void validateDuplicateCustomerByRcNumber(String rcNumber) {
 		log.info("Validating duplicate customer rcNumber: {}", rcNumber);
 		getCustomerByRcNumber(rcNumber).ifPresent(existingCustomer -> {
-			throw new ValidationException("customer.with.rcNumber.exist", "Customer already exists. Please proceed to login");
+			if (existingCustomer.isActive()) {
+				throw new ValidationException("customer.with.rcNumber.exist", "Customer already exists. Please proceed to login");
+			} else {
+				log.error("Customer with rcNumber {} exists but is inactive. Reactivate instead of creating a new one.", rcNumber);
+			}
 		});
 	}
 
@@ -324,7 +330,7 @@ public class CustomerServiceImpl implements CustomerService {
 		customer.setLastname(createCustomerRequest.getLastname());
 		customer.setEmailAddress(createCustomerRequest.getEmailAddress());
 		customer.setPhoneNumber(createCustomerRequest.getPhoneNumber());
-		customer.setExternalId(postClientsResponse.getClientId());
+		customer.setExternalId(postClientsResponse.getCustomerId());
 		customer.setReferralCode(createCustomerRequest.getReferralCode());
 		customer.setTransactionPin(createCustomerRequest.getTransactionPin());
 		customer.setTransactionPinSet(StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()));
@@ -338,10 +344,10 @@ public class CustomerServiceImpl implements CustomerService {
 		return customer;
 	}
 
-	private void updateCustomerDetails(CustomerUpdateRequest customerUpdateRequest, Customer customer) {
+	private void updateCustomerDetails(CustomerUpdateRequest customerUpdateRequest, Customer customer, boolean isExternalServiceUpdateAllowed) {
 		if (customerUpdateRequest != null) {
-			if (customer.getExternalId() != null) {
-				clientService.updateCustomer(customerUpdateRequest, Long.valueOf(customer.getExternalId()), customer.getUserType());
+			if (StringUtils.isNotBlank(customer.getExternalId()) && isExternalServiceUpdateAllowed) {
+				clientService.updateCustomer(customerUpdateRequest, customer.getExternalId(), customer.getUserType());
 			}
 			updateCustomerFields(customerUpdateRequest, customer);
 		}

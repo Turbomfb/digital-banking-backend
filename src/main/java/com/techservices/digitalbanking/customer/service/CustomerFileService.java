@@ -4,7 +4,7 @@ package com.techservices.digitalbanking.customer.service;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientClientIdImagesResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostClientClientIdImagesResponse;
 
 public interface CustomerFileService {
 

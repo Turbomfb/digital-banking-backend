@@ -3,7 +3,7 @@ package com.techservices.digitalbanking.walletaccount.domain.request;
 
 import java.math.BigDecimal;
 
-import com.techservices.digitalbanking.core.fineract.model.response.TransactionMetadata;
+import com.techservices.digitalbanking.core.eBanking.model.response.TransactionMetadata;
 
 public record CreateSavingsAccountTransactionRequest(BigDecimal transactionAmount, String transactionReference,
 		String narration, String beneficiaryAccountNumber, String reasonForBlock,

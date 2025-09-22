@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.techservices.digitalbanking.core.fineract.model.request.PutClientClientIdAddressesRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientAddressTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientClientIdAddressesResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutClientClientIdAddressesResponse;
-import com.techservices.digitalbanking.core.fineract.service.ClientAddressService;
+import com.techservices.digitalbanking.core.eBanking.model.request.PutClientClientIdAddressesRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetClientAddressTemplateResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetClientClientIdAddressesResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PutClientClientIdAddressesResponse;
+import com.techservices.digitalbanking.core.eBanking.service.ClientAddressService;
 import com.techservices.digitalbanking.customer.service.CustomerAddressService;
 
 import lombok.RequiredArgsConstructor;

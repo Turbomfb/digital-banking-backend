@@ -5,7 +5,7 @@ import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetClientsClientIdAccountsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetClientsClientIdAccountsResponse;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
@@ -21,7 +21,7 @@ public interface CustomerService {
 
 	BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType);
 
-	Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer existingCustomer);
+	Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer existingCustomer, boolean isExternalServiceUpdateAllowed);
 
 	Customer getCustomerById(Long customerId);
 	Optional<Customer> getCustomerByEmailAddress(String emailAddress);

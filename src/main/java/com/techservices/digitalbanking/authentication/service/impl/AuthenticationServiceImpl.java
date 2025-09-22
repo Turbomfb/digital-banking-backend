@@ -198,7 +198,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (StringUtils.isBlank(foundCustomer.getPassword())){
             if (StringUtils.isNotBlank(passwordMgtRequest.getPassword())){
                 foundCustomer.setPassword(passwordEncoder.encode(passwordMgtRequest.getPassword()));
-                customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer);
+                customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer, true);
                 return new GenericApiResponse("Password created successfully", "success", CustomerDtoResponse.parse(foundCustomer));
             } else {
                 throw new ValidationException("Invalid.credentials.provided", "password cannot be blank");
@@ -240,7 +240,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             PasswordMgtRequest passwordRequest = (PasswordMgtRequest) otpDto.getData();
             Customer foundCustomer = customerService.getCustomerById(passwordRequest.getCustomerId());
             foundCustomer.setPassword(password);
-            customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer);
+            customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer, true);
             return new GenericApiResponse("Password has been changed successfully", "success", null);
         } else {
             throw new ValidationException("Invalid.command", "Invalid command: " + command);

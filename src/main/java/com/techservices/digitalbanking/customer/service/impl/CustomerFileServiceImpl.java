@@ -2,15 +2,15 @@
 package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
-import com.techservices.digitalbanking.core.fineract.api.ClientApiClient;
+import com.techservices.digitalbanking.core.eBanking.api.ClientApiClient;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientClientIdImagesResponse;
-import com.techservices.digitalbanking.core.fineract.service.ClientImageService;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostClientClientIdImagesResponse;
+import com.techservices.digitalbanking.core.eBanking.service.ClientImageService;
 import com.techservices.digitalbanking.customer.service.CustomerFileService;
 
 import lombok.RequiredArgsConstructor;

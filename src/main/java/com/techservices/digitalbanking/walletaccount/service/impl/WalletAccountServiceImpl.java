@@ -7,11 +7,11 @@ import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.response.SavingsInterestBreakdownResponse;
 import org.springframework.stereotype.Service;
 
-import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostSavingsAccountsResponse;
-import com.techservices.digitalbanking.core.fineract.service.AccountService;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountsAccountIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountsResponse;
+import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.walletaccount.domain.request.CreateSavingsAccountRequest;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountService;
 
@@ -35,7 +35,7 @@ public class WalletAccountServiceImpl implements WalletAccountService {
 		return accountService.createSavingsAccount(createSavingsAccountRequest.getClientId(),
 				createSavingsAccountRequest.getProductId(), createSavingsAccountRequest.getAccountNumber(),
 				createSavingsAccountRequest.getAccountName(), createSavingsAccountRequest.getExternalId(), null,
-				createSavingsAccountRequest.isActive(), null);
+				createSavingsAccountRequest.isActive(), null, null, null);
 	}
 
 	@Override

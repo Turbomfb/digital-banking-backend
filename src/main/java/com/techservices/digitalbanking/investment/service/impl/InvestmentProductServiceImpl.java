@@ -4,18 +4,18 @@ package com.techservices.digitalbanking.investment.service.impl;
 import java.util.List;
 
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
-import com.techservices.digitalbanking.core.fineract.service.FixedDepositProductService;
+import com.techservices.digitalbanking.core.eBanking.configuration.FineractProperty;
+import com.techservices.digitalbanking.core.eBanking.service.FixedDepositProductService;
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import org.springframework.stereotype.Service;
 
-import com.techservices.digitalbanking.core.fineract.model.request.PostRecurringDepositProductsRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PutRecurringDepositProductRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.DeleteRecurringDepositProductResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetRecurringDepositProductProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostRecurringDepositProductResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PutRecurringDepositProductResponse;
-import com.techservices.digitalbanking.core.fineract.service.RecurringDepositProductService;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostRecurringDepositProductsRequest;
+import com.techservices.digitalbanking.core.eBanking.model.request.PutRecurringDepositProductRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.DeleteRecurringDepositProductResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetRecurringDepositProductProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostRecurringDepositProductResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PutRecurringDepositProductResponse;
+import com.techservices.digitalbanking.core.eBanking.service.RecurringDepositProductService;
 import com.techservices.digitalbanking.investment.service.InvestmentProductService;
 
 import lombok.RequiredArgsConstructor;

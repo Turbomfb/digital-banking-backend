@@ -2,10 +2,10 @@
 package com.techservices.digitalbanking.loan.service;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.fineract.model.request.PostLoanProductsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoanProductsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostLoanProductsRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsTemplateResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostLoanProductsResponse;
 
 public interface LoanProductService {
 

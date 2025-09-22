@@ -3,8 +3,14 @@ package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.domain.CustomerDto;
 import com.techservices.digitalbanking.core.domain.data.model.Address;
+import com.techservices.digitalbanking.core.domain.data.model.IndustrySector;
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
+import com.techservices.digitalbanking.core.domain.data.repository.IndustrySectorRepository;
+import com.techservices.digitalbanking.core.domain.data.repository.KycTierRepository;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.CustomerFilterDto;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
@@ -14,15 +20,13 @@ import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerifica
 import com.techservices.digitalbanking.core.domain.enums.AddressType;
 import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
-import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.fineract.model.request.KycTier;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientNonPersonDetails;
-import com.techservices.digitalbanking.core.fineract.model.request.PutDataTableRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.*;
-import com.techservices.digitalbanking.core.fineract.service.AccountService;
-import com.techservices.digitalbanking.core.fineract.service.ClientService;
+import com.techservices.digitalbanking.core.domain.dto.KycTierDto;
+import com.techservices.digitalbanking.core.eBanking.model.request.PutDataTableRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.core.eBanking.service.AccountService;
+import com.techservices.digitalbanking.core.eBanking.service.ClientService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
@@ -45,6 +49,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.techservices.digitalbanking.common.domain.enums.UserType.CORPORATE;
+import static com.techservices.digitalbanking.common.domain.enums.UserType.INDIVIDUAL;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.*;
 import static com.techservices.digitalbanking.core.util.AppUtil.DIRECTORS_DATATABLE_NAME;
 import static com.techservices.digitalbanking.core.util.AppUtil.EXTERNAL;
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
@@ -62,83 +69,456 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     private final IdentityVerificationService identityVerificationService;
     private final RedisService redisService;
     private final AccountService accountService;
-    private final FineractProperty fineractProperty;
     private final AddressRepository addressRepository;
+    private final IndustrySectorRepository industrySectorRepository;
+    private final KycTierRepository kycTierRepository;
 
     @Override
     @Transactional(rollbackOn = Exception.class)
     public BaseAppResponse updateCustomerKyc(CustomerKycRequest customerKycRequest, Long customerId, String command) {
         log.info("customerKycRequest: {}", customerKycRequest);
-        Customer foundCustomer = this.customerService.getCustomerById(customerId);
-        String uniqueId = customerKycRequest.getUniqueId();
-        String otp = customerKycRequest.getOtp();
+
+        Customer foundCustomer = customerService.getCustomerById(customerId);
 
         if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
-            IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
-            if (verificationResponse != null) {
-                return processKycOtpGeneration(customerKycRequest, verificationResponse, foundCustomer.getUserType());
-            }
+            return handleOtpGeneration(customerKycRequest, foundCustomer, command);
+        } else if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
+            return handleOtpVerification(customerKycRequest, customerId, foundCustomer, command);
+        } else {
+            throw new ValidationException("invalid.command", "Invalid command provided: " + command);
         }
-
-        else if (VERIFY_OTP_COMMAND.equalsIgnoreCase(command)) {
-            return processKycVerification(customerKycRequest, customerId, otp, uniqueId, foundCustomer, command);
-        }
-        throw new ValidationException("invalid.command", "Invalid command provided.");
     }
 
-    private CustomerDtoResponse processKycVerification(CustomerKycRequest customerKycRequest, Long customerId, String otp, String uniqueId, Customer foundCustomer, String command) {
-        if (StringUtils.isBlank(customerKycRequest.getBase64Image()) && StringUtils.isBlank(otp)) {
-            throw new ValidationException("validation.error.exists", "Please provide an otp or a base64Image");
-        }
-        OtpDto otpDto = this.redisService.retrieveOtpDto(uniqueId);
-        if (otpDto == null) {
-            throw new ValidationException("otp.expired", "Verification has expired or does not exist. Please initiate a new one.");
-        }
-        if (StringUtils.isNotBlank(customerKycRequest.getBase64Image())) {
-            log.info("customerKycRequest.getBase64Image(): {}", customerKycRequest.getBase64Image());
-            customerKycRequest = (CustomerKycRequest) otpDto.getData();
-            this.identityVerificationService.validateImageMismatch(customerKycRequest.getBase64Image(), customerKycRequest.getBvn(), customerKycRequest.getNin());
-            log.info("Image mismatch validated successfully");
-        } else {
-            otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.KYC_UPGRADE);
-            customerKycRequest = (CustomerKycRequest) otpDto.getData();
-        }
-        IdentityVerificationResponse verificationResponse = this.validateKycParameters(customerKycRequest, foundCustomer, command);
+    @Override
+    public BasePageResponse<KycTierDto> retrieveAllKycTier() {
+        return BasePageResponse.instance(
+                kycTierRepository.findAll().stream().map(KycTierDto::parse).toList()
+        );
+    }
 
-
-        CustomerKycTier customerKycTier = this.getCustomerKycTier(foundCustomer);
-        if (!foundCustomer.isActive()) {
-            this.activateCustomer(foundCustomer, customerKycRequest, customerKycTier);
-        } else {
-            this.updateCustomerDetails(foundCustomer, customerKycRequest, customerId, customerKycTier);
+    private BaseAppResponse handleOtpGeneration(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
+        IdentityVerificationResponse verificationResponse = validateKycParameters(customerKycRequest, foundCustomer, command);
+        if (verificationResponse != null) {
+            return processKycOtpGeneration(customerKycRequest, verificationResponse, foundCustomer.getUserType());
         }
-        if (verificationResponse != null && verificationResponse.getData() != null && verificationResponse.getData().getAddress() != null && StringUtils.isNotBlank(foundCustomer.getExternalId())) {
-            updateCustomerAddress(foundCustomer, verificationResponse.getData().getAddress());
-        }
-
-        foundCustomer.setKycTier(customerKycTier);
-        foundCustomer = this.customerRepository.save(foundCustomer);
-        this.redisService.delete(uniqueId);
-        return CustomerDtoResponse.parse(foundCustomer);
+        throw new ValidationException("error.generating_otp", "Kyc upgrade failed. Please contact support");
     }
 
     private GenericApiResponse processKycOtpGeneration(CustomerKycRequest customerKycRequest, IdentityVerificationResponse verificationResponse, UserType userType) {
+        NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse);
+        OtpDto otpDto = redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto, null);
+        String message = notificationRequestDto.getOtpResponseMessage();
+        return new GenericApiResponse(otpDto.getUniqueId(), message, "success", null);
+    }
+
+    private void validateOtpGenerationData(IdentityVerificationResponse verificationResponse, IdentityVerificationDataType dataType, Customer foundCustomer) {
         if (verificationResponse.getData() != null) {
             IdentityVerificationResponse.IdentityVerificationResponseData data = verificationResponse.getData();
             if ("EXTERNAL".equalsIgnoreCase(verificationResponse.getDataSource())) {
-                if ((userType.isCorporate() && (StringUtils.isBlank(data.getName()) || StringUtils.isBlank(data.getMobile())))
-                        || (!userType.isCorporate() && (StringUtils.isBlank(data.getFirstName()) || StringUtils.isBlank(data.getLastName())) || StringUtils.isBlank(data.getMobile()))) {
-                    log.error("Data source: {}, Identity verification failed for customer id: {}. Null fields were identified", verificationResponse.getDataSource(), data);
-                    String dataType = StringUtils.isNotBlank(customerKycRequest.getBvn()) ? "BVN" : StringUtils.isNotBlank(customerKycRequest.getNin()) ? "NIN" : StringUtils.isNotBlank(customerKycRequest.getRcNumber()) ? "RC Number" : "TIN";
-                    throw new ValidationException("validation.error.exists", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
-                            "Please confirm that your "+dataType+" details are correct or contact your bank customer support for assistance.");
+//                boolean isValidCorporateData = StringUtils.isNoneBlank(data.getName(), data.getMobile());
+                boolean isValidCorporateData = StringUtils.isNoneBlank(data.getName());
+                boolean isValidIndividualData = StringUtils.isNoneBlank(data.getFirstName(), data.getLastName(), data.getMobile());
+
+                if ((dataType.isIndividual() && !isValidIndividualData) || (dataType.isCorporate() && !isValidCorporateData)) {
+                    log.error("Data source: {}, Identity verification failed for customer id: {}. Null fields were identified",
+                            verificationResponse.getDataSource(), data);
+                    throw new ValidationException("validation.error.exists",
+                            "We're unable to complete your tier upgrade because the information provided does not match our records. " +
+                                    "Please confirm that your " + dataType + " details are correct or contact your bank customer support for assistance.");
                 }
             }
         }
-        NotificationRequestDto notificationRequestDto = new NotificationRequestDto(verificationResponse);
-        OtpDto otpDto = this.redisService.generateOtpRequest(customerKycRequest, OtpType.KYC_UPGRADE, notificationRequestDto, null);
-        String message = notificationRequestDto.getOtpResponseMessage();
-        return new GenericApiResponse(otpDto.getUniqueId(), message, "success", null);
+    }
+
+    private IdentityVerificationDataType determineDataType(CustomerKycRequest customerKycRequest) {
+        if (StringUtils.isNotBlank(customerKycRequest.getBvn())) return BVN;
+        if (StringUtils.isNotBlank(customerKycRequest.getNin())) return NIN;
+        if (StringUtils.isNotBlank(customerKycRequest.getRcNumber())) return RC_NUMBER;
+        return TIN;
+    }
+
+    private CustomerDtoResponse handleOtpVerification(CustomerKycRequest customerKycRequest, Long customerId, Customer foundCustomer, String command) {
+        String uniqueId = customerKycRequest.getUniqueId();
+        String otp = customerKycRequest.getOtp();
+
+        validateVerificationInput(customerKycRequest);
+
+        OtpDto otpDto = retrieveAndValidateOtp(customerKycRequest, uniqueId, otp);
+        customerKycRequest = (CustomerKycRequest) otpDto.getData();
+        if (customerKycRequest == null) {
+            throw new ValidationException("otp.expired", "Verification has expired or does not exist. Please initiate a new one.");
+        }
+
+        IdentityVerificationResponse verificationResponse = validateKycParameters(customerKycRequest, foundCustomer, command);
+        CustomerKycTier customerKycTier = getCustomerKycTier(foundCustomer, customerKycRequest);
+
+        processCustomerActivationOrUpdate(foundCustomer, customerKycRequest, customerId, customerKycTier, verificationResponse);
+        updateCustomerAddressIfNeeded(foundCustomer, verificationResponse);
+
+        foundCustomer.setKycTier(customerKycTier);
+        foundCustomer = customerRepository.save(foundCustomer);
+        redisService.delete(uniqueId);
+
+        return CustomerDtoResponse.parse(foundCustomer);
+    }
+
+    private void validateVerificationInput(CustomerKycRequest customerKycRequest) {
+        if (StringUtils.isBlank(customerKycRequest.getBase64Image()) && StringUtils.isBlank(customerKycRequest.getOtp())) {
+            throw new ValidationException("validation.error.exists", "Please provide an otp or a base64Image");
+        }
+    }
+
+    private OtpDto retrieveAndValidateOtp(CustomerKycRequest customerKycRequest, String uniqueId, String otp) {
+        OtpDto otpDto = redisService.retrieveOtpDto(uniqueId);
+        if (otpDto == null) {
+            throw new ValidationException("otp.expired", "Verification has expired or does not exist. Please initiate a new one.");
+        }
+
+        if (StringUtils.isNotBlank(customerKycRequest.getBase64Image())) {
+            log.info("customerKycRequest.getBase64Image(): {}", customerKycRequest.getBase64Image());
+            CustomerKycRequest originalRequest = (CustomerKycRequest) otpDto.getData();
+            identityVerificationService.validateImageMismatch(
+                    customerKycRequest.getBase64Image(),
+                    originalRequest.getBvn(),
+                    originalRequest.getNin()
+            );
+            log.info("Image mismatch validated successfully");
+        } else {
+            otpDto = redisService.validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.KYC_UPGRADE);
+        }
+
+        return otpDto;
+    }
+
+    private void processCustomerActivationOrUpdate(Customer foundCustomer, CustomerKycRequest customerKycRequest,
+                                                   Long customerId, CustomerKycTier customerKycTier,
+                                                   IdentityVerificationResponse verificationResponse) {
+        if (!foundCustomer.isActive()) {
+            activateCustomer(foundCustomer, customerKycRequest, customerKycTier, verificationResponse.getData());
+        } else {
+            updateCustomerDetails(foundCustomer, customerKycRequest, customerId, customerKycTier);
+        }
+    }
+
+    private void updateCustomerAddressIfNeeded(Customer foundCustomer, IdentityVerificationResponse verificationResponse) {
+        if (verificationResponse != null && verificationResponse.getData() != null &&
+                verificationResponse.getData().getAddress() != null &&
+                StringUtils.isNotBlank(foundCustomer.getExternalId())) {
+            updateCustomerAddress(foundCustomer, verificationResponse.getData().getAddress());
+        }
+    }
+
+    private IdentityVerificationResponse validateKycParameters(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
+        validateBasicKycRequirements(customerKycRequest, foundCustomer);
+
+        if (StringUtils.isNoneBlank(customerKycRequest.getBvn(), customerKycRequest.getNin())) {
+            return handleBvnNinValidation(customerKycRequest, foundCustomer, command);
+        }
+
+        if (StringUtils.isNotBlank(customerKycRequest.getRcNumber()) && foundCustomer.isCorporateUser()) {
+            return handleRcNumberValidation(customerKycRequest, foundCustomer, command);
+        }
+
+        if (StringUtils.isNotBlank(customerKycRequest.getTin()) && foundCustomer.isCorporateUser()) {
+            return handleTinValidation(customerKycRequest, foundCustomer, command);
+        }
+
+        return null;
+    }
+
+    private void validateBasicKycRequirements(CustomerKycRequest customerKycRequest, Customer foundCustomer) {
+        boolean includesNoKycParameter = StringUtils.isAllBlank(
+                customerKycRequest.getBvn(), customerKycRequest.getNin(),
+                customerKycRequest.getRcNumber(), customerKycRequest.getTin()
+        );
+
+        if (!foundCustomer.isActive() && includesNoKycParameter) {
+            throw new ValidationException("no.kyc.parameter.provided",
+                    "At least one KYC parameter (BVN, NIN, TIN or RCNUMBER) must be provided.");
+        }
+
+        if (!foundCustomer.isCorporateUser()) {
+            if (StringUtils.isBlank(customerKycRequest.getBvn()) || StringUtils.isBlank(customerKycRequest.getNin())) {
+                throw new ValidationException("individual.kyc.parameters.required",
+                        "Both BVN and NIN are required for individual customers.");
+            }
+        }
+
+        if (foundCustomer.isCorporateUser()) {
+            if (!foundCustomer.isActive()) {
+                if (StringUtils.isBlank(customerKycRequest.getBvn()) || StringUtils.isBlank(customerKycRequest.getNin())) {
+                    throw new ValidationException("corporate.customer.not.a.tier1",
+                            "Both BVN and NIN are required to upgrade from a non-tier 1 corporate customer.");
+                }
+            }
+        }
+    }
+
+    private IdentityVerificationResponse handleBvnNinValidation(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
+        validateExistingBvnNin(foundCustomer);
+        validateBvnUniqueness(customerKycRequest, foundCustomer);
+        validateNinUniqueness(customerKycRequest, foundCustomer);
+
+        if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+            IdentityVerificationResponse ninVerificationResponse = identityVerificationService.retrieveNinData(customerKycRequest.getNin());
+            validateOtpGenerationData(ninVerificationResponse, NIN, foundCustomer);
+            IdentityVerificationResponse bvnVerificationResponse = identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
+            validateOtpGenerationData(bvnVerificationResponse, BVN, foundCustomer);
+            return bvnVerificationResponse;
+
+        } else {
+            return processNinBvnVerification(customerKycRequest, foundCustomer);
+        }
+    }
+
+    private void validateExistingBvnNin(Customer foundCustomer) {
+        if (StringUtils.isNotBlank(foundCustomer.getNin()) && StringUtils.isNotBlank(foundCustomer.getBvn())) {
+            throw new ValidationException("bvn.and.nin.validation.exists", "Both BVN and NIN have already been provided.");
+        }
+
+        if (StringUtils.isNotBlank(foundCustomer.getBvn())) {
+            throw new ValidationException("bvn.validation.exists", "BVN already exists on your profile.");
+        }
+
+        if (StringUtils.isNotBlank(foundCustomer.getNin())) {
+            throw new ValidationException("nin.validation.exists", "NIN already exists on your profile.");
+        }
+    }
+
+    private void validateBvnUniqueness(CustomerKycRequest customerKycRequest, Customer foundCustomer) {
+        log.info("Validating BVN: {}", customerKycRequest.getBvn());
+        customerRepository.findByBvnAndUserType(customerKycRequest.getBvn(), foundCustomer.getUserType())
+                .ifPresent(existedCustomer -> {
+                    log.error("BVN {} already exists for customer id: {}", customerKycRequest.getBvn(), existedCustomer.getId());
+                    throw new ValidationException("bvn.already.exists", "You have entered an invalid BVN");
+                });
+    }
+
+    private void validateNinUniqueness(CustomerKycRequest customerKycRequest, Customer foundCustomer) {
+        log.info("Validating NIN: {}", customerKycRequest.getNin());
+        customerRepository.findByNinAndUserType(customerKycRequest.getNin(), foundCustomer.getUserType())
+                .ifPresent(existingCustomer -> {
+                    log.error("NIN {} already exists for customer id: {}", customerKycRequest.getNin(), existingCustomer.getId());
+                    throw new ValidationException("nin.already.exists", "You have entered an invalid NIN.");
+                });
+    }
+
+    private IdentityVerificationResponse processNinBvnVerification(CustomerKycRequest customerKycRequest, Customer foundCustomer) {
+        CustomerIdentityVerificationResponse customerIdentityVerificationResponse =
+                identityVerificationService.verifyNin(customerKycRequest.getNin(), foundCustomer);
+        foundCustomer.setNin(customerKycRequest.getNin());
+//        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
+
+        customerIdentityVerificationResponse = identityVerificationService.verifyBvn(customerKycRequest.getBvn(), foundCustomer);
+        foundCustomer.setBvn(customerKycRequest.getBvn());
+        finalizeValidations(customerIdentityVerificationResponse, BVN);
+        IdentityVerificationResponse bvnData = identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
+        if (bvnData.getData().getAddress() == null) {
+            IdentityVerificationResponse ninData = identityVerificationService.retrieveNinData(customerKycRequest.getNin());
+            bvnData.getData().setAddress(ninData.getData().getAddress());
+        }
+        return bvnData;
+    }
+
+    private IdentityVerificationResponse handleRcNumberValidation(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
+        log.info("Validating RC Number: {}", customerKycRequest.getRcNumber());
+        BusinessDataResponse businessData = identityVerificationService.retrieveRcNumberData(customerKycRequest.getRcNumber());
+        IdentityVerificationResponse rcNumberIdentityVerificationResponse = IdentityVerificationResponse.parse(businessData.getData(), EXTERNAL);
+        if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+            validateOtpGenerationData(rcNumberIdentityVerificationResponse, RC_NUMBER, foundCustomer);
+            return rcNumberIdentityVerificationResponse;
+        }
+
+        CustomerIdentityVerificationResponse customerIdentityVerificationResponse =
+                identityVerificationService.verifyRcNumber(customerKycRequest.getRcNumber(), foundCustomer);
+        foundCustomer.setRcNumber(customerKycRequest.getRcNumber());
+//        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.RC_NUMBER);
+        return rcNumberIdentityVerificationResponse;
+    }
+
+    private IdentityVerificationResponse handleTinValidation(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
+        BusinessDataResponse businessData = identityVerificationService.retrieveTinData(customerKycRequest.getTin());
+        IdentityVerificationResponse tinIdentityVerificationResponse = IdentityVerificationResponse.parse(businessData.getData(), EXTERNAL);
+        if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
+            validateOtpGenerationData(tinIdentityVerificationResponse, TIN, foundCustomer);
+            return tinIdentityVerificationResponse;
+        }
+
+        CustomerIdentityVerificationResponse customerIdentityVerificationResponse =
+                identityVerificationService.verifyTin(customerKycRequest.getTin(), foundCustomer);
+        foundCustomer.setTin(customerKycRequest.getTin());
+        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.TIN);
+        return tinIdentityVerificationResponse;
+    }
+
+    private static void finalizeValidations(CustomerIdentityVerificationResponse customerIdentityVerificationResponse, IdentityVerificationDataType dataType) {
+        log.error("{} verification status: {}", dataType.name(), customerIdentityVerificationResponse);
+        if (!customerIdentityVerificationResponse.isValid()) {
+            throw new ValidationException(dataType);
+        }
+    }
+
+    private void activateCustomer(Customer foundCustomer, CustomerKycRequest customerKycRequest,
+                                  CustomerKycTier customerKycTier, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse) {
+        CustomerDto customer = null;
+        CustomerFilterDto customerFilterDto = new CustomerFilterDto().bvn(customerKycRequest.getBvn());
+        customer = clientService.searchCustomer(customerFilterDto).stream().findAny().orElse(null);
+        log.info("Client found: {}", customer);
+        String clientId = createOrUpgradeClient(foundCustomer, customerKycRequest, customerKycTier, customer, verificationResponse);
+
+        if (StringUtils.isNotBlank(clientId)) {
+            String savingsAccountNo = createOrRetrieveSavingsAccount(clientId, verificationResponse, customerKycTier);
+            updateCustomerWithAccountDetails(foundCustomer, clientId, savingsAccountNo);
+        }
+    }
+
+    private String createOrUpgradeClient(Customer foundCustomer, CustomerKycRequest customerKycRequest,
+                                         CustomerKycTier customerKycTier, CustomerDto customer, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse) {
+        CreateCustomerRequest createCustomerRequest = buildCreateCustomerRequest(foundCustomer, customerKycRequest, customerKycTier, verificationResponse);
+        PostClientsResponse createCustomerResponse;
+
+        if (customer == null) {
+            createCustomerResponse = clientService.createCustomer(createCustomerRequest);
+            return createCustomerResponse.getCustomerId();
+        } else {
+            if (foundCustomer.isCorporateUser()) {
+                createCustomerRequest.setExternalId(customer.getId());
+                createCustomerResponse = clientService.createCustomer(createCustomerRequest);
+                upgradeClientTier(customerKycTier, customer.getId(), foundCustomer, customerKycRequest);
+                return createCustomerResponse.getCustomerId();
+            }
+            upgradeClientTier(customerKycTier, customer.getId(), foundCustomer, customerKycRequest);
+        }
+
+        return customer.getId();
+    }
+
+    private String createOrRetrieveSavingsAccount(String clientId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse,
+                                                  CustomerKycTier customerKycTier) {
+        log.info("Client ID found: {}", clientId);
+        @Valid Set<@Valid GetClientsSavingsAccounts> clientAccounts = clientService.getClientSavingsAccountsByClientId(clientId);
+        Optional<@Valid GetClientsSavingsAccounts> savingsAccount = clientAccounts.stream().findAny();
+        log.info("Savings account found: {}", savingsAccount);
+
+        if (savingsAccount.isPresent()) {
+            return savingsAccount.get().getAccountNumber();
+        } else {
+            String gender = verificationResponse.getGender();
+            PostSavingsAccountsResponse savingsAccountsResponse = accountService.createSavingsAccount(
+                    clientId, null, null, null, null,
+                    null, true, null, gender, customerKycTier.getCode()
+            );
+            return savingsAccountsResponse != null ? savingsAccountsResponse.getAccountNumber() : null;
+        }
+    }
+
+    private void updateCustomerWithAccountDetails(Customer foundCustomer, String clientId, String savingsAccountNo) {
+        foundCustomer.setExternalId(clientId);
+        foundCustomer.setAccountId(savingsAccountNo);
+        foundCustomer.setActive(true);
+
+    }
+
+    private void updateCustomerDetails(Customer foundCustomer, CustomerKycRequest customerKycRequest,
+                                       Long customerId, CustomerKycTier customerKycTier) {
+        boolean customerIsACorporateUser = foundCustomer.getUserType() == CORPORATE;
+
+        CustomerUpdateRequest customerUpdateRequest = buildUpdateRequest(customerKycRequest, customerKycTier, customerIsACorporateUser);
+        customerService.updateCustomer(customerUpdateRequest, customerId, foundCustomer, !customerIsACorporateUser);
+    }
+
+    private CustomerUpdateRequest buildUpdateRequest(CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier, boolean isCorpoarate) {
+        CustomerUpdateRequest customerUpdateRequest = new CustomerUpdateRequest();
+
+        if (customerKycRequest != null && !isCorpoarate) {
+            customerUpdateRequest.setBvn(customerKycRequest.getBvn());
+            customerUpdateRequest.setNin(customerKycRequest.getNin());
+        }
+
+        if (customerKycTier != null) {
+            customerUpdateRequest.setKycTier(customerKycTier.getCode());
+            customerUpdateRequest.setTin(customerKycRequest.getTin());
+            customerUpdateRequest.setRcNumber(customerKycRequest.getRcNumber());
+        }
+
+        return customerUpdateRequest;
+    }
+
+    private CustomerKycTier getCustomerKycTier(Customer foundCustomer, CustomerKycRequest customerKycRequest) {
+        CustomerKycTier customerKycTier = CustomerKycTier.INVALID;
+        if (StringUtils.isAllBlank(foundCustomer.getNin(), foundCustomer.getBvn())) {
+            throw new ValidationException("invalid.kyc.tier", "Unable to determine KYC tier for the customer.");
+        }
+
+        if (StringUtils.isNoneBlank(foundCustomer.getBvn(), foundCustomer.getNin())) {
+            customerKycTier = CustomerKycTier.TIER_2;
+        } else if (StringUtils.isNotBlank(foundCustomer.getBvn()) || StringUtils.isNotBlank(foundCustomer.getNin())) {
+            customerKycTier = CustomerKycTier.TIER_1;
+        }
+
+        if (customerKycTier == CustomerKycTier.TIER_2) {
+            if (foundCustomer.isCorporateUser()) {
+                if (StringUtils.isNotBlank(customerKycRequest.getRcNumber()) || StringUtils.isNotBlank(customerKycRequest.getTin())) {
+                    customerKycTier = CustomerKycTier.TIER_3;
+                }
+            }
+        }
+
+        if (customerKycTier == CustomerKycTier.INVALID) {
+            throw new ValidationException("invalid.kyc.tier", "Unable to determine KYC tier for the customer.");
+        }
+
+        return customerKycTier;
+    }
+
+    private CreateCustomerRequest buildCreateCustomerRequest(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse) {
+        CreateCustomerRequest createCustomerRequest = new CreateCustomerRequest();
+        createCustomerRequest.setCustomerType(foundCustomer.getUserType());
+
+        if (foundCustomer.getUserType() == CORPORATE) {
+            setupCorporateCustomerRequest(createCustomerRequest, foundCustomer);
+        } else {
+            setupIndividualCustomerRequest(createCustomerRequest);
+        }
+
+        setupCommonCustomerFields(createCustomerRequest, foundCustomer, customerKycTier, verificationResponse, customerKycRequest);
+        return createCustomerRequest;
+    }
+
+    private void setupCorporateCustomerRequest(CreateCustomerRequest createCustomerRequest, Customer foundCustomer) {
+        createCustomerRequest.setBusinessName(foundCustomer.getBusinessName());
+        createCustomerRequest.setRcNumber(foundCustomer.getRcNumber());
+        IndustrySector industrySector = industrySectorRepository.findById(Long.valueOf(foundCustomer.getIndustryId())).orElse(new IndustrySector());
+        createCustomerRequest.setBusinessSector(industrySector.getName());
+        createCustomerRequest.setCustomerType(CORPORATE);
+    }
+
+    private void setupIndividualCustomerRequest(CreateCustomerRequest createCustomerRequest) {
+        createCustomerRequest.setCustomerType(INDIVIDUAL);
+    }
+
+    private void setupCommonCustomerFields(CreateCustomerRequest createCustomerRequest, Customer foundCustomer, CustomerKycTier customerKycTier, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse, CustomerKycRequest customerKycRequest) {
+        createCustomerRequest.setFirstname(foundCustomer.getFirstname());
+        createCustomerRequest.setLastname(foundCustomer.getLastname());
+        createCustomerRequest.setEmailAddress(foundCustomer.getEmailAddress());
+        createCustomerRequest.setPhoneNumber(foundCustomer.getPhoneNumber());
+        createCustomerRequest.setGender(verificationResponse.getGender());
+        createCustomerRequest.setDateOfBirth(verificationResponse.getDateOfBirth());
+        createCustomerRequest.setBvn(customerKycRequest.getBvn());
+        createCustomerRequest.setNin(customerKycRequest.getNin());
+        if (verificationResponse.getAddress() != null) {
+            IdentityVerificationResponse.IdentityVerificationResponseData.Address address = verificationResponse.getAddress();
+            PostClientsAddressRequest postClientsAddressRequest = new PostClientsAddressRequest();
+            postClientsAddressRequest.setAddressLine1(address.getAddressLine());
+            postClientsAddressRequest.setCity(address.getTown());
+            postClientsAddressRequest.setLga(address.getLga());
+            postClientsAddressRequest.setState(address.getState());
+            createCustomerRequest.setAddress(List.of(postClientsAddressRequest));
+        }
+
+        if (customerKycTier != null) {
+            createCustomerRequest.setKycTier(customerKycTier.getCode());
+        }
     }
 
     private void updateCustomerAddress(Customer foundCustomer, IdentityVerificationResponse.IdentityVerificationResponseData.Address address) {
@@ -146,199 +526,73 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         if (!customerAddress.isEmpty()) {
             return;
         }
+
+        Address newAddress = createNewAddress(foundCustomer.getId(), address);
+        addressRepository.save(newAddress);
+    }
+
+    private Address createNewAddress(Long customerId, IdentityVerificationResponse.IdentityVerificationResponseData.Address address) {
         Address newAddress = new Address();
-        newAddress.setCustomerId(foundCustomer.getId());
+        newAddress.setCustomerId(customerId);
         newAddress.setType(AddressType.RESIDENTIAL.toString());
         newAddress.setAddressLine(address.getAddressLine());
         newAddress.setTown(address.getTown());
         newAddress.setLga(address.getLga());
         newAddress.setState(address.getState());
-        addressRepository.save(newAddress);
+        return newAddress;
     }
 
-    @Override
-    public FineractPageResponse<KycTier> retrieveAllKycTier() {
-        return clientService.retrieveAllKycTier();
-    }
-
-    private IdentityVerificationResponse validateKycParameters(CustomerKycRequest customerKycRequest, Customer foundCustomer, String command) {
-        boolean includesNoKycParameter = StringUtils.isAllBlank(customerKycRequest.getBvn(), customerKycRequest.getNin(), customerKycRequest.getRcNumber(), customerKycRequest.getTin());
-        if (!foundCustomer.isActive() && includesNoKycParameter) {
-            throw new ValidationException("no.kyc.parameter.provided", "At least one KYC parameter (BVN, NIN, TIN or RCNUMBER) must be provided.");
-        }
-
-        if (StringUtils.isNotBlank(customerKycRequest.getBvn())) {
-            if (StringUtils.isNotBlank(foundCustomer.getBvn())) {
-                throw new ValidationException("bvn.validation.exists", "BVN already exists on your profile.");
-            }
-            log.info("Validating BVN: {}", customerKycRequest.getBvn());
-            customerRepository.findByBvnAndUserType(customerKycRequest.getBvn(), foundCustomer.getUserType())
-                    .ifPresent(existedCustomer -> {
-                        log.error("BVN {} already exists for customer id: {}", customerKycRequest.getBvn(), existedCustomer.getId());
-                        throw new ValidationException("bvn.already.exists", "You have entered an invalid BVN");
-                    });
-
-            if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
-                GetClientsClientIdResponse client = clientService.getCustomerByBvn(customerKycRequest.getBvn());
-                if (client != null) {
-                    return IdentityVerificationResponse.parse(client);
-                }
-                return this.identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
-            }
-
-            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = this.identityVerificationService.verifyBvn(customerKycRequest.getBvn(), foundCustomer);
-            foundCustomer.setBvn(customerKycRequest.getBvn());
-            finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.BVN);
-            return this.identityVerificationService.retrieveBvnData(customerKycRequest.getBvn());
-        }
-
-        if (StringUtils.isNotBlank(customerKycRequest.getNin())) {
-            if (StringUtils.isNotBlank(foundCustomer.getNin())) {
-                throw new ValidationException("nin.validation.exists", "NIN already exists on your profile.");
-            }
-            log.info("Validating NIN: {}", customerKycRequest.getNin());
-            customerRepository.findByNinAndUserType(customerKycRequest.getNin(), foundCustomer.getUserType())
-                    .ifPresent(existingCustomer -> {
-                        log.error("NIN {} already exists for customer id: {}", customerKycRequest.getNin(), existingCustomer.getId());
-                        throw new ValidationException("nin.already.exists", "You have entered an invalid NIN.");
-                    });
-
-            if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
-                GetClientsClientIdResponse client = clientService.getCustomerByNin(customerKycRequest.getNin());
-                if (client != null) {
-                    return IdentityVerificationResponse.parse(client);
-                }
-                return this.identityVerificationService.retrieveNinData(customerKycRequest.getNin());
-            }
-
-            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyNin(customerKycRequest.getNin(), foundCustomer);
-            foundCustomer.setNin(customerKycRequest.getNin());
-            finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
-            return this.identityVerificationService.retrieveNinData(customerKycRequest.getNin());
-        }
-
-        if (StringUtils.isNotBlank(customerKycRequest.getRcNumber()) && foundCustomer.isCorporateUser()) {
-            log.info("Validating RC Number: {}", customerKycRequest.getRcNumber());
-            customerRepository.findByRcNumberAndUserType(customerKycRequest.getRcNumber(), foundCustomer.getUserType())
-                    .ifPresent(existingCustomer -> {
-                        log.error("RC Number {} already exists for customer id: {}", customerKycRequest.getRcNumber(), existingCustomer.getId());
-                        throw new ValidationException("rc-number.already.exists", "You have entered an invalid RC Number.");
-                    });
-
-            if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
-                BusinessDataResponse businessData = this.identityVerificationService.retrieveRcNumberData(customerKycRequest.getRcNumber());
-                return IdentityVerificationResponse.parse(businessData.getData(), EXTERNAL);
-            }
-
-            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyRcNumber(customerKycRequest.getRcNumber(), foundCustomer);
-            foundCustomer.setRcNumber(customerKycRequest.getRcNumber());
-            finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.RC_NUMBER);
-        }
-
-        if (StringUtils.isNotBlank(customerKycRequest.getTin()) && foundCustomer.isCorporateUser()) {
-            if (GENERATE_OTP_COMMAND.equalsIgnoreCase(command)) {
-                BusinessDataResponse businessData = this.identityVerificationService.retrieveTinData(customerKycRequest.getTin());
-                return IdentityVerificationResponse.parse(businessData.getData(), EXTERNAL);
-            }
-
-            CustomerIdentityVerificationResponse customerIdentityVerificationResponse = identityVerificationService.verifyTin(customerKycRequest.getTin(), foundCustomer);
-            foundCustomer.setTin(customerKycRequest.getTin());
-            finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.TIN);
-        }
-        return null;
-    }
-
-    private static void finalizeValidations(CustomerIdentityVerificationResponse customerIdentityVerificationResponse, IdentityVerificationDataType dataType) {
-        log.error("{} verification failed: {}", dataType.name(), customerIdentityVerificationResponse);
-        if (!customerIdentityVerificationResponse.isValid()) {
-            throw new ValidationException(dataType.name()+".verification.failed", "We're unable to complete your tier upgrade because the information provided does not match our records. " +
-                    "Please confirm that your "+dataType.name()+" details are correct or contact your bank customer support for assistance.");
-        }
-    }
-
-    private static void validateEntityClient(GetClientsClientIdResponse client) {
-        if (client != null && client.getLegalForm() != null && client.getLegalForm().getId() == 2) {
-            throw new ValidationException("validation.error.exists", "This profile is currently linked to a corporate entity and is not permitted to perform any operations.");
-        }
-    }
-
-    private void activateCustomer(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier) {
-        GetClientsClientIdResponse client = clientService.searchClients(customerKycRequest.getNin(), customerKycRequest.getBvn(), null, null, foundCustomer.getUserType());
-        log.info("Client found: {}", client);
-        if (client == null) {
-            client = fetchCbaClientByEmailOrPhoneNumber(foundCustomer);
-        }
-        CreateCustomerRequest createCustomerRequest = buildCreateCustomerRequest(foundCustomer, customerKycRequest, customerKycTier);
-        PostClientsResponse createCustomerResponse = null;
-        if (client == null) {
-            createCustomerResponse = clientService.createCustomer(createCustomerRequest);
-            if (foundCustomer.getUserType() == UserType.CORPORATE && createCustomerResponse != null) {
-                this.postDirectorDataTable(foundCustomer, createCustomerResponse.getClientId());
-            }
-        } else {
-            PutClientsClientIdResponse response = this.upgradeClientTier(customerKycTier, client.getId(), foundCustomer);
-            if (foundCustomer.getUserType() == UserType.CORPORATE && response != null) {
-                this.updateDirectorDataTable(foundCustomer, client.getId());
-            }
-        }
-
-        Long clientId = client != null && client.getId() != null ? client.getId() : createCustomerResponse != null ? createCustomerResponse.getClientId() : null;
-        if (clientId != null) {
-            log.info("Client ID found: {}", clientId);
-            @Valid Set<@Valid GetClientsSavingsAccounts> clientAccounts = clientService.getClientAccountsByClientId(String.valueOf(clientId), "savingsAccounts").getSavingsAccounts();
-            Optional<@Valid GetClientsSavingsAccounts> savingsAccount = clientAccounts.stream().findAny();
-            log.info("Savings account found: {}", savingsAccount);
-            Long savingsAccountId = null;
-            if (savingsAccount.isPresent()) {
-                savingsAccountId = savingsAccount.get().getId();
-            } else {
-                PostSavingsAccountsResponse savingsAccountsResponse = accountService.createSavingsAccount(
-                        clientId, fineractProperty.getDefaultSavingsProductId(), null, null, null,
-                        null, true, fineractProperty.getSavingsAccountNominalAnnualInterestRate()
-                );
-                if (savingsAccountsResponse != null) {
-                    savingsAccountId = savingsAccountsResponse.getSavingsId();
-                }
-            }
-            if (savingsAccountId != null) {
-                foundCustomer.setExternalId(String.valueOf(clientId));
-                foundCustomer.setAccountId(String.valueOf(savingsAccountId));
-                foundCustomer.setActive(true);
-            }
-        }
+    private PutClientsClientIdResponse upgradeClientTier(CustomerKycTier customerKycTier, String clientId, Customer foundCustomer, CustomerKycRequest customerKycRequest) {
+        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest();
+        updateRequest.setKycTier(customerKycTier.getCode());
+        updateRequest.setNin(customerKycRequest.getNin());
+        updateRequest.setTin(customerKycRequest.getTin());
+        return clientService.updateCustomer(updateRequest, clientId, foundCustomer.getUserType());
     }
 
     private void updateDirectorDataTable(Customer foundCustomer, Long externalId) {
         List<GetDataTablesResponse> datatableResponse = clientService.retrieveClientDataTables(DIRECTORS_DATATABLE_NAME, externalId);
+
         if (datatableResponse != null && !datatableResponse.isEmpty()) {
-            log.info("Directors datatable already exists for client ID {}", externalId);
-            GetDataTablesResponse directorsTable = datatableResponse.stream()
-                    .filter(data -> foundCustomer.getFirstname().equalsIgnoreCase(data.getFirstName()))
-                    .findFirst()
-                    .orElse(null);
-            if (directorsTable != null) {
-                PutDataTableRequest request = new PutDataTableRequest();
-                request.setBvn(foundCustomer.getBvn());
-                request.setNin(foundCustomer.getNin());
-                request.setFirstName(foundCustomer.getFirstname());
-                request.setLastName(foundCustomer.getLastname());
-                request.setEmailAddress(foundCustomer.getEmailAddress());
-                request.setMobileNumber(foundCustomer.getPhoneNumber());
-                request.setLocale(DEFAULT_LOCALE);
-                try {
-                    clientService.updateAClientDataTable(DIRECTORS_DATATABLE_NAME, externalId, directorsTable.getId(), request);
-                } catch (Exception e) {
-                    log.error("Error updating director to datatable for client ID {}: {}", externalId, e.getMessage());
-                }
-            } else {
-                this.postDirectorDataTable(foundCustomer, externalId);
-            }
+            handleExistingDirectorsTable(foundCustomer, externalId, datatableResponse);
         } else {
-            this.postDirectorDataTable(foundCustomer, externalId);
+            postDirectorDataTable(foundCustomer, externalId);
+        }
+    }
+
+    private void handleExistingDirectorsTable(Customer foundCustomer, Long externalId, List<GetDataTablesResponse> datatableResponse) {
+        log.info("Directors datatable already exists for client ID {}", externalId);
+        GetDataTablesResponse directorsTable = datatableResponse.stream()
+                .filter(data -> foundCustomer.getFirstname().equalsIgnoreCase(data.getFirstName()))
+                .findFirst()
+                .orElse(null);
+
+        if (directorsTable != null) {
+            updateExistingDirectorEntry(foundCustomer, externalId, directorsTable);
+        } else {
+            postDirectorDataTable(foundCustomer, externalId);
+        }
+    }
+
+    private void updateExistingDirectorEntry(Customer foundCustomer, Long externalId, GetDataTablesResponse directorsTable) {
+        PutDataTableRequest request = buildDataTableRequest(foundCustomer);
+        try {
+            clientService.updateAClientDataTable(DIRECTORS_DATATABLE_NAME, externalId, directorsTable.getId(), request);
+        } catch (Exception e) {
+            log.error("Error updating director to datatable for client ID {}: {}", externalId, e.getMessage());
         }
     }
 
     private void postDirectorDataTable(Customer foundCustomer, Long clientId) {
+        PutDataTableRequest request = buildDataTableRequest(foundCustomer);
+        try {
+            clientService.postAClientDataTable(DIRECTORS_DATATABLE_NAME, clientId, request);
+        } catch (Exception e) {
+            log.error("Error adding director to datatable for client ID {}: {}", clientId, e.getMessage());
+        }
+    }
+
+    private PutDataTableRequest buildDataTableRequest(Customer foundCustomer) {
         PutDataTableRequest request = new PutDataTableRequest();
         request.setBvn(foundCustomer.getBvn());
         request.setNin(foundCustomer.getNin());
@@ -347,10 +601,13 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         request.setEmailAddress(foundCustomer.getEmailAddress());
         request.setMobileNumber(foundCustomer.getPhoneNumber());
         request.setLocale(DEFAULT_LOCALE);
-        try {
-            clientService.postAClientDataTable(DIRECTORS_DATATABLE_NAME, clientId, request);
-        } catch (Exception e) {
-            log.error("Error adding director to datatable for client ID {}: {}", clientId, e.getMessage());
+        return request;
+    }
+
+    private static void validateEntityClient(GetClientsClientIdResponse client) {
+        if (client != null && client.getLegalForm() != null && client.getLegalForm().getId() == 2) {
+            throw new ValidationException("validation.error.exists",
+                    "This profile is currently linked to a corporate entity and is not permitted to perform any operations.");
         }
     }
 
@@ -361,68 +618,5 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             client = clientService.searchClients(null, null, null, foundCustomer.getPhoneNumber(), foundCustomer.getUserType());
         }
         return client;
-    }
-
-    private PutClientsClientIdResponse upgradeClientTier(CustomerKycTier customerKycTier, Long clientId, Customer foundCustomer) {
-        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest();
-        updateRequest.setKycTier(customerKycTier.getCode());
-        return clientService.updateCustomer(updateRequest, clientId, foundCustomer.getUserType());
-    }
-
-    private CustomerKycTier getCustomerKycTier(Customer foundCustomer) {
-        if (!StringUtils.isAllBlank(foundCustomer.getNin(), foundCustomer.getBvn())) {
-            if (foundCustomer.isCorporateUser() && !StringUtils.isAllBlank(foundCustomer.getRcNumber(), foundCustomer.getTin())) {
-                if (StringUtils.isNoneBlank(foundCustomer.getRcNumber(), foundCustomer.getTin())) {
-                    return CustomerKycTier.TIER_3;
-                }
-            }
-            if (StringUtils.isNoneBlank(foundCustomer.getBvn(), foundCustomer.getNin())) {
-                return CustomerKycTier.TIER_2;
-            }
-            return CustomerKycTier.TIER_1;
-        }
-        return null;
-    }
-
-    private CreateCustomerRequest buildCreateCustomerRequest(Customer foundCustomer, CustomerKycRequest customerKycRequest, CustomerKycTier customerKycTier) {
-        CreateCustomerRequest createCustomerRequest = new CreateCustomerRequest();
-        createCustomerRequest.setCustomerType(foundCustomer.getUserType());
-        if (foundCustomer.getUserType() == UserType.CORPORATE) {
-            createCustomerRequest.setBusinessName(foundCustomer.getBusinessName());
-            PostClientNonPersonDetails postClientNonPersonDetails = new PostClientNonPersonDetails();
-            postClientNonPersonDetails.setIncorpNumber(foundCustomer.getRcNumber());
-            postClientNonPersonDetails.setConstitutionId(23L);
-            postClientNonPersonDetails.setMainBusinessLineId(Long.valueOf(foundCustomer.getIndustryId()));
-            createCustomerRequest.setClientNonPersonDetails(postClientNonPersonDetails);
-        } else {
-            createCustomerRequest.setBvn(customerKycRequest.getBvn());
-            createCustomerRequest.setNin(customerKycRequest.getNin());
-            createCustomerRequest.setFirstname(createCustomerRequest.getFirstname());
-            createCustomerRequest.setLastname(createCustomerRequest.getLastname());
-        }
-        createCustomerRequest.setFirstname(foundCustomer.getFirstname());
-        createCustomerRequest.setLastname(foundCustomer.getLastname());
-        createCustomerRequest.setEmailAddress(foundCustomer.getEmailAddress());
-        createCustomerRequest.setPhoneNumber(foundCustomer.getPhoneNumber());
-        if (customerKycTier != null) {
-            createCustomerRequest.setKycTier(customerKycTier.getCode());
-        }
-        return createCustomerRequest;
-    }
-
-    private void updateCustomerDetails(Customer foundCustomer, CustomerKycRequest customerKycRequest, Long customerId, CustomerKycTier customerKycTier) {
-        boolean customerIsACorporateUser = foundCustomer.getUserType() == UserType.CORPORATE;
-        CustomerUpdateRequest customerUpdateRequest = new CustomerUpdateRequest();
-        if (customerKycRequest != null && !customerIsACorporateUser) {
-            customerUpdateRequest.setBvn(customerKycRequest.getBvn());
-            customerUpdateRequest.setNin(customerKycRequest.getNin());
-        }
-        if (customerKycTier != null) {
-            customerUpdateRequest.setKycTier(customerKycTier.getCode());
-        }
-        customerService.updateCustomer(customerUpdateRequest, customerId, foundCustomer);
-        if (customerIsACorporateUser && StringUtils.isNotBlank(foundCustomer.getExternalId())) {
-            this.updateDirectorDataTable(foundCustomer, Long.valueOf(foundCustomer.getExternalId()));
-        }
     }
 }

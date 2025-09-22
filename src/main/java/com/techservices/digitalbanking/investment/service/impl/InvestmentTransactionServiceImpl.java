@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.techservices.digitalbanking.core.fineract.model.response.GetRecurringDepositTransactionResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostRecurringDepositTransactionCommandResponse;
-import com.techservices.digitalbanking.core.fineract.service.RecurringDepositTransactionService;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetRecurringDepositTransactionResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostRecurringDepositTransactionCommandResponse;
+import com.techservices.digitalbanking.core.eBanking.service.RecurringDepositTransactionService;
 import com.techservices.digitalbanking.investment.domain.request.RecurringDepositTransactionCommandRequest;
 import com.techservices.digitalbanking.investment.service.InvestmentTransactionService;
 

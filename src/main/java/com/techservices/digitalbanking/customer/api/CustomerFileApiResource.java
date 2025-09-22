@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.techservices.digitalbanking.core.fineract.model.response.PostClientClientIdImagesResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostClientClientIdImagesResponse;
 import com.techservices.digitalbanking.customer.service.CustomerFileService;
 
 import lombok.RequiredArgsConstructor;

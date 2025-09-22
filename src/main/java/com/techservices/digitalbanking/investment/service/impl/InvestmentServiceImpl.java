@@ -7,12 +7,11 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.enums.AccountType;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.configuration.FineractProperty;
-import com.techservices.digitalbanking.core.fineract.model.request.PostAccountTransfersRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PostRecurringDepositAccountsRequest;
-import com.techservices.digitalbanking.core.fineract.model.request.PutRecurringDepositProductRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.*;
-import com.techservices.digitalbanking.core.fineract.service.*;
+import com.techservices.digitalbanking.core.eBanking.configuration.FineractProperty;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostRecurringDepositAccountsRequest;
+import com.techservices.digitalbanking.core.eBanking.model.request.PutRecurringDepositProductRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.core.eBanking.service.*;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.customer.service.CustomerService;
@@ -39,11 +38,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.ACTIVATE;
 import static com.techservices.digitalbanking.core.util.CommandUtil.APPROVE;
-import static com.techservices.digitalbanking.core.util.DateUtil.*;
 
 @Service
 @RequiredArgsConstructor

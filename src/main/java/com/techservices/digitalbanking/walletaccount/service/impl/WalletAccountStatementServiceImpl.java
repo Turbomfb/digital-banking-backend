@@ -1,11 +1,11 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.walletaccount.service.impl;
 
-import com.techservices.digitalbanking.core.fineract.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PaymentDetailData;
-import com.techservices.digitalbanking.core.fineract.model.response.SavingsAccountTransactionData;
-import com.techservices.digitalbanking.core.fineract.service.AccountService;
+import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PaymentDetailData;
+import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
+import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.service.StatementService;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountStatementService;

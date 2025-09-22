@@ -44,7 +44,7 @@ public class ApiService {
         }
         log.info("Calling external API returned: {}", responseEntity);
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            log.info("External API call successful: {}", responseEntity.getStatusCode());
+            log.info("External API call successful: {} <==>", responseEntity.getStatusCode(), responseEntity);
         } else if (responseEntity.getStatusCode().is4xxClientError()) {
             log.error("External API call failed with client error: {}", responseEntity.getStatusCode());
             throw new PlatformServiceException("Client error during external API call: " + responseEntity.getBody());
