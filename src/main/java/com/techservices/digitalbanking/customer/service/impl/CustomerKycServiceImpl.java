@@ -115,8 +115,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         if (verificationResponse.getData() != null) {
             IdentityVerificationResponse.IdentityVerificationResponseData data = verificationResponse.getData();
             if ("EXTERNAL".equalsIgnoreCase(verificationResponse.getDataSource())) {
-//                boolean isValidCorporateData = StringUtils.isNoneBlank(data.getName(), data.getMobile());
-                boolean isValidCorporateData = StringUtils.isNoneBlank(data.getName());
+                boolean isValidCorporateData = StringUtils.isNoneBlank(data.getName(), data.getMobile());
                 boolean isValidIndividualData = StringUtils.isNoneBlank(data.getFirstName(), data.getLastName(), data.getMobile());
 
                 if ((dataType.isIndividual() && !isValidIndividualData) || (dataType.isCorporate() && !isValidCorporateData)) {
@@ -307,7 +306,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         CustomerIdentityVerificationResponse customerIdentityVerificationResponse =
                 identityVerificationService.verifyNin(customerKycRequest.getNin(), foundCustomer);
         foundCustomer.setNin(customerKycRequest.getNin());
-//        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
+        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
 
         customerIdentityVerificationResponse = identityVerificationService.verifyBvn(customerKycRequest.getBvn(), foundCustomer);
         foundCustomer.setBvn(customerKycRequest.getBvn());
@@ -332,7 +331,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         CustomerIdentityVerificationResponse customerIdentityVerificationResponse =
                 identityVerificationService.verifyRcNumber(customerKycRequest.getRcNumber(), foundCustomer);
         foundCustomer.setRcNumber(customerKycRequest.getRcNumber());
-//        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.RC_NUMBER);
+        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.RC_NUMBER);
         return rcNumberIdentityVerificationResponse;
     }
 
