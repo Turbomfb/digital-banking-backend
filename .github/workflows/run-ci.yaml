@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - feature/bankone
 
 permissions:
   packages: write
@@ -23,6 +24,20 @@ jobs:
       build_image_token: ${{ secrets.BUILD_IMAGE_TOKEN }}
       ecs_cluster: ${{ secrets.STAGING_ECS_CLUSTER }}
       ecs_service: ${{ secrets.STAGING_ECS_SERVICE }}
+      aws_region: ${{ secrets.STAGING_AWS_REGION }}
+
+  bankone:
+    if: github.ref_name == 'feature/bankone'
+    uses: ./.github/workflows/build-deploy.yaml
+    with:
+      environment: staging
+      image_tag: bank-one-latest
+    secrets:
+      aws_access_key_id: ${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+      build_image_token: ${{ secrets.BUILD_IMAGE_TOKEN }}
+      ecs_cluster: ${{ secrets.STAGING_ECS_CLUSTER }}
+      ecs_service: ${{ vars.BANK_ONE_ECS_SERVICE }}
       aws_region: ${{ secrets.STAGING_AWS_REGION }}
 
   production:
