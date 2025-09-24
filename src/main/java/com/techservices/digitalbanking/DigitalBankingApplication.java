@@ -3,9 +3,9 @@ package com.techservices.digitalbanking;
 
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.IdentityVerificationDataRepository;
-import com.techservices.digitalbanking.core.eBanking.api.ClientApiClient;
+import com.techservices.digitalbanking.core.eBanking.api.CustomerApiClient;
 import com.techservices.digitalbanking.core.eBanking.service.ClientService;
-import com.techservices.digitalbanking.core.eBanking.service.RecurringDepositAccountService;
+import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.investment.service.InvestmentService;
@@ -28,12 +28,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DigitalBankingApplication {
     private final CustomerRepository customerRepository;
     private final IdentityVerificationDataRepository verificationDataRepository;
-    private final RecurringDepositAccountService recurringDepositAccountService;
+    private final FlexDepositAccountService flexDepositAccountService;
     private final ClientService clientService;
     private final PasswordEncoder passwordEncoder;
     private final IdentityVerificationService identityVerificationService;
     private final AddressRepository addressRepository;
-    private final ClientApiClient clientApiClient;
+    private final CustomerApiClient customerApiClient;
     private final InvestmentService investmentService;
 
     public static void main(String[] args) {

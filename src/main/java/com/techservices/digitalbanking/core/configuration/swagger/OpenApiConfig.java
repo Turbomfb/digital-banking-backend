@@ -41,23 +41,20 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI().info(new Info()
-                        .title("Digit Banking Core API")
-                        .version("1.0")
-                        .description("This is the core API for the Digital Banking application, providing essential services and functionalities.")
-                        .contact(new Contact()
-                                .name("")
-                                .email(""))
-                        .license(new License()
-                                .name("")
-                                .url("")))
-                .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
-                .components(new io.swagger.v3.oas.models.Components()
-                        .addSecuritySchemes(SECURITY_SCHEME_NAME, new SecurityScheme()
-                                .name(SECURITY_SCHEME_NAME)
-                                .type(Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")
-                                .in(SecurityScheme.In.HEADER)));
+                .title("Digital Banking Core API")
+                .version("v1.0.0")
+                .description("Core API for Digital Banking application, providing essential services such as customer management, transactions, and loan processing.")
+                .contact(new Contact()
+                        .name("Techservice Engineering Team")
+                        .email("engineering@techservice.com")
+                        .url("https://techservice.com"))
+                .license(new License()
+                        .name("Proprietary")
+                        .url("https://techservice.com/license")))
+                .servers(List.of(
+                        new Server().url("http://localhost:8080").description("Local Dev"),
+                        new Server().url("https://api-bank-one.dev.turbomfb.com").description("Staging")
+                ));
     }
 
 }

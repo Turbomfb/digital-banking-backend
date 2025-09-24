@@ -14,7 +14,7 @@ import java.time.temporal.ChronoUnit;
 @Builder
 public class StatementRequest {
     private Long customerId;
-    private Long savingsId;
+    private String savingsId;
     private LocalDate startDate;
     private LocalDate endDate;
     private Long productId;

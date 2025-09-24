@@ -5,6 +5,7 @@ import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.data.model.CustomerStatusAudit;
 import com.techservices.digitalbanking.core.domain.data.repository.CustomerStatusAuditRepository;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
@@ -29,6 +30,7 @@ import com.techservices.digitalbanking.core.eBanking.service.ClientService;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +39,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
 
@@ -166,52 +171,51 @@ public class CustomerServiceImpl implements CustomerService {
 		return BasePageResponse.instance(customerRepository.findAll(pageable).map(CustomerDtoResponse::parse));
 	}
 
-	@Override
-	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountType) {
-		String externalId = this.retrieveCustomerExternalId(customerId);
-		return clientService.getClientAccountsByClientId(externalId, accountType);
-	}
-
 	private String retrieveCustomerExternalId(Long customerId) {
 		return getCustomerById(customerId).getExternalId();
 	}
 
 	@Override
 	public CustomerDashboardResponse retrieveCustomerDashboard(Long customerId) {
-		String externalId = this.retrieveCustomerExternalId(customerId);
-		GetClientsClientIdAccountsResponse customerAccounts = clientService.getClientAccountsByClientId(externalId, null);
+		Customer foundCustomer = getCustomerById(customerId);
+		String externalId = foundCustomer.getExternalId();
+		List<@Valid AccountDto> savingsAccounts = clientService.getAllWalletAccountByExternalId(externalId);
+		List<@Valid AccountDto> flexAccounts = clientService.getAllFlexAccountByExternalId(externalId);
+		AccountDto walletAccount = clientService.getWalletAccountByCustomerId(foundCustomer);
+		AccountDto flexAccount = clientService.getFlexAccountByCustomer(foundCustomer);
+		List<@Valid AccountDto> lockAccount = clientService.getAllLockAccountByExternalId(foundCustomer.getExternalId());
 		CustomerDashboardResponse customerDashboardResponse = CustomerDashboardResponse.builder()
 				.walletAccount(
 						new CustomerDashboardResponse.Account(
-								customerAccounts.getTotalAccountBalanceFor(AccountType.SAVINGS),
-								customerAccounts.getTotalAccountInterestsFor(AccountType.SAVINGS, accountService),
-								customerAccounts.getTotalAccountDepositsFor(AccountType.SAVINGS, accountService),
-								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.SAVINGS, accountService),
-								customerAccounts.getTotalActivePlanFor(AccountType.SAVINGS, accountService)
+								walletAccount.getAccountBalance(),
+								walletAccount.getExpectedInterest(),
+								BigDecimal.ZERO,
+								BigDecimal.ZERO,
+                                (long) savingsAccounts.size()
 						)
 				)
 				.flexAccount(
 						new CustomerDashboardResponse.Account(
-								customerAccounts.getTotalAccountBalanceFor(AccountType.RECURRING_DEPOSIT),
-								customerAccounts.getTotalAccountInterestsFor(AccountType.RECURRING_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountDepositsFor(AccountType.RECURRING_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.RECURRING_DEPOSIT, accountService),
-								customerAccounts.getTotalActivePlanFor(AccountType.RECURRING_DEPOSIT, accountService)
+								flexAccount.getAccountBalance(),
+								flexAccount.getExpectedInterest(),
+								BigDecimal.ZERO,
+								BigDecimal.ZERO,
+								(long) flexAccounts.size()
 						)
 				)
 				.lockAccount(
 						new CustomerDashboardResponse.Account(
-								customerAccounts.getTotalAccountBalanceFor(AccountType.FIXED_DEPOSIT),
-								customerAccounts.getTotalAccountInterestsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountDepositsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalActivePlanFor(AccountType.FIXED_DEPOSIT, accountService)
+								lockAccount.stream().map(AccountDto::getAccountBalance).reduce(BigDecimal.ZERO, BigDecimal::add),
+								BigDecimal.ZERO,
+								BigDecimal.ZERO,
+								BigDecimal.ZERO,
+								(long) lockAccount.size()
 						)
 				)
 				.build();
 		customerDashboardResponse.setInvestmentMetrics(
 				new CustomerDashboardResponse.Account(
-						null,
+						customerDashboardResponse.getFlexAccount().getBalance().add(customerDashboardResponse.getLockAccount().getBalance()),
 						customerDashboardResponse.getFlexAccount().getTotalInterestEarned().add(customerDashboardResponse.getLockAccount().getTotalInterestEarned()),
 						customerDashboardResponse.getFlexAccount().getTotalDeposit().add(customerDashboardResponse.getLockAccount().getTotalDeposit()),
 						customerDashboardResponse.getFlexAccount().getTotalWithdrawal().add(customerDashboardResponse.getLockAccount().getTotalWithdrawal()),

@@ -5,7 +5,6 @@ import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetClientsClientIdAccountsResponse;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
@@ -30,8 +29,6 @@ public interface CustomerService {
 	Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber, UserType customerType);
 
 	BasePageResponse<CustomerDtoResponse> getAllCustomers(Pageable pageable);
-
-	GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountTypes);
 
 	CustomerDashboardResponse retrieveCustomerDashboard(Long customerId);
 

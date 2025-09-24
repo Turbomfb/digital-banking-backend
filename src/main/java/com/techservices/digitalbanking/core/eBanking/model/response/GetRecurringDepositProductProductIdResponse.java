@@ -16,7 +16,7 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GetRecurringDepositProductProductIdResponse {
 
-	private Long id;
+	private String id;
 	private String name;
 	private String shortName;
 	private String description;

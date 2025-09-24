@@ -11,7 +11,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostSavingsAccountTransactionsResponse {
 
-	private Long clientId;
+	private String clientId;
 
 	private Long officeId;
 
@@ -19,7 +19,7 @@ public class PostSavingsAccountTransactionsResponse {
 
 	private String transactionId;
 
-	private Long savingsId;
+	private String savingsId;
 
 	private Object changes;
 }

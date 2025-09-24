@@ -3,15 +3,12 @@ package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
-import com.techservices.digitalbanking.core.domain.CustomerDto;
+import com.techservices.digitalbanking.core.domain.dto.*;
 import com.techservices.digitalbanking.core.domain.data.model.Address;
 import com.techservices.digitalbanking.core.domain.data.model.IndustrySector;
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.IndustrySectorRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.KycTierRepository;
-import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.domain.dto.CustomerFilterDto;
-import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
@@ -22,7 +19,6 @@ import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDat
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.domain.dto.KycTierDto;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutDataTableRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.*;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
@@ -395,8 +391,8 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     private String createOrRetrieveSavingsAccount(String clientId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse,
                                                   CustomerKycTier customerKycTier) {
         log.info("Client ID found: {}", clientId);
-        @Valid Set<@Valid GetClientsSavingsAccounts> clientAccounts = clientService.getClientSavingsAccountsByClientId(clientId);
-        Optional<@Valid GetClientsSavingsAccounts> savingsAccount = clientAccounts.stream().findAny();
+        List<@Valid AccountDto> clientAccounts = clientService.getAllWalletAccountByExternalId(clientId);
+        Optional<@Valid AccountDto> savingsAccount = clientAccounts.stream().findAny();
         log.info("Savings account found: {}", savingsAccount);
 
         if (savingsAccount.isPresent()) {
@@ -547,48 +543,6 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         updateRequest.setNin(customerKycRequest.getNin());
         updateRequest.setTin(customerKycRequest.getTin());
         return clientService.updateCustomer(updateRequest, clientId, foundCustomer.getUserType());
-    }
-
-    private void updateDirectorDataTable(Customer foundCustomer, Long externalId) {
-        List<GetDataTablesResponse> datatableResponse = clientService.retrieveClientDataTables(DIRECTORS_DATATABLE_NAME, externalId);
-
-        if (datatableResponse != null && !datatableResponse.isEmpty()) {
-            handleExistingDirectorsTable(foundCustomer, externalId, datatableResponse);
-        } else {
-            postDirectorDataTable(foundCustomer, externalId);
-        }
-    }
-
-    private void handleExistingDirectorsTable(Customer foundCustomer, Long externalId, List<GetDataTablesResponse> datatableResponse) {
-        log.info("Directors datatable already exists for client ID {}", externalId);
-        GetDataTablesResponse directorsTable = datatableResponse.stream()
-                .filter(data -> foundCustomer.getFirstname().equalsIgnoreCase(data.getFirstName()))
-                .findFirst()
-                .orElse(null);
-
-        if (directorsTable != null) {
-            updateExistingDirectorEntry(foundCustomer, externalId, directorsTable);
-        } else {
-            postDirectorDataTable(foundCustomer, externalId);
-        }
-    }
-
-    private void updateExistingDirectorEntry(Customer foundCustomer, Long externalId, GetDataTablesResponse directorsTable) {
-        PutDataTableRequest request = buildDataTableRequest(foundCustomer);
-        try {
-            clientService.updateAClientDataTable(DIRECTORS_DATATABLE_NAME, externalId, directorsTable.getId(), request);
-        } catch (Exception e) {
-            log.error("Error updating director to datatable for client ID {}: {}", externalId, e.getMessage());
-        }
-    }
-
-    private void postDirectorDataTable(Customer foundCustomer, Long clientId) {
-        PutDataTableRequest request = buildDataTableRequest(foundCustomer);
-        try {
-            clientService.postAClientDataTable(DIRECTORS_DATATABLE_NAME, clientId, request);
-        } catch (Exception e) {
-            log.error("Error adding director to datatable for client ID {}: {}", clientId, e.getMessage());
-        }
     }
 
     private PutDataTableRequest buildDataTableRequest(Customer foundCustomer) {

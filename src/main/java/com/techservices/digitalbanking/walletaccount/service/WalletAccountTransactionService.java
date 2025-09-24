@@ -21,7 +21,7 @@ public interface WalletAccountTransactionService {
 
 	SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long customerId, Long transactionId);
 
-	BigDecimal getBalanceAsOfDate(Long savingsId, LocalDate localDate);
+	BigDecimal getBalanceAsOfDate(Long customerId, LocalDate localDate);
 
 	GenericApiResponse processTransactionCommand(@Valid String command, SavingsAccountTransactionRequest request, Long customerId);
 

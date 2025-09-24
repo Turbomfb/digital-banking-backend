@@ -3,11 +3,11 @@ package com.techservices.digitalbanking.investment.service.impl;
 
 import java.util.List;
 
+import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.eBanking.model.response.GetRecurringDepositTransactionResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostRecurringDepositTransactionCommandResponse;
-import com.techservices.digitalbanking.core.eBanking.service.RecurringDepositTransactionService;
 import com.techservices.digitalbanking.investment.domain.request.RecurringDepositTransactionCommandRequest;
 import com.techservices.digitalbanking.investment.service.InvestmentTransactionService;
 
@@ -16,22 +16,22 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class InvestmentTransactionServiceImpl implements InvestmentTransactionService {
-	private final RecurringDepositTransactionService recurringDepositTransactionService;
+	private final FlexDepositAccountService flexDepositAccountService;
 
 	@Override
-	public GetRecurringDepositTransactionResponse retrieveInvestmentTransactionById(Long investmentId,
+	public GetRecurringDepositTransactionResponse retrieveInvestmentTransactionById(String investmentId,
 			Long transactionId) {
-		return recurringDepositTransactionService.retrieveInvestmentTransactionById(investmentId, transactionId);
+		return flexDepositAccountService.retrieveInvestmentTransactionById(investmentId, transactionId);
 	}
 
 	@Override
-	public List<GetRecurringDepositTransactionResponse> retrieveAllInvestmentTransactions(Long investmentId) {
-		return recurringDepositTransactionService.retrieveAllInvestmentTransactions(investmentId);
+	public List<GetRecurringDepositTransactionResponse> retrieveAllInvestmentTransactions(String investmentId) {
+		return flexDepositAccountService.retrieveAllInvestmentTransactions(investmentId);
 	}
 
 	@Override
-	public PostRecurringDepositTransactionCommandResponse processInvestmentTransactionCommand(Long investmentId,
+	public PostRecurringDepositTransactionCommandResponse processInvestmentTransactionCommand(String investmentId,
 			RecurringDepositTransactionCommandRequest request, String command) {
-		return recurringDepositTransactionService.processInvestmentTransactionCommand(investmentId, request, command);
+		return flexDepositAccountService.processInvestmentTransactionCommand(investmentId, request, command);
 	}
 }

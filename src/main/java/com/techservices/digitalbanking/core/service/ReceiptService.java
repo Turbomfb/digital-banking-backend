@@ -5,10 +5,11 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.*;
 import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.request.ReceiptRequest;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -105,8 +106,9 @@ public class ReceiptService {
     private byte[] generatePdfReceiptContent(ReceiptRequest request, Long customerId) throws IOException {
         try {
             // Get customer and account data
-            String accountId = customerService.getCustomerById(customerId).getAccountId();
-            GetSavingsAccountsAccountIdResponse accountData = accountService.retrieveSavingsAccount(Long.valueOf(accountId), false);
+            Customer foundCustomer = customerService.getCustomerById(customerId);
+            String accountId = foundCustomer.getAccountId();
+            AccountDto accountData = accountService.retrieveSavingsAccount(accountId);
 
             Document document = new Document(PageSize.A5, 36, 36, 36, 36);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -121,7 +123,7 @@ public class ReceiptService {
             addReceiptTitle(document);
 
             // Add transaction details
-            addTransactionDetails(document, request, accountData);
+            addTransactionDetails(document, request, accountData, foundCustomer);
 
             // Add recipient details
             addRecipientDetails(document, request);
@@ -142,8 +144,9 @@ public class ReceiptService {
     private byte[] generateImageReceiptContent(ReceiptRequest request, Long customerId, String format) throws IOException {
         try {
             // Get customer and account data
-            String accountId = customerService.getCustomerById(customerId).getAccountId();
-            GetSavingsAccountsAccountIdResponse accountData = accountService.retrieveSavingsAccount(Long.valueOf(accountId), false);
+            Customer foundCustomer = customerService.getCustomerById(customerId);
+            String accountId = foundCustomer.getAccountId();
+            AccountDto accountData = accountService.retrieveSavingsAccount(accountId);
 
             int width = 600;
             int height = 800;
@@ -159,7 +162,7 @@ public class ReceiptService {
             g2d.fillRect(0, 0, width, height);
 
             // Draw receipt content
-            drawImageReceiptContent(g2d, request, accountData, width);
+            drawImageReceiptContent(g2d, request, accountData, width, foundCustomer);
 
             g2d.dispose();
 
@@ -218,8 +221,8 @@ public class ReceiptService {
     }
 
     private void addTransactionDetails(Document document, ReceiptRequest request,
-                                       GetSavingsAccountsAccountIdResponse accountData
-                                       ) throws DocumentException {
+                                       AccountDto accountData,
+                                       Customer foundCustomer) throws DocumentException {
 
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
@@ -236,8 +239,8 @@ public class ReceiptService {
         addReceiptTableRow(table, "Reference:", request.getTransactionId(), labelFont, valueFont);
 
         // Sender details
-        addReceiptTableRow(table, "From Account:", accountData.getAccountNo(), labelFont, valueFont);
-        addReceiptTableRow(table, "Account Holder:", accountData.getClientName(), labelFont, valueFont);
+        addReceiptTableRow(table, "From Account:", accountData.getAccountNumber(), labelFont, valueFont);
+        addReceiptTableRow(table, "Account Holder:", foundCustomer.getFullName(), labelFont, valueFont);
 
         document.add(table);
     }
@@ -289,8 +292,8 @@ public class ReceiptService {
     }
 
     private void drawImageReceiptContent(Graphics2D g2d, ReceiptRequest request,
-                                         GetSavingsAccountsAccountIdResponse accountData,
-                                         int width) {
+                                         AccountDto accountData,
+                                         int width, Customer foundCustomer) {
         int y = 30;
         int padding = 40;
 
@@ -322,8 +325,8 @@ public class ReceiptService {
         y = drawDetailRow(g2d, "Date & Time:", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")), padding, y, width);
         y = drawDetailRow(g2d, "Amount:", formatCurrency(request.getAmount()) + " " + request.getCurrency(), padding, y, width);
         y = drawDetailRow(g2d, "Status:", "SUCCESSFUL", padding, y, width);
-        y = drawDetailRow(g2d, "From Account:", accountData.getAccountNo(), padding, y, width);
-        y = drawDetailRow(g2d, "Account Holder:", accountData.getClientName(), padding, y, width);
+        y = drawDetailRow(g2d, "From Account:", accountData.getAccountNumber(), padding, y, width);
+        y = drawDetailRow(g2d, "Account Holder:", foundCustomer.getFullName(), padding, y, width);
 
         y += 20;
 

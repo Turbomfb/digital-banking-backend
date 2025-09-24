@@ -1,6 +1,7 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.walletaccount.service.impl;
 
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.customer.service.CustomerService;
@@ -8,8 +9,6 @@ import com.techservices.digitalbanking.walletaccount.domain.response.SavingsInte
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountsResponse;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.walletaccount.domain.request.CreateSavingsAccountRequest;
@@ -39,40 +38,25 @@ public class WalletAccountServiceImpl implements WalletAccountService {
 	}
 
 	@Override
-	public PostSavingsAccountsAccountIdResponse manageSavingsAccount(String savingsAccountId, String command,
-			long productId) {
-		GetSavingsAccountsAccountIdResponse getSavingsAccountsAccountIdResponse = retrieveSavingsAccount(
-				savingsAccountId, productId);
-		return accountService.manageSavingsAccountCommand(getSavingsAccountsAccountIdResponse, command);
-	}
-
-	@Override
-	public GetSavingsAccountsResponse retrieveAllSavingsAccount(Long limit, Long offset, Long productId) {
-		return accountService.retrieveAllSavingsAccounts(limit, offset, productId);
-	}
-
-	@Override
-	public GetSavingsAccountsAccountIdResponse retrieveSavingsAccountById(Long customerId) {
+	public AccountDto retrieveSavingsAccountById(Long customerId) {
 		String savingsAccountId = customerService.getCustomerSavingsId(customerId);
-		return accountService.retrieveSavingsAccount(Long.valueOf(savingsAccountId), true);
+		return accountService.retrieveSavingsAccount(savingsAccountId);
 	}
 
 	@Override
 	public BasePageResponse<SavingsInterestBreakdownResponse> calculateInterestBreakdown(Long customerId, LocalDate startDate, LocalDate endDate) {
 		String savingsAccountId = customerService.getCustomerSavingsId(customerId);
-		GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccount(Long.valueOf(savingsAccountId), true);
+		AccountDto savingsAccount = accountService.retrieveSavingsAccount(savingsAccountId);
 
 		// Validate date range
 		if (startDate.isAfter(endDate)) {
 			throw new ValidationException("Start date cannot be after end date");
 		}
 
-		BigDecimal currentBalance = savingsAccount.getSummary().getAvailableBalance() != null
-				? savingsAccount.getSummary().getAvailableBalance()
-				: BigDecimal.ZERO;
+		BigDecimal currentBalance = savingsAccount.getAccountBalance();
 
 		// Get annual interest rate as decimal (e.g., 5% = 0.05)
-		BigDecimal annualInterestRate = BigDecimal.valueOf(savingsAccount.getNominalAnnualInterestRate())
+		BigDecimal annualInterestRate = BigDecimal.valueOf(savingsAccount.getAnnualInterestRate())
 				.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
 
 		List<SavingsInterestBreakdownResponse> savingsInterestBreakdownResponses = new ArrayList<>();
@@ -105,9 +89,5 @@ public class WalletAccountServiceImpl implements WalletAccountService {
 		}
 
 		return BasePageResponse.instance(savingsInterestBreakdownResponses);
-	}
-
-	public GetSavingsAccountsAccountIdResponse retrieveSavingsAccount(String savingsAccountId, long productId) {
-		return accountService.retrieveSavingsAccount(savingsAccountId, productId, false);
 	}
 }

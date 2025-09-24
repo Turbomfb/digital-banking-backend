@@ -10,6 +10,7 @@ public class AppUtil {
 	public static final String ROLES = "roles";
 	public static final String EXTERNAL = "External";
 	public static final String INTERNAL = "Internal";
+	public static final String DEFAULT_CURRENCY = "NGN";
 
 	public static final String[] PUBLIC_ENDPOINTS = {
 			"/api-docs/**",
@@ -38,6 +39,18 @@ public class AppUtil {
 			"api/v1/loan-products",
 			"api/v1/system/codes/**",
 			"api/v1/privacy-policy",
+			"api/v1/docs",
+			"api/v3/api-docs/customers",
+			"api/v3/api-docs",
+			"api/v3/api-docs/swagger-config",
+			"api/v1/swagger-ui/favicon-16x16.png",
+			"api/v1/swagger-ui/favicon-32x32.png",
+			"api/v1/swagger-ui/swagger-initializer.js",
+			"api/v1/swagger-ui/index.css",
+			"api/v1/swagger-ui/swagger-ui-bundle.js",
+			"api/v1/swagger-ui/swagger-ui-standalone-preset.js",
+			"api/v1/swagger-ui/swagger-ui.css",
+			"api/v1/swagger-ui/index.html",
 			"api/v1/customers/me/addresses/states",
 			"api/v1/customers/me/addresses/states/**"
 	};

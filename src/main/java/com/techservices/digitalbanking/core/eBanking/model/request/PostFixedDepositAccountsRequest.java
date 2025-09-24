@@ -24,7 +24,7 @@ public class PostFixedDepositAccountsRequest {
 
 	private String locale;
 
-	private Long productId;
+	private String productId;
 
 	private String accountNo;
 	private String allocationName;

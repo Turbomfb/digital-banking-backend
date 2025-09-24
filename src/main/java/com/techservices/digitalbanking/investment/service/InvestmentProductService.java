@@ -11,18 +11,8 @@ import com.techservices.digitalbanking.core.eBanking.model.response.PostRecurrin
 import com.techservices.digitalbanking.core.eBanking.model.response.PutRecurringDepositProductResponse;
 
 public interface InvestmentProductService {
-	PostRecurringDepositProductResponse createProduct(
-			PostRecurringDepositProductsRequest postRecurringDepositProductsRequest);
 
-	List<GetRecurringDepositProductProductIdResponse> retrieveAllProducts();
+	GetRecurringDepositProductProductIdResponse retrieveInvestmentProductById(String productId);
 
-	GetRecurringDepositProductProductIdResponse retrieveInvestmentProductById(Long productId);
-
-	PutRecurringDepositProductResponse updateProduct(Long productId,
-			PutRecurringDepositProductRequest putRecurringDepositProductRequest);
-
-	DeleteRecurringDepositProductResponse deleteProduct(Long productId);
-
-	Object retrieveProductTemplate();
 	Object retrieveCurrentInvestmentProduct(String investmentType);
 }

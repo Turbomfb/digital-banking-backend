@@ -6,6 +6,7 @@ import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.ReceiptRequest;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ReceiptService;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
@@ -28,6 +29,10 @@ import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccou
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +49,7 @@ import java.util.Comparator;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
+@Tag(name = "Wallet Account Transactions", description = "Operations for managing savings account transactions, payments, statements, and receipts")
 @RequestMapping("api/v1/wallet-accounts/me/transactions")
 @RestController
 @RequiredArgsConstructor
@@ -56,36 +62,264 @@ public class WalletAccountTransactionApiResource {
 	private final RedisService redisService;
 	private final ReceiptService receiptService;
 
+	@Operation(
+			summary = "Process transaction command",
+			description = "Processes various transaction commands for the authenticated customer's savings account. Default command generates OTP for transaction verification."
+	)
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Transaction command processed successfully",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = GenericApiResponse.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "Invalid request data or command parameters",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Authentication required",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Access denied - insufficient permissions",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Internal server error",
+					content = @Content(mediaType = "application/json")
+			)
+	})
 	@PostMapping
 	public ResponseEntity<GenericApiResponse> processTransactionCommand(
+			@io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "Transaction request containing amount, recipient details, and transaction parameters",
+					required = true,
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = SavingsAccountTransactionRequest.class)
+					)
+			)
 			@RequestBody SavingsAccountTransactionRequest request,
+
+			@Parameter(
+					name = "command",
+					description = "Transaction command to execute. Defaults to 'GENERATE_OTP_COMMAND' if not specified.",
+					schema = @Schema(type = "string", defaultValue = GENERATE_OTP_COMMAND, example = GENERATE_OTP_COMMAND)
+			)
 			@RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		return ResponseEntity.ok(walletAccountTransactionService.processTransactionCommand(command, request, customerId));
 	}
 
+	@Operation(
+			summary = "Initiate payment order",
+			description = "Initiates a new payment order for transferring funds from the customer's wallet account to external recipients."
+	)
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Payment order initiated successfully",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = WalletPaymentOrderResponse.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "Invalid payment request or insufficient funds",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Authentication required",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Access denied - insufficient permissions",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "422",
+					description = "Payment processing failed due to business rules",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Internal server error",
+					content = @Content(mediaType = "application/json")
+			)
+	})
 	@PostMapping("/initiate-payment-order")
-	public ResponseEntity<WalletPaymentOrderResponse> initiatePaymentOrder(@RequestBody WalletPaymentOrderRequest request) throws Exception {
+	public ResponseEntity<WalletPaymentOrderResponse> initiatePaymentOrder(
+			@io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "Payment order request containing recipient details, amount, and payment instructions",
+					required = true,
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = WalletPaymentOrderRequest.class)
+					)
+			)
+			@RequestBody WalletPaymentOrderRequest request) throws Exception {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		WalletPaymentOrderResponse responseOrder = walletAccountTransactionService.initiatePaymentOrder(request, customerId);
 		return ResponseEntity.ok(responseOrder);
 	}
 
-
+	@Operation(
+			summary = "Receive inbound webhook",
+			description = "Handles incoming webhook notifications from external payment providers to update transaction statuses and process callbacks."
+	)
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Webhook processed successfully",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = GenericApiResponse.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "Invalid webhook payload or signature verification failed",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "422",
+					description = "Webhook payload could not be processed",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Internal server error",
+					content = @Content(mediaType = "application/json")
+			)
+	})
 	@PostMapping("/webhooks")
-	public ResponseEntity<GenericApiResponse> receiveInboundWebhook(@RequestBody WalletInboundWebhookRequest request) throws Exception {
+	public ResponseEntity<GenericApiResponse> receiveInboundWebhook(
+			@io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "Webhook payload from external payment provider containing transaction updates",
+					required = true,
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = WalletInboundWebhookRequest.class)
+					)
+			)
+			@RequestBody WalletInboundWebhookRequest request) throws Exception {
 		GenericApiResponse webhookResponse = walletAccountTransactionService.receiveInboundWebhook(request);
 		return ResponseEntity.ok(webhookResponse);
 	}
 
+	@Operation(
+			summary = "Retrieve savings account transactions",
+			description = "Retrieves a paginated list of transactions for the authenticated customer's savings account with optional filtering by date range, transaction type, and product ID."
+	)
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Transactions retrieved successfully",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = FineractPageResponse.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "Invalid query parameters or date format",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Authentication required",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Access denied - insufficient permissions",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "404",
+					description = "Savings account not found",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Internal server error",
+					content = @Content(mediaType = "application/json")
+			)
+	})
 	@GetMapping
 	public ResponseEntity<FineractPageResponse<SavingsAccountTransactionData>> retrieveSavingsAccountTransactions(
+			@Parameter(
+					name = "page",
+					description = "Page number for pagination (0-based indexing)",
+					schema = @Schema(type = "integer", minimum = "0", example = "0")
+			)
 			@RequestParam(required = false) Integer page,
-			@RequestParam(required = false) Integer size, @RequestParam(required = false) String startDate,
-			@RequestParam(required = false) String endDate, @RequestParam(required = false) String dateFormat,
-			@RequestParam(required = false) Long productId, @RequestParam(value = "offset", required = false) @Valid Long offset,
+
+			@Parameter(
+					name = "size",
+					description = "Number of transactions per page",
+					schema = @Schema(type = "integer", minimum = "1", maximum = "1000", example = "20")
+			)
+			@RequestParam(required = false) Integer size,
+
+			@Parameter(
+					name = "startDate",
+					description = "Start date for filtering transactions (format depends on dateFormat parameter)",
+					schema = @Schema(type = "string", example = "2024-01-01")
+			)
+			@RequestParam(required = false) String startDate,
+
+			@Parameter(
+					name = "endDate",
+					description = "End date for filtering transactions (format depends on dateFormat parameter)",
+					schema = @Schema(type = "string", example = "2024-01-31")
+			)
+			@RequestParam(required = false) String endDate,
+
+			@Parameter(
+					name = "dateFormat",
+					description = "Date format pattern for startDate and endDate parameters",
+					schema = @Schema(type = "string", example = "yyyy-MM-dd")
+			)
+			@RequestParam(required = false) String dateFormat,
+
+			@Parameter(
+					name = "productId",
+					description = "Filter transactions by specific product ID",
+					schema = @Schema(type = "integer", format = "int64")
+			)
+			@RequestParam(required = false) Long productId,
+
+			@Parameter(
+					name = "offset",
+					description = "Number of records to skip for pagination",
+					schema = @Schema(type = "integer", format = "int64", minimum = "0", example = "0")
+			)
+			@RequestParam(value = "offset", required = false) @Valid Long offset,
+
+			@Parameter(
+					name = "limit",
+					description = "Maximum number of records to return",
+					schema = @Schema(type = "integer", format = "int64", minimum = "1", maximum = "10000", example = "100")
+			)
 			@RequestParam(value = "limit", required = false) @Valid Long limit,
+
+			@Parameter(
+					name = "transactionType",
+					description = "Filter by transaction type",
+					schema = @Schema(type = "string", allowableValues = {"CREDIT", "DEBIT", "ALL"})
+			)
 			@RequestParam(value = "transactionType", required = false) @Valid String transactionType
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
@@ -101,23 +335,98 @@ public class WalletAccountTransactionApiResource {
 	}
 
 	@GetMapping("/statement")
-	@Operation(summary = "Generate Account Statement",
-			description = "Generate and export account statement in various formats (CSV, PDF, Excel)")
+	@Operation(
+			summary = "Generate account statement",
+			description = "Generates and exports account statement in various formats (CSV, PDF, Excel) for a specified date range. The generated file is directly streamed to the client for download."
+	)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Statement generated successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-			@ApiResponse(responseCode = "404", description = "Account not found"),
-			@ApiResponse(responseCode = "500", description = "Internal server error")
+			@ApiResponse(
+					responseCode = "200",
+					description = "Statement generated and downloaded successfully"
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "Invalid request parameters or date range",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Authentication required",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Access denied - insufficient permissions",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "404",
+					description = "Account not found",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Internal server error",
+					content = @Content(mediaType = "application/json")
+			)
 	})
 	public ResponseEntity<Void> generateAccountStatement(
+			@Parameter(
+					name = "startDate",
+					description = "Start date for statement period (ISO date format: YYYY-MM-DD)",
+					schema = @Schema(type = "string", format = "date", example = "2024-01-01")
+			)
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+
+			@Parameter(
+					name = "endDate",
+					description = "End date for statement period (ISO date format: YYYY-MM-DD)",
+					schema = @Schema(type = "string", format = "date", example = "2024-01-31")
+			)
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+
+			@Parameter(
+					name = "productId",
+					description = "Filter transactions by specific product ID",
+					schema = @Schema(type = "integer", format = "int64", minimum = "1")
+			)
 			@RequestParam(required = false) @Positive Long productId,
+
+			@Parameter(
+					name = "offset",
+					description = "Number of records to skip for pagination",
+					schema = @Schema(type = "integer", format = "int64", minimum = "0", defaultValue = "0")
+			)
 			@RequestParam(value = "offset", required = false, defaultValue = "0") @Min(0) Long offset,
+
+			@Parameter(
+					name = "limit",
+					description = "Maximum number of records to include in statement",
+					schema = @Schema(type = "integer", format = "int64", minimum = "1", maximum = "10000", defaultValue = "1000")
+			)
 			@RequestParam(value = "limit", required = false, defaultValue = "1000") @Min(1) @Max(10000) Long limit,
+
+			@Parameter(
+					name = "format",
+					description = "Export format for the statement",
+					schema = @Schema(type = "string", allowableValues = {"CSV", "PDF", "EXCEL"}, defaultValue = "CSV")
+			)
 			@RequestParam(value = "format", required = false, defaultValue = "CSV") @Pattern(regexp = "CSV|PDF|EXCEL") String format,
+
+			@Parameter(
+					name = "includeReversals",
+					description = "Whether to include reversed transactions in the statement",
+					schema = @Schema(type = "boolean", defaultValue = "false")
+			)
 			@RequestParam(value = "includeReversals", required = false, defaultValue = "false") Boolean includeReversals,
+
+			@Parameter(
+					name = "transactionType",
+					description = "Filter transactions by type",
+					schema = @Schema(type = "string", allowableValues = {"CREDIT", "DEBIT", "ALL"})
+			)
 			@RequestParam(value = "transactionType", required = false) @Pattern(regexp = "CREDIT|DEBIT|ALL") String transactionType,
+
 			HttpServletRequest request,
 			HttpServletResponse response
 	) {
@@ -132,19 +441,20 @@ public class WalletAccountTransactionApiResource {
 					includeReversals, transactionType
 			);
 			String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
-			statementRequest.setSavingsId(Long.valueOf(savingsAccountId));
+			statementRequest.setSavingsId(savingsAccountId);
 			statementRequest.setCustomerId(customerId);
-            log.info("Date Range: {} to {}", statementRequest.getStartDate(), statementRequest.getEndDate());
+			log.info("Date Range: {} to {}", statementRequest.getStartDate(), statementRequest.getEndDate());
+			Customer customer = customerService.getCustomerById(customerId);
 
 			switch (format.toUpperCase()) {
 				case "CSV":
-					this.statementService.generateCsvStatement(statementRequest, response);
+					this.statementService.generateCsvStatement(statementRequest, response, customer);
 					break;
 				case "PDF":
-					this.statementService.generatePdfStatement(statementRequest, response);
+					this.statementService.generatePdfStatement(statementRequest, response, customer);
 					break;
 				case "EXCEL":
-					this.statementService.generateExcelStatement(statementRequest, response);
+					this.statementService.generateExcelStatement(statementRequest, response, customer);
 					break;
 				default:
 					throw new IllegalArgumentException("Unsupported format: " + format);
@@ -162,8 +472,53 @@ public class WalletAccountTransactionApiResource {
 		}
 	}
 
+	@Operation(
+			summary = "Retrieve specific transaction by ID",
+			description = "Retrieves detailed information for a specific transaction belonging to the authenticated customer's savings account."
+	)
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Transaction retrieved successfully",
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = SavingsAccountTransactionData.class)
+					)
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "Invalid transaction ID",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Authentication required",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Access denied - transaction does not belong to authenticated user",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "404",
+					description = "Transaction not found",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Internal server error",
+					content = @Content(mediaType = "application/json")
+			)
+	})
 	@GetMapping("/{transactionId}")
 	public ResponseEntity<SavingsAccountTransactionData> retrieveSavingsAccountTransactionById(
+			@Parameter(
+					name = "transactionId",
+					description = "Unique identifier of the transaction to retrieve",
+					required = true,
+					schema = @Schema(type = "integer", format = "int64", example = "12345")
+			)
 			@PathVariable(required = false) Long transactionId
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
@@ -172,17 +527,57 @@ public class WalletAccountTransactionApiResource {
 	}
 
 	@GetMapping("/receipt")
-	@Operation(summary = "Generate Transaction Receipt",
-			description = "Generate and export transaction receipt in various formats (PDF, PNG, JPEG)")
+	@Operation(
+			summary = "Generate transaction receipt",
+			description = "Generates and exports transaction receipt in various formats (PDF, PNG, JPEG) for a specific transaction. The receipt includes transaction details, customer information, and bank branding."
+	)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Receipt generated successfully"),
-			@ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-			@ApiResponse(responseCode = "404", description = "Transaction not found"),
-			@ApiResponse(responseCode = "500", description = "Internal server error")
+			@ApiResponse(
+					responseCode = "200",
+					description = "Receipt generated and downloaded successfully"
+			),
+			@ApiResponse(
+					responseCode = "400",
+					description = "Invalid request parameters or transaction reference not found",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Authentication required",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "403",
+					description = "Access denied - transaction does not belong to authenticated user",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "404",
+					description = "Transaction not found",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "500",
+					description = "Internal server error",
+					content = @Content(mediaType = "application/json")
+			)
 	})
 	public ResponseEntity<Void> generateTransactionReceipt(
+			@Parameter(
+					name = "format",
+					description = "Export format for the receipt",
+					schema = @Schema(type = "string", allowableValues = {"PDF", "PNG", "JPEG"}, defaultValue = "PDF")
+			)
 			@RequestParam(value = "format", required = false, defaultValue = "PDF") @Pattern(regexp = "PDF|PNG|JPEG") String format,
+
+			@Parameter(
+					name = "reference",
+					description = "Transaction reference number used to retrieve transaction details from cache",
+					required = true,
+					schema = @Schema(type = "string", example = "TXN123456789")
+			)
 			@RequestParam(value = "reference") String reference,
+
 			HttpServletRequest request,
 			HttpServletResponse response
 	) {

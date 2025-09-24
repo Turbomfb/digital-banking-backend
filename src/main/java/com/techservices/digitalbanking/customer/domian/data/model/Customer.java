@@ -27,7 +27,7 @@ public class Customer extends BaseEntity {
     private String accountId;
 
     @Column(name = "recurring_deposit_account_id")
-    private String recurringDepositAccountId;
+    private String flexAccountId;
 
     @Column(name = "password")
     private String password;
@@ -123,5 +123,9 @@ public class Customer extends BaseEntity {
 
     public boolean isIndividualUser() {
         return this.userType == UserType.RETAIL || this.userType == UserType.INDIVIDUAL;
+    }
+
+    public String getFullName() {
+        return this.firstname + " " + this.lastname;
     }
 }

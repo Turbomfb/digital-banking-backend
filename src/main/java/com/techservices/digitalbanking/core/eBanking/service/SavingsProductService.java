@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.techservices.digitalbanking.core.eBanking.api.SavingsAccountProductApiClient;
+import com.techservices.digitalbanking.core.eBanking.api.WalletAccountProductApiClient;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAccountProductRequest;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutSavingsAccountProductRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountProductsResponse;
@@ -22,7 +22,7 @@ import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_LOCALE;
 @RequiredArgsConstructor
 public class SavingsProductService {
 
-	private final SavingsAccountProductApiClient savingsAccountProductApiClient;
+	private final WalletAccountProductApiClient savingsAccountProductApiClient;
 
 	public PostSavingsAccountProductsResponse createSavingsAccountProduct(
 			PostSavingsAccountProductRequest postSavingsAccountProductRequest) {

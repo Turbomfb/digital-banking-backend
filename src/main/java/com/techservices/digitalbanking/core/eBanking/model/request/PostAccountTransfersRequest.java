@@ -18,21 +18,21 @@ public class PostAccountTransfersRequest {
 
 	private String dateFormat;
 
-	private Long fromAccountId;
+	private String fromAccountId;
 
 	private Long fromAccountType;
 
-	private Long fromClientId;
+	private String fromClientId;
 
 	private Long fromOfficeId;
 
 	private String locale;
 
-	private Long toAccountId;
+	private String toAccountId;
 
 	private Long toAccountType;
 
-	private Long toClientId;
+	private String toClientId;
 
 	private Long toOfficeId;
 

@@ -21,7 +21,7 @@ public class FixedDepositApplicationRequest {
 
 	private Long depositPeriodFrequencyId;
 
-	private Long productId;
+	private String productId;
 
 	private String accountNo;
 	private String allocationName;

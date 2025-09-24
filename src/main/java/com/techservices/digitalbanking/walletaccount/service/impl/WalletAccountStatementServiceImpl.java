@@ -1,12 +1,13 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.walletaccount.service.impl;
 
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PaymentDetailData;
 import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.service.StatementService;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountStatementService;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
@@ -26,6 +27,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.techservices.digitalbanking.core.util.AppUtil.DEFAULT_CURRENCY;
+
 @Service
 @AllArgsConstructor
 public class WalletAccountStatementServiceImpl implements WalletAccountStatementService {
@@ -34,9 +37,9 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
     private final WalletAccountTransactionService walletAccountTransactionService;
 
     @Override
-    public void generateCsvStatement(StatementRequest request, HttpServletResponse response) throws IOException {
+    public void generateCsvStatement(StatementRequest request, HttpServletResponse response, Customer customer) throws IOException {
         // Retrieve account details
-        GetSavingsAccountsAccountIdResponse accountData = accountService.retrieveSavingsAccount(request.getSavingsId(), false);
+        AccountDto accountData = accountService.retrieveSavingsAccount(request.getSavingsId());
 
         // Retrieve transactions
         FineractPageResponse<SavingsAccountTransactionData> transactionResult =
@@ -66,7 +69,7 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
 
         // Set response headers
         String filename = String.format("statement_%s_%s_%s.csv",
-                accountData.getAccountNo(),
+                accountData.getAccountNumber(),
                 request.getStartDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 request.getEndDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
 
@@ -79,12 +82,12 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
         try (PrintWriter writer = response.getWriter()) {
             // Write header with account information
             writer.println("# ACCOUNT STATEMENT");
-            writer.println("# Account Number: " + accountData.getAccountNo());
-            writer.println("# Account Holder: " + accountData.getClientName());
+            writer.println("# Account Number: " + accountData.getAccountNumber());
+            writer.println("# Account Holder: " + customer.getFullName());
             writer.println("# Statement Period: " + request.getStartDate() + " to " + request.getEndDate());
             writer.println("# Generated On: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            writer.println("# Currency: " + (accountData.getCurrency() != null ? accountData.getCurrency().getCode() : ""));
-            writer.println("# Opening Balance: " + getOpeningBalance(request.getSavingsId(), request.getStartDate()));
+            writer.println("# Currency: " + DEFAULT_CURRENCY);
+            writer.println("# Opening Balance: " + getOpeningBalance(customer.getId(), request.getStartDate()));
             writer.println("# Closing Balance: " + accountData.getAccountBalance());
             writer.println("#");
 
@@ -120,7 +123,7 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
     }
 
     @Override
-    public void generatePdfStatement(StatementRequest request, HttpServletResponse response) throws IOException {
+    public void generatePdfStatement(StatementRequest request, HttpServletResponse response, Customer customer) throws IOException {
         // Implementation for PDF generation using iText or similar library
         // This would create a professional PDF statement with bank letterhead, formatting, etc.
         response.setContentType("application/pdf");
@@ -128,19 +131,19 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
                 "attachment; filename=\"statement_" + request.getSavingsId() + ".pdf\"");
 
         // Use StatementService to generate PDF
-        byte[] pdfContent = this.statementService.generatePdfStatement(request);
+        byte[] pdfContent = this.statementService.generatePdfStatement(request, customer);
         response.getOutputStream().write(pdfContent);
     }
 
     @Override
-    public void generateExcelStatement(StatementRequest request, HttpServletResponse response) throws IOException {
+    public void generateExcelStatement(StatementRequest request, HttpServletResponse response, Customer customer) throws IOException {
         // Implementation for Excel generation using Apache POI
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"statement_" + request.getSavingsId() + ".xlsx\"");
 
         // Use StatementService to generate Excel
-        byte[] excelContent = this.statementService.generateExcelStatement(request);
+        byte[] excelContent = this.statementService.generateExcelStatement(request, customer);
         response.getOutputStream().write(excelContent);
     }
 

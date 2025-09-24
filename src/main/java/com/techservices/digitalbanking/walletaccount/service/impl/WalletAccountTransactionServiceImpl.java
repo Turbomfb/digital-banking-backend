@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.walletaccount.service.impl;
 
 import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
@@ -73,7 +74,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			Long customerId, String startDate, String endDate, String dateFormat, Long productId,
 			Long limit, @Valid Long offset, @Valid String transactionType) {
 		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
-		return accountTransactionService.retrieveSavingsAccountTransactions(Long.valueOf(savingsAccountId), startDate, endDate,
+		return accountTransactionService.retrieveSavingsAccountTransactions(savingsAccountId, startDate, endDate,
 				dateFormat, limit, offset, transactionType);
 	}
 
@@ -85,8 +86,8 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	}
 
 	@Override
-	public BigDecimal getBalanceAsOfDate(Long savingsId, LocalDate localDate) {
-		return this.retrieveSavingsAccountTransactions(savingsId, localDate.toString(), null, "yyyy-MM-dd", null, null, null, null)
+	public BigDecimal getBalanceAsOfDate(Long customerId, LocalDate localDate) {
+		return this.retrieveSavingsAccountTransactions(customerId, localDate.toString(), null, "yyyy-MM-dd", null, null, null, null)
 				.getPageItems()
 				.stream()
 				.filter(transaction -> !transaction.getDate().isAfter(localDate))
@@ -169,7 +170,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 							paymentOrderEntity.getReference(), "Wallet Account Funding", null);
 					paymentOrderEntity.setStatus(PaymentOrderStatus.COMPLETED);
 					paymentOrderRepository.save(paymentOrderEntity);
-					GetSavingsAccountsAccountIdResponse accountResponse = walletAccountService.retrieveSavingsAccountById(customer.getId());
+					AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(customer.getId());
 					BigDecimal balance = accountResponse.getAccountBalance();
 					balance = balance.setScale(2, RoundingMode.DOWN);
 					DecimalFormat df = new DecimalFormat("#,##0.00");
@@ -203,10 +204,10 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 		}
 		log.info("Validating customer account for savings transaction: {}", customer);
 
-		GetSavingsAccountsAccountIdResponse savingsAccount = accountService.retrieveSavingsAccount(Long.valueOf(request.getSavingsId()), true);
-		if (savingsAccount.getSummary().getAvailableBalance().compareTo(request.getAmount()) < 0) {
+		AccountDto savingsAccount = accountService.retrieveSavingsAccount(request.getSavingsId());
+		if (savingsAccount.getAccountBalance().compareTo(request.getAmount()) < 0) {
 			log.error("Insufficient funds: Available balance {} is less than requested amount {}",
-					savingsAccount.getSummary().getAvailableBalance(), request.getAmount());
+					savingsAccount.getAccountBalance(), request.getAmount());
 			throw new AbstractPlatformDomainRuleException("error.msg.insufficient.funds",
 					"Insufficient funds. Available balance is less than the requested amount.");
 		}
