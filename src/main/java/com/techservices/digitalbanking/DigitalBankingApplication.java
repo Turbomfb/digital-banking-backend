@@ -42,6 +42,6 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
-//        customerRepository.deleteAll();
+        customerRepository.deleteAll();
     }
 }
