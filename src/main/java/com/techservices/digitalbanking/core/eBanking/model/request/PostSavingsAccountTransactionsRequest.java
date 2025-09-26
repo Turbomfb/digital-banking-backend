@@ -17,43 +17,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostSavingsAccountTransactionsRequest {
 
-	private String dateFormat;
-
-	private String lienAllowed;
-
-	private String locale;
-
-	private String reasonForBlock;
-
 	private BigDecimal transactionAmount;
-
-	private String transactionDate;
-
 	private String transactionReference;
-
-	private String transactionUniqueId;
-
-	private Long paymentTypeId;
-
-	private String beneficiaryAccountNumber;
-
-	private String beneficiaryBankCode;
-
-	private String toVirtualAccountId;
-
-	private String note;
-
-	private String accountNumber;
-
-	private String receiptNumber;
-
-	private Long glAccountId;
-
-	@JsonProperty("isInternal")
-	private Boolean isInternal;
-
-	private Map<String, Object> additionalInformation;
-
-	@Valid
-	private List<@Valid PostClientsDatatable> datatables;
+	private String narration;
 }

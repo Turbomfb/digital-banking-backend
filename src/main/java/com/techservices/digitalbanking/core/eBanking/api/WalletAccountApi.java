@@ -43,7 +43,7 @@ public interface WalletAccountApi {
 			@RequestParam(value = "accountNo", required = false) @Valid String accountNo);
 
 	@PostMapping(value = "/walletaccounts/{walletAccountNo}/transactions")
-	PostSavingsAccountTransactionsResponse handleTransactionCommand(@PathVariable("walletAccountNo") Long walletAccountNo,
+	PostSavingsAccountTransactionsResponse handleTransactionCommand(@PathVariable("walletAccountNo") String walletAccountNo,
 			@Valid @RequestBody PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest,
 			@Valid @RequestParam(value = "command", required = false) String command);
 

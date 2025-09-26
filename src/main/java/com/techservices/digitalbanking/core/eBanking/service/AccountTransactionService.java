@@ -39,53 +39,30 @@ import static com.techservices.digitalbanking.core.util.TransactionUtil.DEPOSIT;
 public class AccountTransactionService {
     private final WalletAccountApiClient walletAccountApiClient;
 	private final TransactionApiClient transactionApiClient;
-	private final FineractProperty fineractProperty;
 	public static final String SAVINGS_ACCOUNT_TRANSACTION_DATATABLE_NAME = "dt_additional_transaction_information";
 
 	private PostSavingsAccountTransactionsResponse getPostSavingsAccountTransactionsResponse(String command,
-			Long savingsAccountId, PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest) {
+			String savingsAccountId, PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest) {
 
 		return walletAccountApiClient.handleTransactionCommand(savingsAccountId, postSavingsAccountTransactionsRequest,
 				command);
 	}
 
-	public PostSavingsAccountTransactionsResponse handleDeposit(Long savingsAccountId, BigDecimal transactionAmount,
-			String transactionReference, String narration, TransactionMetadata transactionMetadata) {
+	public PostSavingsAccountTransactionsResponse handleDeposit(String savingsAccountId, BigDecimal transactionAmount,
+			String transactionReference, String narration) {
 		PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest = getSavingsAccountTransactionRequest(
-				transactionAmount, narration, transactionMetadata, transactionReference);
+				transactionAmount, narration, transactionReference);
 
 		return getPostSavingsAccountTransactionsResponse(DEPOSIT, savingsAccountId,
 				postSavingsAccountTransactionsRequest);
 	}
 
 	private PostSavingsAccountTransactionsRequest getSavingsAccountTransactionRequest(BigDecimal transactionAmount,
-			String narration, TransactionMetadata transactionMetadata, String transactionReference) {
+			String narration, String transactionReference) {
 		PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest = new PostSavingsAccountTransactionsRequest();
 		postSavingsAccountTransactionsRequest.setTransactionAmount(transactionAmount);
-		postSavingsAccountTransactionsRequest.setNote(narration);
-		postSavingsAccountTransactionsRequest.setTransactionDate(DateUtil.getCurrentDate());
-		postSavingsAccountTransactionsRequest.setDateFormat(DateUtil.getDefaultDateFormat());
-		postSavingsAccountTransactionsRequest.setLocale(DateUtil.DEFAULT_LOCALE);
-		postSavingsAccountTransactionsRequest.setPaymentTypeId(fineractProperty.getPaymentTypeId());
-
-		if (transactionMetadata == null && transactionReference != null) {
-			transactionMetadata = new TransactionMetadata();
-			transactionMetadata.setTransactionReference(transactionReference);
-			transactionMetadata.setAmount(transactionAmount);
-			transactionMetadata.setCreditAccountName("");
-			transactionMetadata.setDebitAccountNumber("");
-			transactionMetadata.setCreditAccountNumber("");
-			transactionMetadata.setDebitAccountName("");
-			transactionMetadata.setDebitBvn("");
-		} else if (transactionMetadata != null) {
-			transactionMetadata.setTransactionReference(transactionMetadata.getTransactionReference() == null
-					? transactionReference
-					: transactionMetadata.getTransactionReference());
-			transactionMetadata.setAmount(
-					transactionMetadata.getAmount() == null ? transactionAmount : transactionMetadata.getAmount());
-			PostClientsDatatable postClientsDatatable = getTransactionMetadata(transactionAmount, transactionMetadata);
-			postSavingsAccountTransactionsRequest.setDatatables(Collections.singletonList(postClientsDatatable));
-		}
+		postSavingsAccountTransactionsRequest.setNarration(narration);
+		postSavingsAccountTransactionsRequest.setTransactionReference(transactionReference);
 		return postSavingsAccountTransactionsRequest;
 	}
 

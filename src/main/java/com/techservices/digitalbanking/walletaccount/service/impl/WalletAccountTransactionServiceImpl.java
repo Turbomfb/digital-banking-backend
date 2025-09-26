@@ -166,8 +166,8 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			if (StringUtils.equalsIgnoreCase(PaymentOrderStatus.COMPLETED.name(), request.getStatus()) || StringUtils.equalsIgnoreCase("Successful", request.getStatus())) {
 				Customer customer = customerService.getCustomerById(paymentOrderEntity.getCustomerId());
 				try {
-					accountTransactionService.handleDeposit(Long.valueOf(customer.getAccountId()), paymentOrderEntity.getAmount(),
-							paymentOrderEntity.getReference(), "Wallet Account Funding", null);
+					accountTransactionService.handleDeposit(customer.getAccountId(), paymentOrderEntity.getAmount(),
+							paymentOrderEntity.getReference(), "Deposit | "+paymentOrderEntity.getReference());
 					paymentOrderEntity.setStatus(PaymentOrderStatus.COMPLETED);
 					paymentOrderRepository.save(paymentOrderEntity);
 					AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(customer.getId());
@@ -177,7 +177,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 					String formattedBalance = df.format(balance);
 					String transactionMessage = notificationUtil.getTransactionNotificationTemplate("CREDIT", paymentOrderEntity.getAmount().toString(), formattedBalance, paymentOrderEntity.getReference());
 					notificationService.notifyUser(customer, transactionMessage, AlertType.TRANSACTION);
-					return new GenericApiResponse("success", "success");
+					return new GenericApiResponse("Inbound transaction successfully processed", "success");
 				} catch (Exception e) {
 					log.error("Error processing deposit for payment order {}: {}", paymentOrderEntity.getReference(), e.getMessage());
 					throw new ValidationException("error.msg.payment.order.deposit.failed",
