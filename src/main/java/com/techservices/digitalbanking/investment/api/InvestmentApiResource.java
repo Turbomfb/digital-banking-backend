@@ -5,7 +5,8 @@ import com.techservices.digitalbanking.core.configuration.security.SpringSecurit
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.core.domain.dto.ProductDto;
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentCalculatorRequest;
@@ -21,7 +22,6 @@ import com.techservices.digitalbanking.investment.service.InvestmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -42,8 +42,8 @@ public class InvestmentApiResource {
 	private final InvestmentProductService investmentProductService;
 
 	@Operation(
-			summary = "Create Investment Application",
-			description = "Submits a new investment application for the authenticated customer. Supports various investment types including fixed deposits, flex savings, and other investment products. The application will be processed according to the selected investment type and product terms."
+			summary = "Create a Lock Investment Application",
+			description = "Submits a new lock investment application for the authenticated customer. Supports various investment types including fixed deposits, flex savings, and other investment products. The application will be processed according to the selected investment type and product terms."
 	)
 	@ApiResponses(value = {
 			@ApiResponse(
@@ -80,17 +80,10 @@ public class InvestmentApiResource {
 							schema = @Schema(implementation = InvestmentApplicationRequest.class)
 					)
 			)
-			@RequestBody InvestmentApplicationRequest request,
-
-			@Parameter(
-					description = "Type of investment product to apply for",
-					example = "FIXED_DEPOSIT",
-					schema = @Schema(implementation = InvestmentType.class)
-			)
-			@RequestParam(required = false) InvestmentType investmentType
+			@RequestBody InvestmentApplicationRequest request
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		InvestmentApplicationResponse investment = investmentService.submitApplication(customerId, investmentType, request);
+		InvestmentApplicationResponse investment = investmentService.submitApplication(customerId, request);
 		return ResponseEntity.ok(investment);
 	}
 
@@ -154,8 +147,8 @@ public class InvestmentApiResource {
 	}
 
 	@Operation(
-			summary = "Fund Investment Account",
-			description = "Adds funds to an existing investment account. This operation increases the principal amount and may affect interest calculations based on the investment type and terms."
+			summary = "Fund Lock Investment Account",
+			description = "Adds funds to an existing lock investment account. This operation increases the principal amount and may affect interest calculations based on the investment type and terms."
 	)
 	@ApiResponses(value = {
 			@ApiResponse(
@@ -281,7 +274,7 @@ public class InvestmentApiResource {
 			)
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@PostMapping("/{investmentId}/withdraw-flex")
+	@PostMapping("/me/withdraw-flex")
 	public ResponseEntity<BaseAppResponse> withdrawFlexInvestment(
 			@Parameter(
 					description = "Withdrawal request details including amount and destination account",
@@ -289,17 +282,10 @@ public class InvestmentApiResource {
 							schema = @Schema(implementation = InvestmentUpdateRequest.class)
 					)
 			)
-			@RequestBody(required = false) InvestmentUpdateRequest request,
-
-			@Parameter(
-					description = "Unique identifier of the flex investment to withdraw from",
-					required = true,
-					example = "FLEX-2024-001"
-			)
-			@PathVariable String investmentId
+			@RequestBody(required = false) InvestmentUpdateRequest request
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		BaseAppResponse investment = investmentService.withdrawFlexInvestment(customerId, request, investmentId);
+		BaseAppResponse investment = investmentService.withdrawFlexInvestment(customerId, request);
 		return ResponseEntity.ok(investment);
 	}
 
@@ -364,7 +350,7 @@ public class InvestmentApiResource {
 			)
 	})
 	@SecurityRequirement(name = "bearerAuth")
-	@GetMapping()
+	@GetMapping
 	public ResponseEntity<BasePageResponse<AccountDto>> retrieveAllCustomerInvestments(
 			@Parameter(
 					description = "Filter investments by type",
@@ -380,7 +366,9 @@ public class InvestmentApiResource {
 		BasePageResponse<AccountDto> investment = investmentService.retrieveAllCustomerInvestments(customerId, investmentType);
 		investment.setData(
 				investment.getData().stream()
-						.sorted(Comparator.comparing(AccountDto::getId).reversed())
+						.sorted(Comparator.comparing(AccountDto::getId,
+										Comparator.nullsLast(Comparator.naturalOrder()))
+								.reversed())
 						.toList()
 		);
 		return ResponseEntity.ok(investment);
@@ -418,7 +406,7 @@ public class InvestmentApiResource {
 					required = true,
 					example = "12345"
 			)
-			@PathVariable Long id,
+			@PathVariable String id,
 
 			@Parameter(
 					description = "Type of investment to retrieve",
@@ -450,7 +438,7 @@ public class InvestmentApiResource {
 			)
 	})
 	@GetMapping("products/current")
-	public ResponseEntity<Object> retrieveCurrentInvestmentProduct(
+	public ResponseEntity<ProductDto> retrieveCurrentInvestmentProduct(
 			@Parameter(
 					description = "Type of investment product to retrieve information for",
 					example = "FLEX",
@@ -461,7 +449,7 @@ public class InvestmentApiResource {
 			)
 			@RequestParam(required = false, defaultValue = "FLEX") String investmentType
 	) {
-		Object product = investmentProductService.retrieveCurrentInvestmentProduct(investmentType);
+		ProductDto product = investmentProductService.retrieveCurrentInvestmentProduct(investmentType);
 		return ResponseEntity.ok(product);
 	}
 
@@ -490,7 +478,7 @@ public class InvestmentApiResource {
 	})
 	@SecurityRequirement(name = "bearerAuth")
 	@GetMapping("{id}/transactions")
-	public ResponseEntity<Object> retrieveInvestmentTransactionsById(
+	public ResponseEntity<BasePageResponse<TransactionDto>> retrieveInvestmentTransactionsById(
 			@Parameter(
 					description = "Unique identifier of the investment",
 					required = true,
@@ -522,7 +510,7 @@ public class InvestmentApiResource {
 			@RequestParam(required = false) String investmentType
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		Object investment = investmentService.retrieveInvestmentTransactionsById(id, investmentType, customerId);
+		BasePageResponse<TransactionDto> investment = investmentService.retrieveInvestmentTransactionsById(id, investmentType, customerId);
 		return ResponseEntity.ok(investment);
 	}
 }

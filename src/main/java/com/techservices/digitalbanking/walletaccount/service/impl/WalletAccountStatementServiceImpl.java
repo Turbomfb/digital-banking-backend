@@ -2,7 +2,8 @@
 package com.techservices.digitalbanking.walletaccount.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
-import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.core.eBanking.model.response.PaymentDetailData;
 import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
@@ -42,28 +43,19 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
         AccountDto accountData = accountService.retrieveSavingsAccount(request.getSavingsId());
 
         // Retrieve transactions
-        FineractPageResponse<SavingsAccountTransactionData> transactionResult =
+        BasePageResponse<TransactionDto> transactionResult =
                 walletAccountTransactionService.retrieveSavingsAccountTransactions(
                         request.getCustomerId(),
                         request.getStartDate().toString(),
                         request.getEndDate().toString(),
-                        "yyyy-MM-dd",
-                        request.getProductId(),
-                        request.getLimit(),
-                        request.getOffset(), null);
+                        request.getLimit());
 
-        List<SavingsAccountTransactionData> transactions = transactionResult.getPageItems();
+        List<TransactionDto> transactions = transactionResult.getData();
 
         // Filter transactions if needed
         if (request.getTransactionType() != null && !request.getTransactionType().equals("ALL")) {
             transactions = transactions.stream()
-                    .filter(t -> request.getTransactionType().equals(t.getActualTransactionType()))
-                    .collect(Collectors.toList());
-        }
-
-        if (!request.getIncludeReversals()) {
-            transactions = transactions.stream()
-                    .filter(t -> !t.isReversed())
+                    .filter(t -> request.getTransactionType().equals(t.getTransactionType()))
                     .collect(Collectors.toList());
         }
 
@@ -95,22 +87,23 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
             writer.println("Transaction Date,Value Date,Transaction ID,Reference Number,Description,Transaction Type,Debit Amount,Credit Amount,Running Balance,Status");
 
             // Write transactions
-            for (SavingsAccountTransactionData transaction : transactions) {
-                String transactionType = transaction.getActualTransactionType();
+            for (TransactionDto transaction : transactions) {
+                String transactionType = transaction.getTransactionType();
                 BigDecimal debitAmount = "DEBIT".equals(transactionType) ? transaction.getAmount() : BigDecimal.ZERO;
                 BigDecimal creditAmount = "CREDIT".equals(transactionType) ? transaction.getAmount() : BigDecimal.ZERO;
 
-                writer.printf("%s,%s,%d,%s,\"%s\",%s,%s,%s,%s,%s%n",
-                        formatDate(transaction.getSubmittedOnDate()),
-                        formatDate(transaction.getDate()),
+                writer.printf("%s,%s,%s,%s,\"%s\",%s,%s,%s,%s,%s%n",
+                        formatDate(LocalDate.from(transaction.getDate())),
+                        formatDate(LocalDate.from(transaction.getDate())),
                         transaction.getId(),
-                        StringUtils.defaultString(transaction.getRefNo(), ""),
+                        StringUtils.defaultString(transaction.getReference(), ""),
                         escapeForCsv(getTransactionDescription(transaction)),
                         transactionType,
                         formatAmount(debitAmount),
                         formatAmount(creditAmount),
                         formatAmount(transaction.getRunningBalance()),
-                        transaction.isReversed() ? "REVERSED" : "PROCESSED");
+                        "PROCESSED"
+                );
             }
 
             // Summary section
@@ -147,25 +140,16 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
         response.getOutputStream().write(excelContent);
     }
 
-    private String getTransactionDescription(SavingsAccountTransactionData transaction) {
+    private String getTransactionDescription(TransactionDto transaction) {
         StringBuilder description = new StringBuilder();
 
         if (StringUtils.isNotBlank(transaction.getNarration())) {
             description.append(transaction.getNarration());
-        } else if (StringUtils.isNotBlank(transaction.getNote())) {
-            description.append(transaction.getNote());
+        } else if (StringUtils.isNotBlank(transaction.getNarration())) {
+            description.append(transaction.getNarration());
         } else if (transaction.getTransactionType() != null) {
-            description.append(transaction.getActualTransactionType());
+            description.append(transaction.getTransactionType());
         }
-
-        // Add payment details if available
-        if (transaction.getPaymentDetailData() != null) {
-            PaymentDetailData paymentData = transaction.getPaymentDetailData();
-            if (StringUtils.isNotBlank(paymentData.getReceiptNumber())) {
-                description.append(" - Receipt: ").append(paymentData.getReceiptNumber());
-            }
-        }
-
         return description.toString();
     }
 
@@ -188,17 +172,17 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
         return walletAccountTransactionService.getBalanceAsOfDate(savingsId, startDate.minusDays(1));
     }
 
-    private BigDecimal calculateTotalDebits(List<SavingsAccountTransactionData> transactions) {
+    private BigDecimal calculateTotalDebits(List<TransactionDto> transactions) {
         return transactions.stream()
-                .filter(t -> "DEBIT".equals(t.getActualTransactionType()))
-                .map(SavingsAccountTransactionData::getAmount)
+                .filter(t -> "DEBIT".equals(t.getTransactionType()))
+                .map(TransactionDto::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private BigDecimal calculateTotalCredits(List<SavingsAccountTransactionData> transactions) {
+    private BigDecimal calculateTotalCredits(List<TransactionDto> transactions) {
         return transactions.stream()
-                .filter(t -> "CREDIT".equals(t.getActualTransactionType()))
-                .map(SavingsAccountTransactionData::getAmount)
+                .filter(t -> "CREDIT".equals(t.getTransactionType()))
+                .map(TransactionDto::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

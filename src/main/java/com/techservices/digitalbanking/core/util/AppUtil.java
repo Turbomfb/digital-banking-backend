@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.util;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.StringJoiner;
 
 public class AppUtil {
@@ -95,4 +96,10 @@ public class AppUtil {
 	public static boolean isStaticVirtualAccountDynamic(String accountNumber) {
 		return accountNumber.startsWith("1");
 	}
+
+	public static BigDecimal safeAdd(BigDecimal a, BigDecimal b) {
+		return (a == null ? BigDecimal.ZERO : a)
+				.add(b == null ? BigDecimal.ZERO : b);
+	}
+
 }

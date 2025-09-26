@@ -1,17 +1,22 @@
-/* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
+import lombok.Setter;
 
-import lombok.Data;
-
-@Data
+@Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PostAccountTransfersResponse {
+public class FlexInvestmentCreationResponse {
+    private Long customerId;
 
-	private String reference;
+    private Long officeId;
 
-	private String message;
+    private Long resourceId;
+
+    private Long savingsId;
+
+    private String accountNumber;
 }

@@ -22,7 +22,6 @@ public class AccountDto {
     private String accountNumber;
     private String customerId;
     private AccountType accountType;
-    private BigDecimal balance = BigDecimal.ZERO;
     private String currency;
     private String currencyCode;
     private LocalDateTime createdAt;
@@ -35,6 +34,7 @@ public class AccountDto {
     private BigDecimal accountBalance = BigDecimal.ZERO;
     private Double annualInterestRate;
     private BigDecimal expectedInterest = BigDecimal.ZERO;
+    private BigDecimal interestEarned = BigDecimal.ZERO;
     private Long duration;
     private String maturityDate;
     private EnumOptionData depositType;

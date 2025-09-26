@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.eBanking.model.request.WalletAccountCreationRequest;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -46,37 +47,13 @@ public class AccountService {
 		return walletAccountApiClient.retrieveAll(null, null, offset, limit, null, null, productId, null);
 	}
 
-	public PostSavingsAccountsResponse createSavingsAccount(String clientId, Long productId, String accountNumber,
-															String accountName, String externalId, PostClientsDatatable postClientsDatatable, boolean active, Long savingsAccountNominalAnnualInterestRate, String gender, Long kycTierCode) {
-		PostSavingsAccountsRequest postSavingsAccountsRequest = new PostSavingsAccountsRequest();
-		postSavingsAccountsRequest.setClientId(clientId);
-		postSavingsAccountsRequest.setProductId(productId);
-		postSavingsAccountsRequest.setActive(active);
-		postSavingsAccountsRequest.setLocale("en");
-		postSavingsAccountsRequest.setGender(gender);
-		postSavingsAccountsRequest.setKycTier(kycTierCode);
-		postSavingsAccountsRequest.setAccountName(accountName);
-		postSavingsAccountsRequest.setNominalAnnualInterestRate(savingsAccountNominalAnnualInterestRate);
-		postSavingsAccountsRequest.setDateFormat(DateUtil.getDefaultDateFormat());
+	public PostSavingsAccountsResponse createSavingsAccount(String externalId, String gender, Long kycTierCode) {
+		WalletAccountCreationRequest walletAccountCreationRequest = new WalletAccountCreationRequest();
+		walletAccountCreationRequest.setExternalId(externalId);
+		walletAccountCreationRequest.setGender(gender);
+		walletAccountCreationRequest.setKycTier(kycTierCode);
 
-		postSavingsAccountsRequest.setSubmittedOnDate(DateUtil.getCurrentDate());
-
-		if (StringUtils.isNotBlank(accountNumber)) {
-			postSavingsAccountsRequest.setAccountNo(accountNumber);
-		}
-
-		if (StringUtils.isNotBlank(externalId)) {
-			postSavingsAccountsRequest.setExternalId(externalId);
-		}
-
-		if (postClientsDatatable != null) {
-			List<PostClientsDatatable> datatables = StringUtils.isEmpty(postClientsDatatable.getRegisteredTableName())
-					? Collections.emptyList()
-					: List.of(postClientsDatatable);
-			postSavingsAccountsRequest.setDatatables(datatables);
-		}
-
-		return walletAccountApiClient.submitApplication(postSavingsAccountsRequest);
+		return walletAccountApiClient.submitApplication(walletAccountCreationRequest);
 	}
 
 	public PostSavingsAccountsAccountIdResponse approveSavingsAccount(Long savingsAccountId) {

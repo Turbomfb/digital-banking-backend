@@ -13,18 +13,14 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FixedDepositApplicationRequest {
 
-	private Long clientId;
+	private String externalId;
 
 	private BigDecimal depositAmount;
 
 	private Long depositPeriod;
 
-	private Long depositPeriodFrequencyId;
-
-	private String productId;
-
 	private String accountNo;
 	private String allocationName;
 
-	private Long linkAccountId;
+	private String walletAccountNumber;
 }

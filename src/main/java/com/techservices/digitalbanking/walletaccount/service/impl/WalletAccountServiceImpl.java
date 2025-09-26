@@ -32,9 +32,7 @@ public class WalletAccountServiceImpl implements WalletAccountService {
 	@Override
 	public PostSavingsAccountsResponse createSavingsAccount(CreateSavingsAccountRequest createSavingsAccountRequest) {
 		return accountService.createSavingsAccount(createSavingsAccountRequest.getClientId(),
-				createSavingsAccountRequest.getProductId(), createSavingsAccountRequest.getAccountNumber(),
-				createSavingsAccountRequest.getAccountName(), createSavingsAccountRequest.getExternalId(), null,
-				createSavingsAccountRequest.isActive(), null, null, null);
+				null, null);
 	}
 
 	@Override

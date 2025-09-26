@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.investment.api;
 
 import java.util.List;
 
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,7 +67,7 @@ public class InvestmentTransactionApiResource {
 			)
 	})
 	@GetMapping
-	public ResponseEntity<List<GetRecurringDepositTransactionResponse>> retrieveAllInvestmentTransactions(
+	public ResponseEntity<List<TransactionDto>> retrieveAllInvestmentTransactions(
 			@Parameter(
 					name = "investmentId",
 					description = "Unique identifier of the investment account",
@@ -74,7 +75,7 @@ public class InvestmentTransactionApiResource {
 					schema = @Schema(type = "string", format = "uuid")
 			)
 			@PathVariable String investmentId) {
-		List<GetRecurringDepositTransactionResponse> investmentTransactions = investmentTransactionService
+		List<TransactionDto> investmentTransactions = investmentTransactionService
 				.retrieveAllInvestmentTransactions(investmentId);
 		return ResponseEntity.ok(investmentTransactions);
 	}

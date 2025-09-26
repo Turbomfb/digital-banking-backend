@@ -1,8 +1,10 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.service;
 
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.ProductDto;
 import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.eBanking.api.LockDepositAccountsApiClient;
@@ -24,35 +26,20 @@ import static com.techservices.digitalbanking.core.util.DateUtil.getCurrentDate;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LockDepositService {
+public class LockDepositAccountService {
 	private final LockDepositAccountsApiClient lockDepositAccountsApiClient;
 
-	public PostSavingsAccountsResponse submitApplication(FixedDepositApplicationRequest fixedDepositApplicationRequest,
-			@Valid boolean activate) {
-		GetFixedDepositProductsProductIdResponse product = lockDepositAccountsApiClient.retrieveAProduct(fixedDepositApplicationRequest.getProductId());
-		PostFixedDepositAccountsRequest postFixedDepositAccountsRequest = new PostFixedDepositAccountsRequest();
-		postFixedDepositAccountsRequest.setDepositAmount(fixedDepositApplicationRequest.getDepositAmount());
-		postFixedDepositAccountsRequest.setDepositPeriod(fixedDepositApplicationRequest.getDepositPeriod());
-		postFixedDepositAccountsRequest.setDepositPeriodFrequencyId(product.getMinDepositTermType().getId());
-		postFixedDepositAccountsRequest.setClientId(fixedDepositApplicationRequest.getClientId());
-		postFixedDepositAccountsRequest.setProductId(fixedDepositApplicationRequest.getProductId());
-		postFixedDepositAccountsRequest.setLocale(DEFAULT_LOCALE);
-		postFixedDepositAccountsRequest.setDateFormat(DEFAULT_DATE_FORMAT);
-		postFixedDepositAccountsRequest.setSubmittedOnDate(getCurrentDate());
-		postFixedDepositAccountsRequest.setAccountNo(fixedDepositApplicationRequest.getAccountNo());
-		postFixedDepositAccountsRequest.setAllocationName(fixedDepositApplicationRequest.getAllocationName());
-		postFixedDepositAccountsRequest.setLinkAccountId(fixedDepositApplicationRequest.getLinkAccountId());
-		PostSavingsAccountsResponse postSavingsAccountsResponse = lockDepositAccountsApiClient
-				.submitApplication(postFixedDepositAccountsRequest);
-		if (activate) {
-			processInvestmentApproval(new PostFixedDepositAccountsAccountIdRequest());
-			processInvestmentActivation(new PostFixedDepositAccountsAccountIdRequest());
-		}
-		return postSavingsAccountsResponse;
+	public InvestmentApplicationResponse submitApplication(FixedDepositApplicationRequest fixedDepositApplicationRequest) {
+		return lockDepositAccountsApiClient
+				.submitApplication(fixedDepositApplicationRequest);
 	}
 
-	public ProductDto retrieveALockProduct() {
+	public ProductDto retrieveLockProductDetails() {
 		return lockDepositAccountsApiClient.retrieveALockProduct();
+	}
+
+	public List<AccountDto> retrieveAllLockInvestmentForAnAccount(String linkedAccountNumber) {
+		return lockDepositAccountsApiClient.retrieveAllLockInvestmentForAnAccount(linkedAccountNumber);
 	}
 
 	private void processInvestmentActivation(

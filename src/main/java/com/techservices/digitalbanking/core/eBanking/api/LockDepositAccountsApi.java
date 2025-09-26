@@ -1,7 +1,10 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.api;
 
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.ProductDto;
+import com.techservices.digitalbanking.investment.domain.request.FixedDepositApplicationRequest;
+import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.techservices.digitalbanking.core.eBanking.model.request.PostFixedDepositAccountsAccountIdRequest;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostFixedDepositAccountsRequest;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutFixedDepositAccountsAccountIdRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.*;
 
@@ -26,7 +28,7 @@ import java.util.List;
 public interface LockDepositAccountsApi {
 
 	/**
-	 * GET /fixeddepositaccounts/{accountId}/template
+	 * GET /lockaccounts/{accountId}/template
 	 *
 	 * @param accountId
 	 *            accountId (required)
@@ -34,14 +36,14 @@ public interface LockDepositAccountsApi {
 	 *            command (optional)
 	 * @return default response (status code 200)
 	 */
-	@GetMapping(value = "/fixeddepositaccounts/{accountId}/template")
+	@GetMapping(value = "/lockaccounts/{accountId}/template")
 	String accountClosureTemplate(
 			@Parameter(name = "accountId", description = "accountId", required = true, in = ParameterIn.PATH) @PathVariable("accountId") Long accountId,
 			@Parameter(name = "command", description = "command", in = ParameterIn.QUERY) @Valid @RequestParam(value = "command", required = false) String command);
 
 	/**
 	 * POST
-	 * /fixeddepositaccounts/{fixedDepositAccountId}/transactions/{transactionId}
+	 * /lockaccounts/{fixedDepositAccountId}/transactions/{transactionId}
 	 *
 	 * @param fixedDepositAccountId
 	 *            (required)
@@ -53,7 +55,7 @@ public interface LockDepositAccountsApi {
 	 *            (optional)
 	 * @return default response (status code 200)
 	 */
-	@PostMapping(value = "/fixeddepositaccounts/{fixedDepositAccountId}/transactions/{transactionId}")
+	@PostMapping(value = "/lockaccounts/{fixedDepositAccountId}/transactions/{transactionId}")
 	String adjustTransaction(
 			@Parameter(name = "fixedDepositAccountId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("fixedDepositAccountId") Long fixedDepositAccountId,
 			@Parameter(name = "transactionId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("transactionId") Long transactionId,
@@ -61,7 +63,7 @@ public interface LockDepositAccountsApi {
 			@Parameter(name = "body", description = "") @Valid @RequestBody(required = false) String body);
 
 	/**
-	 * DELETE /fixeddepositaccounts/{accountId} : Delete a fixed deposit application
+	 * DELETE /lockaccounts/{accountId} : Delete a fixed deposit application
 	 * At present we support hard delete of fixed deposit application so long as its
 	 * in &#39;Submitted and pending approval&#39; state. One the application is
 	 * moves past this state, it is not possible to do a &#39;hard&#39; delete of
@@ -72,12 +74,12 @@ public interface LockDepositAccountsApi {
 	 *            accountId (required)
 	 * @return OK (status code 200)
 	 */
-	@DeleteMapping(value = "/fixeddepositaccounts/{accountId}")
+	@DeleteMapping(value = "/lockaccounts/{accountId}")
 	DeleteFixedDepositAccountsAccountIdResponse deleteAccount(
 			@Parameter(name = "accountId", description = "accountId", required = true, in = ParameterIn.PATH) @PathVariable("accountId") Long accountId);
 
 	/**
-	 * GET /fixeddepositaccounts/downloadtemplate
+	 * GET /lockaccounts/downloadtemplate
 	 *
 	 * @param officeId
 	 *            (optional)
@@ -87,14 +89,14 @@ public interface LockDepositAccountsApi {
 	 *            (optional)
 	 * @return default response (status code 200)
 	 */
-	@GetMapping(value = "/fixeddepositaccounts/downloadtemplate")
+	@GetMapping(value = "/lockaccounts/downloadtemplate")
 	void getFixedDepositTemplate(
 			@Parameter(name = "officeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "officeId", required = false) Long officeId,
 			@Parameter(name = "staffId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "staffId", required = false) Long staffId,
 			@Parameter(name = "dateFormat", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "dateFormat", required = false) String dateFormat);
 
 	/**
-	 * GET /fixeddepositaccounts/transaction/downloadtemplate
+	 * GET /lockaccounts/transaction/downloadtemplate
 	 *
 	 * @param officeId
 	 *            (optional)
@@ -102,13 +104,13 @@ public interface LockDepositAccountsApi {
 	 *            (optional)
 	 * @return default response (status code 200)
 	 */
-	@GetMapping(value = "/fixeddepositaccounts/transaction/downloadtemplate")
+	@GetMapping(value = "/lockaccounts/transaction/downloadtemplate")
 	void getFixedDepositTransactionTemplate(
 			@Parameter(name = "officeId", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "officeId", required = false) Long officeId,
 			@Parameter(name = "dateFormat", description = "", in = ParameterIn.QUERY) @Valid @RequestParam(value = "dateFormat", required = false) String dateFormat);
 
 	/**
-	 * POST /fixeddepositaccounts/{accountId} : Approve fixed deposit application |
+	 * POST /lockaccounts/{accountId} : Approve fixed deposit application |
 	 * Undo approval fixed deposit application | Reject fixed deposit application |
 	 * Withdraw fixed deposit application | Activate a fixed deposit account | Close
 	 * a fixed deposit account | Premature Close a fixed deposit account | Calculate
@@ -148,14 +150,14 @@ public interface LockDepositAccountsApi {
 	 *            command (optional)
 	 * @return OK (status code 200)
 	 */
-	@PostMapping(value = "/fixeddepositaccounts/{accountId}")
+	@PostMapping(value = "/lockaccounts/{accountId}")
 	PostFixedDepositAccountsAccountIdResponse handleCommands(
 			@Parameter(name = "accountId", description = "accountId", required = true, in = ParameterIn.PATH) @PathVariable("accountId") Long accountId,
 			@Parameter(name = "body", description = "", required = true) @Valid @RequestBody PostFixedDepositAccountsAccountIdRequest postFixedDepositAccountsAccountIdRequest,
 			@Parameter(name = "command", description = "command", in = ParameterIn.QUERY) @Valid @RequestParam(value = "command", required = false) String command);
 
 	/**
-	 * POST /fixeddepositaccounts/uploadtemplate
+	 * POST /lockaccounts/uploadtemplate
 	 *
 	 * @param dateFormat
 	 *            (optional)
@@ -165,14 +167,14 @@ public interface LockDepositAccountsApi {
 	 *            (optional)
 	 * @return default response (status code 200)
 	 */
-	@PostMapping(value = "/fixeddepositaccounts/uploadtemplate")
+	@PostMapping(value = "/lockaccounts/uploadtemplate")
 	String postFixedDepositTemplate(
 			@Parameter(name = "dateFormat", description = "") @Valid @RequestParam(value = "dateFormat", required = false) String dateFormat,
 			@Parameter(name = "locale", description = "") @Valid @RequestParam(value = "locale", required = false) String locale,
 			@Parameter(name = "uploadedInputStream", description = "") @RequestPart(value = "uploadedInputStream", required = false) MultipartFile uploadedInputStream);
 
 	/**
-	 * POST /fixeddepositaccounts/transaction/uploadtemplate
+	 * POST /lockaccounts/transaction/uploadtemplate
 	 *
 	 * @param dateFormat
 	 *            (optional)
@@ -182,7 +184,7 @@ public interface LockDepositAccountsApi {
 	 *            (optional)
 	 * @return default response (status code 200)
 	 */
-	@PostMapping(value = "/fixeddepositaccounts/transaction/uploadtemplate")
+	@PostMapping(value = "/lockaccounts/transaction/uploadtemplate")
 	String postFixedDepositTransactionTemplate(
 			@Parameter(name = "dateFormat", description = "") @Valid @RequestParam(value = "dateFormat", required = false) String dateFormat,
 			@Parameter(name = "locale", description = "") @Valid @RequestParam(value = "locale", required = false) String locale,
@@ -215,7 +217,7 @@ public interface LockDepositAccountsApi {
 
 	/**
 	 * GET
-	 * /fixeddepositaccounts/{fixedDepositAccountId}/transactions/{transactionId}
+	 * /lockaccounts/{fixedDepositAccountId}/transactions/{transactionId}
 	 *
 	 * @param fixedDepositAccountId
 	 *            (required)
@@ -223,32 +225,32 @@ public interface LockDepositAccountsApi {
 	 *            (required)
 	 * @return default response (status code 200)
 	 */
-	@GetMapping(value = "/fixeddepositaccounts/{fixedDepositAccountId}/transactions/{transactionId}")
+	@GetMapping(value = "/lockaccounts/{fixedDepositAccountId}/transactions/{transactionId}")
 	GetFixedDepositTransactionResponse retrieveOneTransaction(
 			@Parameter(name = "fixedDepositAccountId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("fixedDepositAccountId") Long fixedDepositAccountId,
 			@Parameter(name = "transactionId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("transactionId") Long transactionId);
 
 	/**
-	 * GET /fixeddepositaccounts/{accountId} : Retrieve a fixed deposit
+	 * GET /lockaccounts/{accountId} : Retrieve a fixed deposit
 	 * application/account Retrieves a fixed deposit application/account Example
 	 * Requests : fixeddepositaccounts/1
 	 * fixeddepositaccounts/1?associations&#x3D;all
 	 *
 	 * @param accountId
 	 */
-	@GetMapping(value = "/fixeddepositaccounts/{accountId}")
+	@GetMapping(value = "/lockaccounts/{accountId}")
 	GetFixedDepositAccountsAccountIdResponse retrieveOne(
 			@Parameter(name = "accountId", description = "accountId", required = true, in = ParameterIn.PATH) @PathVariable("accountId") String accountId
 	);
 
 	/**
-	 * GET /fixeddepositaccounts/{fixedDepositAccountId}/transactions/template
+	 * GET /lockaccounts/{fixedDepositAccountId}/transactions/template
 	 *
 	 * @param fixedDepositAccountId
 	 *            (required)
 	 * @return default response (status code 200)
 	 */
-	@GetMapping(value = "/fixeddepositaccounts/{fixedDepositAccountId}/transactions/template")
+	@GetMapping(value = "/lockaccounts/{fixedDepositAccountId}/transactions/template")
 	String retrieveTemplate13(
 			@Parameter(name = "fixedDepositAccountId", description = "", required = true, in = ParameterIn.PATH) @PathVariable("fixedDepositAccountId") Long fixedDepositAccountId);
 
@@ -260,17 +262,15 @@ public interface LockDepositAccountsApi {
 	 * fieldOfficerId,linkAccountId(if provided initial deposit amount will be
 	 * collected from this account),transferInterestToSavings(By enabling this flag
 	 * all interest postings will be transferred to linked saving account )
-	 *
-	 * @param postFixedDepositAccountsRequest
 	 *            (required)
 	 * @return OK (status code 200)
 	 */
-	@PostMapping(value = "/fixeddepositaccounts")
-	PostSavingsAccountsResponse submitApplication(
-			@Parameter(name = "PostFixedDepositAccountsRequest", description = "", required = true) @Valid @RequestBody PostFixedDepositAccountsRequest postFixedDepositAccountsRequest);
+	@PostMapping(value = "/lockaccounts")
+	InvestmentApplicationResponse submitApplication(
+			@Parameter(description = "", required = true) @RequestBody FixedDepositApplicationRequest fixedDepositApplicationRequest);
 
 	/**
-	 * GET /fixeddepositaccounts/template : Retrieve Fixed Deposit Account Template
+	 * GET /lockaccounts/template : Retrieve Fixed Deposit Account Template
 	 * This is a convenience resource. It can be useful when building maintenance
 	 * user interface screens for fixed deposit applications. The template data
 	 * returned consists of any or all of: Field Defaults Allowed Value ListsExample
@@ -287,14 +287,14 @@ public interface LockDepositAccountsApi {
 	 * @return OK (status code 200)
 	 */
 	// GetFixedDepositAccountsTemplateResponse
-	@GetMapping(value = "/fixeddepositaccounts/template")
+	@GetMapping(value = "/lockaccounts/template")
 	Object retrieveAccountTemplate(@RequestParam(value = "clientId", required = false) Long clientId,
 			@RequestParam(value = "groupId", required = false) Long groupId,
 			@RequestParam(value = "productId", required = false) Long productId,
 			@RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly);
 
 	/**
-	 * PUT /fixeddepositaccounts/{accountId} : Modify a fixed deposit application
+	 * PUT /lockaccounts/{accountId} : Modify a fixed deposit application
 	 * Fixed deposit application can only be modified when in &#39;Submitted and
 	 * pending approval&#39; state. Once the application is approved, the details
 	 * cannot be changed using this method. Specific api endpoints will be created
@@ -307,7 +307,7 @@ public interface LockDepositAccountsApi {
 	 *            (required)
 	 * @return OK (status code 200)
 	 */
-	@PutMapping(value = "/fixeddepositaccounts/{accountId}")
+	@PutMapping(value = "/lockaccounts/{accountId}")
 	PutFixedDepositAccountsAccountIdResponse updateAccount(
 			@Parameter(name = "accountId", description = "accountId", required = true, in = ParameterIn.PATH) @PathVariable("accountId") Long accountId,
 			@Parameter(name = "PutFixedDepositAccountsAccountIdRequest", description = "", required = true) @Valid @RequestBody PutFixedDepositAccountsAccountIdRequest putFixedDepositAccountsAccountIdRequest);
@@ -317,4 +317,9 @@ public interface LockDepositAccountsApi {
 
 	@GetMapping("/lockaccounts/product")
 	ProductDto retrieveALockProduct();
+
+	@GetMapping("/lockaccounts/{linkedAccountNumber}")
+	List<AccountDto> retrieveAllLockInvestmentForAnAccount(
+			@PathVariable String linkedAccountNumber
+	);
 }

@@ -17,7 +17,9 @@ import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerifica
 import com.techservices.digitalbanking.core.domain.enums.AddressType;
 import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.eBanking.model.request.FlexInvestmentCreationRequest;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
+import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutDataTableRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.*;
@@ -43,12 +45,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.techservices.digitalbanking.common.domain.enums.UserType.CORPORATE;
 import static com.techservices.digitalbanking.common.domain.enums.UserType.INDIVIDUAL;
 import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.*;
-import static com.techservices.digitalbanking.core.util.AppUtil.DIRECTORS_DATATABLE_NAME;
 import static com.techservices.digitalbanking.core.util.AppUtil.EXTERNAL;
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
@@ -68,6 +68,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     private final AddressRepository addressRepository;
     private final IndustrySectorRepository industrySectorRepository;
     private final KycTierRepository kycTierRepository;
+    private final FlexDepositAccountService flexDepositAccountService;
 
     @Override
     @Transactional(rollbackOn = Exception.class)
@@ -302,7 +303,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         CustomerIdentityVerificationResponse customerIdentityVerificationResponse =
                 identityVerificationService.verifyNin(customerKycRequest.getNin(), foundCustomer);
         foundCustomer.setNin(customerKycRequest.getNin());
-        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
+//        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
 
         customerIdentityVerificationResponse = identityVerificationService.verifyBvn(customerKycRequest.getBvn(), foundCustomer);
         foundCustomer.setBvn(customerKycRequest.getBvn());
@@ -359,11 +360,12 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         CustomerFilterDto customerFilterDto = new CustomerFilterDto().bvn(customerKycRequest.getBvn());
         customer = clientService.searchCustomer(customerFilterDto).stream().findAny().orElse(null);
         log.info("Client found: {}", customer);
-        String clientId = createOrUpgradeClient(foundCustomer, customerKycRequest, customerKycTier, customer, verificationResponse);
+        String externalId = createOrUpgradeClient(foundCustomer, customerKycRequest, customerKycTier, customer, verificationResponse);
 
-        if (StringUtils.isNotBlank(clientId)) {
-            String savingsAccountNo = createOrRetrieveSavingsAccount(clientId, verificationResponse, customerKycTier);
-            updateCustomerWithAccountDetails(foundCustomer, clientId, savingsAccountNo);
+        if (StringUtils.isNotBlank(externalId)) {
+            String savingsAccountNo = createOrRetrieveSavingsAccount(externalId, verificationResponse, customerKycTier);
+            String flexAccountNo = createOrRetrieveFlexInvestmentAccount(externalId, verificationResponse);
+            updateCustomerWithAccountDetails(foundCustomer, externalId, savingsAccountNo, flexAccountNo);
         }
     }
 
@@ -388,10 +390,10 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         return customer.getId();
     }
 
-    private String createOrRetrieveSavingsAccount(String clientId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse,
+    private String createOrRetrieveSavingsAccount(String externalId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse,
                                                   CustomerKycTier customerKycTier) {
-        log.info("Client ID found: {}", clientId);
-        List<@Valid AccountDto> clientAccounts = clientService.getAllWalletAccountByExternalId(clientId);
+        log.info("Client ID found: {}", externalId);
+        List<@Valid AccountDto> clientAccounts = clientService.getAllWalletAccountByExternalId(externalId);
         Optional<@Valid AccountDto> savingsAccount = clientAccounts.stream().findAny();
         log.info("Savings account found: {}", savingsAccount);
 
@@ -400,17 +402,36 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         } else {
             String gender = verificationResponse.getGender();
             PostSavingsAccountsResponse savingsAccountsResponse = accountService.createSavingsAccount(
-                    clientId, null, null, null, null,
-                    null, true, null, gender, customerKycTier.getCode()
+                    externalId, gender, customerKycTier.getCode()
             );
             return savingsAccountsResponse != null ? savingsAccountsResponse.getAccountNumber() : null;
         }
     }
 
-    private void updateCustomerWithAccountDetails(Customer foundCustomer, String clientId, String savingsAccountNo) {
+    private String createOrRetrieveFlexInvestmentAccount(String externalId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse) {
+        log.info("Client ID found: {}", externalId);
+        List<@Valid AccountDto> clientAccounts = clientService.getAllFlexAccountByExternalId(externalId);
+        Optional<@Valid AccountDto> savingsAccount = clientAccounts.stream().findAny();
+        log.info("Savings account found: {}", savingsAccount);
+
+        if (savingsAccount.isPresent()) {
+            return savingsAccount.get().getAccountNumber();
+        } else {
+
+            FlexInvestmentCreationRequest flexInvestmentCreationRequest = new FlexInvestmentCreationRequest();
+            flexInvestmentCreationRequest.setExternalId(externalId);
+            String gender = verificationResponse.getGender();
+            flexInvestmentCreationRequest.setGender(gender);
+            FlexInvestmentCreationResponse response = flexDepositAccountService.submitApplication(flexInvestmentCreationRequest);
+            return response != null ? response.getAccountNumber() : null;
+        }
+    }
+
+    private void updateCustomerWithAccountDetails(Customer foundCustomer, String clientId, String savingsAccountNo, String flexAccountNo) {
         foundCustomer.setExternalId(clientId);
         foundCustomer.setAccountId(savingsAccountNo);
         foundCustomer.setActive(true);
+        foundCustomer.setFlexAccountId(flexAccountNo);
 
     }
 

@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.investment.service;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
@@ -14,14 +15,14 @@ import com.techservices.digitalbanking.investment.domain.response.InvestmentCalc
 
 public interface InvestmentService {
 
-	AccountDto retrieveInvestmentById(Long id, InvestmentType investmentType, Long customerId);
+	AccountDto retrieveInvestmentById(String id, InvestmentType investmentType, Long customerId);
 
 
 	BasePageResponse<AccountDto> retrieveAllCustomerInvestments(Long customerId, String investmentType);
 
-	Object retrieveInvestmentTransactionsById(String id, String investmentType, Long customerId);
+	BasePageResponse<TransactionDto> retrieveInvestmentTransactionsById(String id, String investmentType, Long customerId);
 
-	InvestmentApplicationResponse submitApplication(Long customerId, InvestmentType investmentType, InvestmentApplicationRequest request);
+	InvestmentApplicationResponse submitApplication(Long customerId, InvestmentApplicationRequest request);
 
 	BaseAppResponse updateAnInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request, String investmentId);
 
@@ -29,5 +30,5 @@ public interface InvestmentService {
 
 	InvestmentCalculatorResponse calculateInvestment(Long customerId, InvestmentCalculatorRequest request);
 
-    BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request, String investmentId);
+    BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request);
 }

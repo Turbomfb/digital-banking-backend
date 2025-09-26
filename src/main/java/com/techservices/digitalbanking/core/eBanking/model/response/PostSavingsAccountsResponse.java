@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PostSavingsAccountsResponse extends InvestmentApplicationResponse {
+public class PostSavingsAccountsResponse {
 
 	private Long customerId;
 

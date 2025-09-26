@@ -2,7 +2,9 @@
 package com.techservices.digitalbanking.walletaccount.api;
 
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.core.domain.dto.request.ReceiptRequest;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ReceiptService;
@@ -258,7 +260,7 @@ public class WalletAccountTransactionApiResource {
 			)
 	})
 	@GetMapping
-	public ResponseEntity<FineractPageResponse<SavingsAccountTransactionData>> retrieveSavingsAccountTransactions(
+	public ResponseEntity<BasePageResponse<TransactionDto>> retrieveSavingsAccountTransactions(
 			@Parameter(
 					name = "page",
 					description = "Page number for pagination (0-based indexing)",
@@ -324,13 +326,8 @@ public class WalletAccountTransactionApiResource {
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 
-		FineractPageResponse<SavingsAccountTransactionData> savingsAccountTransactions = walletAccountTransactionService.retrieveSavingsAccountTransactions(
-				customerId, startDate, endDate, dateFormat, productId, limit, offset, transactionType);
-		savingsAccountTransactions.setPageItems(
-				savingsAccountTransactions.getPageItems().stream()
-						.sorted(Comparator.comparing(SavingsAccountTransactionData::getTransactionDateTime).reversed())
-						.toList()
-		);
+		BasePageResponse<TransactionDto> savingsAccountTransactions = walletAccountTransactionService.retrieveSavingsAccountTransactions(
+				customerId, startDate, endDate, limit);
 		return ResponseEntity.ok(savingsAccountTransactions);
 	}
 

@@ -16,32 +16,13 @@ import lombok.*;
 @AllArgsConstructor
 public class PostAccountTransfersRequest {
 
-	private String dateFormat;
-
 	private String fromAccountId;
-
-	private Long fromAccountType;
-
-	private String fromClientId;
-
-	private Long fromOfficeId;
-
-	private String locale;
 
 	private String toAccountId;
 
-	private Long toAccountType;
-
-	private String toClientId;
-
-	private Long toOfficeId;
-
 	private BigDecimal transferAmount;
 
-	private String transferDate;
 	private String transactionReference;
 
 	private String transferDescription;
-
-	// private String transactionUniqueId = UUID.randomUUID().toString();
 }

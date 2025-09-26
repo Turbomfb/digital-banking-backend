@@ -11,11 +11,11 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostSavingsAccountTransactionsResponse {
 
-	private String clientId;
+	private String customerId;
 
 	private Long officeId;
 
-	private Long resourceId;
+	private Long reference;
 
 	private String transactionId;
 

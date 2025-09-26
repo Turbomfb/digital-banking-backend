@@ -3,11 +3,14 @@ package com.techservices.digitalbanking.walletaccount.service.impl;
 
 import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.enums.AlertType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.eBanking.model.request.TransactionHistoryFilter;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
@@ -32,8 +35,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.exception.AbstractPlatformDomainRuleException;
-import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.eBanking.service.AccountTransactionService;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
@@ -70,12 +71,12 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 
 
 	@Override
-	public FineractPageResponse<SavingsAccountTransactionData> retrieveSavingsAccountTransactions(
-			Long customerId, String startDate, String endDate, String dateFormat, Long productId,
-			Long limit, @Valid Long offset, @Valid String transactionType) {
+	public BasePageResponse<TransactionDto> retrieveSavingsAccountTransactions(
+			Long customerId, String startDate, String endDate,
+			Long limit) {
 		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
-		return accountTransactionService.retrieveSavingsAccountTransactions(savingsAccountId, startDate, endDate,
-				dateFormat, limit, offset, transactionType);
+		TransactionHistoryFilter filter = new TransactionHistoryFilter(savingsAccountId, startDate, endDate, limit);
+		return BasePageResponse.instance(accountTransactionService.retrieveAllAccountTransactions(filter));
 	}
 
 	@Override
@@ -86,14 +87,14 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	}
 
 	@Override
-	public BigDecimal getBalanceAsOfDate(Long customerId, LocalDate localDate) {
-		return this.retrieveSavingsAccountTransactions(customerId, localDate.toString(), null, "yyyy-MM-dd", null, null, null, null)
-				.getPageItems()
+	public BigDecimal getBalanceAsOfDate(Long customerId, LocalDate startDate) {
+		return this.retrieveSavingsAccountTransactions(customerId, startDate.toString(), null, null)
+				.getData()
 				.stream()
-				.filter(transaction -> !transaction.getDate().isAfter(localDate))
-				.sorted(Comparator.comparing(SavingsAccountTransactionData::getDate))
+				.filter(transaction -> !transaction.getDate().isAfter(startDate.atStartOfDay()))
+				.sorted(Comparator.comparing(TransactionDto::getDate))
 				.reduce((first, second) -> second)
-				.map(SavingsAccountTransactionData::getRunningBalance)
+				.map(TransactionDto::getRunningBalance)
 				.orElse(BigDecimal.ZERO);
 	}
 

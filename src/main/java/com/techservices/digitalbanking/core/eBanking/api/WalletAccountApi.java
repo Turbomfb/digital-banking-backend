@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.core.eBanking.api;
 
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.eBanking.model.request.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,10 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageTransactionResponse;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAccountTransactionsRequest;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAccountsAccountIdRequest;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAccountsRequest;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostTransactionQueryRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountTransactionsResponse;
@@ -62,7 +59,7 @@ public interface WalletAccountApi {
 
 	@PostMapping(value = "/walletaccounts")
 	PostSavingsAccountsResponse submitApplication(
-			@Valid @RequestBody PostSavingsAccountsRequest postSavingsAccountsRequest);
+			@Valid @RequestBody WalletAccountCreationRequest walletAccountCreationRequest);
 
 	@GetMapping(value = "/walletaccounts/{walletAccountNo}/transactions")
 	FineractPageResponse<SavingsAccountTransactionData> retrieveTransactions(@PathVariable("walletAccountNo") Long walletAccountNo,

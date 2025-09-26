@@ -4,14 +4,17 @@ package com.techservices.digitalbanking.core.eBanking.service;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
+import com.techservices.digitalbanking.core.eBanking.model.request.TransactionHistoryFilter;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import com.techservices.digitalbanking.core.eBanking.api.AccountTransferApiClient;
+import com.techservices.digitalbanking.core.eBanking.api.TransactionApiClient;
 import com.techservices.digitalbanking.core.eBanking.api.WalletAccountApiClient;
 import com.techservices.digitalbanking.core.eBanking.configuration.FineractProperty;
 import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
@@ -19,7 +22,6 @@ import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageTran
 import com.techservices.digitalbanking.core.eBanking.model.request.PostAccountTransfersRequest;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsDatatable;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAccountTransactionsRequest;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostAccountTransfersResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountTransactionsResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
@@ -36,7 +38,7 @@ import static com.techservices.digitalbanking.core.util.TransactionUtil.DEPOSIT;
 @Slf4j
 public class AccountTransactionService {
     private final WalletAccountApiClient walletAccountApiClient;
-	private final AccountTransferApiClient accountTransferApiClient;
+	private final TransactionApiClient transactionApiClient;
 	private final FineractProperty fineractProperty;
 	public static final String SAVINGS_ACCOUNT_TRANSACTION_DATATABLE_NAME = "dt_additional_transaction_information";
 
@@ -119,62 +121,25 @@ public class AccountTransactionService {
 		return FineractPageResponse.create(savingsAccountTransactions);
 	}
 
-	public PostSavingsAccountTransactionsResponse handleFlexDepositAccountTransfer(
-			AccountDto fromSavingsAccount,
+	public PostAccountTransfersResponse processIntraTransafer(
+			String fromSavingsAccount,
 			String flexAccountId, BigDecimal transactionAmount, String narration) {
 
 		PostAccountTransfersRequest postAccountTransfersRequest = new PostAccountTransfersRequest();
-		postAccountTransfersRequest.setFromAccountId(fromSavingsAccount.getId());
-		postAccountTransfersRequest.setFromAccountType(2L);
-		postAccountTransfersRequest.setFromClientId(fromSavingsAccount.getCustomerId());
-		postAccountTransfersRequest.setFromOfficeId(1L);
-		postAccountTransfersRequest.setToClientId(fromSavingsAccount.getCustomerId());
-		postAccountTransfersRequest.setToOfficeId(1L);
+		postAccountTransfersRequest.setFromAccountId(fromSavingsAccount);
 		postAccountTransfersRequest.setToAccountId(flexAccountId);
-		postAccountTransfersRequest.setToAccountType(2L);
 		postAccountTransfersRequest.setTransferAmount(transactionAmount);
 		postAccountTransfersRequest.setTransferDescription(narration);
-		postAccountTransfersRequest.setTransferDate(DateUtil.getCurrentDate());
-		postAccountTransfersRequest.setDateFormat(DateUtil.getDefaultDateFormat());
-		postAccountTransfersRequest.setLocale(DateUtil.DEFAULT_LOCALE);
-		PostAccountTransfersResponse transferResponse = accountTransferApiClient
-				.makeTransfer(postAccountTransfersRequest);
-		PostSavingsAccountTransactionsResponse postSavingsAccountTransactionsResponse = new PostSavingsAccountTransactionsResponse();
-		postSavingsAccountTransactionsResponse.setClientId(fromSavingsAccount.getCustomerId());
-		postSavingsAccountTransactionsResponse.setResourceId(transferResponse.getResourceId());
-		postSavingsAccountTransactionsResponse.setSavingsId(fromSavingsAccount.getId());
-		return postSavingsAccountTransactionsResponse;
-	}
-
-	public PostSavingsAccountTransactionsResponse handleFlexWithdrawalAccountTransfer(
-			AccountDto toSavingsAccount,
-			String flexAccountId, BigDecimal transactionAmount, String narration) {
-
-		PostAccountTransfersRequest postAccountTransfersRequest = new PostAccountTransfersRequest();
-		postAccountTransfersRequest.setFromAccountId(flexAccountId);
-		postAccountTransfersRequest.setFromAccountType(2L);
-		postAccountTransfersRequest.setFromClientId(toSavingsAccount.getCustomerId());
-		postAccountTransfersRequest.setFromOfficeId(1L);
-		postAccountTransfersRequest.setToClientId(toSavingsAccount.getCustomerId());
-		postAccountTransfersRequest.setToOfficeId(1L);
-		postAccountTransfersRequest.setToAccountId(toSavingsAccount.getId());
-		postAccountTransfersRequest.setToAccountType(2L);
-		postAccountTransfersRequest.setTransferAmount(transactionAmount);
-		postAccountTransfersRequest.setTransferDescription(narration);
-		postAccountTransfersRequest.setTransferDate(DateUtil.getCurrentDate());
-		postAccountTransfersRequest.setDateFormat(DateUtil.getDefaultDateFormat());
-		postAccountTransfersRequest.setLocale(DateUtil.DEFAULT_LOCALE);
-		PostAccountTransfersResponse transferResponse = accountTransferApiClient
-				.makeTransfer(postAccountTransfersRequest);
-		PostSavingsAccountTransactionsResponse postSavingsAccountTransactionsResponse = new PostSavingsAccountTransactionsResponse();
-		postSavingsAccountTransactionsResponse.setClientId(toSavingsAccount.getCustomerId());
-		postSavingsAccountTransactionsResponse.setResourceId(transferResponse.getResourceId());
-		postSavingsAccountTransactionsResponse.setSavingsId(toSavingsAccount.getId());
-		return postSavingsAccountTransactionsResponse;
+		return transactionApiClient
+				.makeTransfer(TransactionType.INTRA_BANK_TRANSFER, postAccountTransfersRequest);
 	}
 
 	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(String savingsAccountId,
 																			   Long transactionId) {
 		return walletAccountApiClient.retrieveOneTransaction(savingsAccountId, transactionId);
+	}
+
+	public List<TransactionDto> retrieveAllAccountTransactions(TransactionHistoryFilter filter) {
+		return transactionApiClient.retrieveAllTransactionsByAccountNo(filter);
 	}
 }

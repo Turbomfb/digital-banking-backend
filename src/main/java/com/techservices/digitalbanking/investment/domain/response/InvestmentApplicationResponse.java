@@ -11,5 +11,5 @@ import java.math.BigDecimal;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InvestmentApplicationResponse {
-
+    private String message;
 }
