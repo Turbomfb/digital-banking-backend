@@ -10,7 +10,7 @@ import com.techservices.digitalbanking.core.domain.dto.request.NotificationReque
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.enums.AlertType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
-import com.techservices.digitalbanking.core.eBanking.model.request.TransactionHistoryFilter;
+import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
@@ -39,7 +39,6 @@ import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccou
 import com.techservices.digitalbanking.core.eBanking.service.AccountTransactionService;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
@@ -75,7 +74,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			Long customerId, String startDate, String endDate,
 			Long limit) {
 		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
-		TransactionHistoryFilter filter = new TransactionHistoryFilter(savingsAccountId, startDate, endDate, limit);
+		FilterDto filter = new FilterDto(savingsAccountId, startDate, endDate, limit);
 		return BasePageResponse.instance(accountTransactionService.retrieveAllAccountTransactions(filter));
 	}
 

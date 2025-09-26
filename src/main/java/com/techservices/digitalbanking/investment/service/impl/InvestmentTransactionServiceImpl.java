@@ -4,7 +4,7 @@ package com.techservices.digitalbanking.investment.service.impl;
 import java.util.List;
 
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
-import com.techservices.digitalbanking.core.eBanking.model.request.TransactionHistoryFilter;
+import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import com.techservices.digitalbanking.core.eBanking.service.AccountTransactionService;
 import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class InvestmentTransactionServiceImpl implements InvestmentTransactionSe
 
 	@Override
 	public List<TransactionDto> retrieveAllInvestmentTransactions(String investmentId) {
-		TransactionHistoryFilter filter = new TransactionHistoryFilter().accountNumber(investmentId);
+		FilterDto filter = new FilterDto().accountNumber(investmentId);
 		return accountTransactionService.retrieveAllAccountTransactions(filter);
 	}
 

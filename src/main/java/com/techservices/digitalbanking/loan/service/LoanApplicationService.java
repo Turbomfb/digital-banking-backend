@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.loan.service;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.LoanDto;
 import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
 import com.techservices.digitalbanking.core.eBanking.model.request.LoanRescheduleRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanTemplateResponse;
@@ -27,8 +28,7 @@ public interface LoanApplicationService {
 	GetLoansLoanIdResponse retrieveLoanById(Long loanId, Boolean staffInSelectedOfficeOnly, String associations,
 											String exclude, String fields, Long customerId);
 
-	GetLoansResponse retrieveAllLoans(String sqlSearch, String externalId, Integer offset, Integer limit,
-									  String orderBy, String sortOrder, String accountNo, @Valid Long customerId, @Valid String status);
+	BasePageResponse<LoanDto> retrieveAllLoans(Long limit, String accountNo, Long customerId);
 
 	PostLoansLoanIdResponse processLoanCommand(Long loanId, PostLoansLoanIdRequest postLoansLoanIdRequest,
 			@Valid String command);

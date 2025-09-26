@@ -11,6 +11,7 @@ public class ProductDto {
     private Long id;
     private String productCode;
     private String productName;
+    private String type;
     private Double interestRate;
     private Integer tenure;
 }

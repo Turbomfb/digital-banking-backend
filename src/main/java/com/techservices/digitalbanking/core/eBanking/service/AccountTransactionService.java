@@ -9,7 +9,7 @@ import java.util.Map;
 
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.core.domain.enums.TransactionType;
-import com.techservices.digitalbanking.core.eBanking.model.request.TransactionHistoryFilter;
+import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -139,7 +139,7 @@ public class AccountTransactionService {
 		return walletAccountApiClient.retrieveOneTransaction(savingsAccountId, transactionId);
 	}
 
-	public List<TransactionDto> retrieveAllAccountTransactions(TransactionHistoryFilter filter) {
+	public List<TransactionDto> retrieveAllAccountTransactions(FilterDto filter) {
 		return transactionApiClient.retrieveAllTransactionsByAccountNo(filter);
 	}
 }

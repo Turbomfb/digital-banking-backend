@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.loan.api;
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.LoanDto;
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import org.springframework.http.ResponseEntity;
@@ -295,55 +296,21 @@ public class LoanApplicationApiResource {
 			)
 	})
 	@GetMapping
-	public ResponseEntity<GetLoansResponse> retrieveAllLoans(
-			@Parameter(
-					name = "sqlSearch",
-					description = "SQL-like search query for advanced filtering across loan attributes"
-			)
-			@Valid @RequestParam(value = "sqlSearch", required = false) String sqlSearch,
-			@Parameter(
-					name = "externalId",
-					description = "Filter loans by external system identifier"
-			)
-			@Valid @RequestParam(value = "externalId", required = false) String externalId,
-			@Parameter(
-					name = "offset",
-					description = "Number of records to skip for pagination",
-					schema = @Schema(type = "integer", minimum = "0", defaultValue = "0")
-			)
-			@Valid @RequestParam(value = "offset", required = false) Integer offset,
+	public ResponseEntity<BasePageResponse<LoanDto>> retrieveAllLoans(
 			@Parameter(
 					name = "limit",
 					description = "Maximum number of records to return per page",
 					schema = @Schema(type = "integer", minimum = "1", maximum = "200", defaultValue = "20")
 			)
-			@Valid @RequestParam(value = "limit", required = false) Integer limit,
-			@Parameter(
-					name = "orderBy",
-					description = "Field name to sort results by (e.g., 'accountNo', 'submittedOnDate', 'loanProductName')"
-			)
-			@Valid @RequestParam(value = "orderBy", required = false) String orderBy,
-			@Parameter(
-					name = "sortOrder",
-					description = "Sort direction for the results",
-					schema = @Schema(type = "string", allowableValues = {"ASC", "DESC"})
-			)
-			@Valid @RequestParam(value = "sortOrder", required = false) String sortOrder,
+			@Valid @RequestParam(value = "limit", required = false) Long limit,
 			@Parameter(
 					name = "accountNo",
 					description = "Filter loans by specific account number"
 			)
-			@Valid @RequestParam(value = "accountNo", required = false) String accountNo,
-			@Parameter(
-					name = "status",
-					description = "Filter loans by current status",
-					schema = @Schema(type = "string", allowableValues = {"ACTIVE", "CLOSED", "PENDING", "APPROVED", "REJECTED"})
-			)
-			@Valid @RequestParam(value = "status", required = false) String status
+			@Valid @RequestParam(value = "accountNo", required = false) String accountNo
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		GetLoansResponse getLoansResponse = loanService.retrieveAllLoans(sqlSearch, externalId, offset, limit, orderBy,
-				sortOrder, accountNo, customerId, status);
+		BasePageResponse<LoanDto> getLoansResponse = loanService.retrieveAllLoans(limit, accountNo, customerId);
 
 		return ResponseEntity.ok(getLoansResponse);
 	}

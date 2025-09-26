@@ -3,6 +3,8 @@ package com.techservices.digitalbanking.loan.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.LoanDto;
+import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.service.ExternalLoanService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
@@ -18,7 +20,6 @@ import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResp
 import com.techservices.digitalbanking.core.eBanking.model.request.LoanRescheduleRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanTemplateResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetLoansResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.LoanRescheduleResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.LoanTransactionResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostLoansLoanIdRequest;
@@ -33,9 +34,10 @@ import com.techservices.digitalbanking.loan.service.LoanApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,11 +69,10 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 		}
 	}
 
-	@Override
-	public GetLoansResponse retrieveAllLoans(String sqlSearch, String externalId, Integer offset, Integer limit,
-											 String orderBy, String sortOrder, String accountNo, Long customerId, String status) {
-		String clientId = customerService.getCustomerById(customerId).getExternalId();
-		return loanService.retrieveAllLoans(sqlSearch, externalId, offset, limit, orderBy, sortOrder, accountNo, clientId, status);
+	public BasePageResponse<LoanDto> retrieveAllLoans(Long limit, String accountNo, Long customerId) {
+		String externalId = customerService.getCustomerById(customerId).getExternalId();
+		FilterDto filterDto = new FilterDto().customerId(externalId).accountNumber(accountNo).size(limit);
+		return BasePageResponse.instance(loanService.retrieveAllCustomerLoans(filterDto));
 	}
 
 	@Override
@@ -145,21 +146,72 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	@Override
 	public LoanDashboardResponse retrieveCustomerLoanDashboard(Long customerId) {
 		Customer customer = customerService.getCustomerById(customerId);
-		GetLoansResponse customerLoans = loanService.retrieveAllLoans(null, null, null, null, null, null, null, customer.getExternalId(), null);
+		FilterDto filterDto = new FilterDto().customerId(customer.getExternalId());
+		List<LoanDto> customerLoans = loanService.retrieveAllCustomerLoans(filterDto);
+
 		return LoanDashboardResponse.builder()
-				.activeLoanBalance(customerLoans.getActiveLoanBalance())
-				.totalExpectedRepayment(customerLoans.getTotalExpectedRepayment())
-				.totalRepaid(customerLoans.getTotalRepayment())
-				.activeLoanCount(customerLoans.getActiveLoanCount())
-				.pendingLoanCount(customerLoans.getPendingLoanCount())
-				.liquidatedLoanCount(customerLoans.getLiquidatedLoanCount())
-				.loans(
-						customerLoans.getPageItems().stream()
-								.filter(loan -> loan.getStatus().getId() != null && (loan.getStatus().getId() <= 300 || loan.getStatus().getId() >= 600))
-								.collect(Collectors.toList())
+				.activeLoanBalance(getActiveLoanBalance(customerLoans))
+				.totalExpectedRepayment(getTotalExpectedRepayment(customerLoans))
+				.totalRepaid(getTotalRepayment(customerLoans))
+				.activeLoanCount(getActiveLoanCount(customerLoans))
+				.pendingLoanCount(getPendingLoanCount(customerLoans))
+				.liquidatedLoanCount(getLiquidatedLoanCount(customerLoans))
+				.loans(customerLoans.stream()
+						.filter(loan -> loan.getStatus() != null &&
+								(loan.getStatus().equalsIgnoreCase("Active") ||
+										loan.getStatus().equalsIgnoreCase("Pending") ||
+										loan.getStatus().equalsIgnoreCase("Liquidated")))
+						.toList()
 				)
 				.build();
 	}
+
+	public BigDecimal getActiveLoanBalance(List<LoanDto> customerLoans) {
+		return customerLoans.stream()
+				.filter(this::isActive)
+				.map(loan -> Optional.ofNullable(loan.getOutstandingBalance()).orElse(BigDecimal.ZERO))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public BigDecimal getTotalExpectedRepayment(List<LoanDto> customerLoans) {
+		return customerLoans.stream()
+				.filter(this::isActive)
+				.map(loan -> Optional.ofNullable(loan.getTotalExpectedRepayment()).orElse(BigDecimal.ZERO))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public BigDecimal getTotalRepayment(List<LoanDto> customerLoans) {
+		return customerLoans.stream()
+				.filter(this::isActive)
+				.map(loan -> Optional.ofNullable(loan.getTotalPaid()).orElse(BigDecimal.ZERO))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	public Long getActiveLoanCount(List<LoanDto> customerLoans) {
+		return customerLoans.stream()
+				.filter(this::isActive)
+				.count();
+	}
+
+	public Long getPendingLoanCount(List<LoanDto> customerLoans) {
+		return customerLoans.stream()
+				.filter(loan -> loan.getStatus() != null &&
+						(loan.getStatus().equalsIgnoreCase("Pending") ||
+								loan.getStatus().equalsIgnoreCase("WaitingForDisbursal")))
+				.count();
+	}
+
+	public Long getLiquidatedLoanCount(List<LoanDto> customerLoans) {
+		return customerLoans.stream()
+				.filter(loan -> loan.getStatus() != null &&
+						loan.getStatus().equalsIgnoreCase("Closed"))
+				.count();
+	}
+
+	private boolean isActive(LoanDto loan) {
+		return loan.getStatus() != null && loan.getStatus().equalsIgnoreCase("Active");
+	}
+
 
 	@Override
 	public LoanRescheduleResponse createALoanRescheduleRequest(LoanRescheduleRequest loanRescheduleRequest) {

@@ -2,6 +2,7 @@ package com.techservices.digitalbanking.loan.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.techservices.digitalbanking.core.domain.dto.LoanDto;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoansLoanIdResponse;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,5 +25,5 @@ public class LoanDashboardResponse {
     private Long activeLoanCount;
     private Long pendingLoanCount;
     private Long liquidatedLoanCount;
-    private List<GetLoansLoanIdResponse> loans;
+    private List<LoanDto> loans;
 }

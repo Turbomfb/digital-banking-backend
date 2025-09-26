@@ -4,6 +4,8 @@ package com.techservices.digitalbanking.core.eBanking.service;
 import java.util.Collections;
 import java.util.List;
 
+import com.techservices.digitalbanking.core.domain.dto.LoanDto;
+import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
 import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,6 @@ import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProdu
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsTemplateResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanTemplateResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoansLoanIdResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetLoansResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.LoanRescheduleResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.LoanTransactionResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostLoanProductsResponse;
@@ -78,11 +79,8 @@ public class LoanService {
 		return loansApiClient.retrieveLoan(loanId, staffInSelectedOfficeOnly, associations, exclude, fields);
 	}
 
-	public GetLoansResponse retrieveAllLoans(String sqlSearch, String externalId, Integer offset, Integer limit,
-											 String orderBy, String sortOrder, String accountNo, String clientId, String status) {
-		offset = offset == null ? 0 : offset;
-		limit = limit == null ? 20 : limit;
-		return loansApiClient.retrieveAll36(sqlSearch, externalId, offset, limit, orderBy, sortOrder, accountNo, clientId, status);
+	public List<LoanDto> retrieveAllCustomerLoans(FilterDto filterDto) {
+		return loansApiClient.retrieveAllCustomerLoans(filterDto);
 	}
 
 	public PostLoansLoanIdResponse processLoanCommand(Long loanId, PostLoansLoanIdRequest postLoansLoanIdRequest,
