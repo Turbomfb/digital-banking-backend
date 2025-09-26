@@ -6,6 +6,7 @@ import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.core.domain.dto.request.ReceiptRequest;
+import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ReceiptService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
@@ -117,8 +118,13 @@ public class WalletAccountTransactionApiResource {
 			)
 			@RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command
 	) {
-		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		return ResponseEntity.ok(walletAccountTransactionService.processTransactionCommand(command, request, customerId));
+		try {
+			Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+			return ResponseEntity.ok(walletAccountTransactionService.processTransactionCommand(command, request, customerId));
+		} catch (Exception e) {
+			log.error("Error processing transaction command: {}", e.getMessage(), e);
+			throw new ValidationException("error.processing.transaction", "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists", e.getMessage());
+		}
 	}
 
 	@Operation(
@@ -170,10 +176,15 @@ public class WalletAccountTransactionApiResource {
 							schema = @Schema(implementation = WalletPaymentOrderRequest.class)
 					)
 			)
-			@RequestBody WalletPaymentOrderRequest request) throws Exception {
-		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		WalletPaymentOrderResponse responseOrder = walletAccountTransactionService.initiatePaymentOrder(request, customerId);
-		return ResponseEntity.ok(responseOrder);
+			@RequestBody WalletPaymentOrderRequest request) {
+		try {
+			Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+			WalletPaymentOrderResponse responseOrder = walletAccountTransactionService.initiatePaymentOrder(request, customerId);
+			return ResponseEntity.ok(responseOrder);
+		} catch (Exception e) {
+			log.error("Error initiating payment order for customer {}: {}", springSecurityAuditorAware.getAuthenticatedUser().getUserId(), e.getMessage(), e);
+			throw new ValidationException("error.payment.order.initiation", "We're unable to process your payment order at the moment. Please try again or contact support if the issue persists", e.getMessage());
+		}
 	}
 
 	@Operation(
@@ -215,9 +226,14 @@ public class WalletAccountTransactionApiResource {
 							schema = @Schema(implementation = WalletInboundWebhookRequest.class)
 					)
 			)
-			@RequestBody WalletInboundWebhookRequest request) throws Exception {
-		GenericApiResponse webhookResponse = walletAccountTransactionService.receiveInboundWebhook(request);
-		return ResponseEntity.ok(webhookResponse);
+			@RequestBody WalletInboundWebhookRequest request) {
+		try {
+			GenericApiResponse webhookResponse = walletAccountTransactionService.receiveInboundWebhook(request);
+			return ResponseEntity.ok(webhookResponse);
+		} catch (Exception e) {
+			log.error("Error processing webhook: {}", e.getMessage(), e);
+			throw new ValidationException("error.webhook.processing", "Unable to process webhook notification.", e.getMessage());
+		}
 	}
 
 	@Operation(
@@ -324,11 +340,16 @@ public class WalletAccountTransactionApiResource {
 			)
 			@RequestParam(value = "transactionType", required = false) @Valid String transactionType
 	) {
-		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		try {
+			Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 
-		BasePageResponse<TransactionDto> savingsAccountTransactions = walletAccountTransactionService.retrieveSavingsAccountTransactions(
-				customerId, startDate, endDate, limit);
-		return ResponseEntity.ok(savingsAccountTransactions);
+			BasePageResponse<TransactionDto> savingsAccountTransactions = walletAccountTransactionService.retrieveSavingsAccountTransactions(
+					customerId, startDate, endDate, limit);
+			return ResponseEntity.ok(savingsAccountTransactions);
+		} catch (Exception e) {
+			log.error("Error retrieving transactions for customer {}: {}", springSecurityAuditorAware.getAuthenticatedUser().getUserId(), e.getMessage(), e);
+			throw new ValidationException("error.transaction.retrieval", "We're unable to retrieve your transaction history at the moment. Please try again later", e.getMessage());
+		}
 	}
 
 	@GetMapping("/statement")
@@ -427,9 +448,8 @@ public class WalletAccountTransactionApiResource {
 			HttpServletRequest request,
 			HttpServletResponse response
 	) {
-		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-
 		try {
+			Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 
 			log.info("Generating statement for account: {} with format: {}", customerId, format);
 
@@ -460,12 +480,9 @@ public class WalletAccountTransactionApiResource {
 			log.info("Statement generated successfully for account: {}", customerId);
 			return ResponseEntity.ok().build();
 
-		} catch (InvalidParameterException e) {
-			log.error("Invalid parameters for statement generation: {}", e.getMessage(), e);
-			return ResponseEntity.badRequest().build();
 		} catch (Exception e) {
-			log.error("Error generating statement for account: {}", customerId, e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			log.error("Error generating statement for customer {}: {}", springSecurityAuditorAware.getAuthenticatedUser().getUserId(), e.getMessage(), e);
+			throw new ValidationException("error.statement.generation", "We're unable to generate your account statement at the moment. Please try again or contact support", e.getMessage());
 		}
 	}
 
@@ -518,9 +535,14 @@ public class WalletAccountTransactionApiResource {
 			)
 			@PathVariable(required = false) Long transactionId
 	) {
-		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		return ResponseEntity.ok(walletAccountTransactionService
-				.retrieveSavingsAccountTransactionById(customerId, transactionId));
+		try {
+			Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+			return ResponseEntity.ok(walletAccountTransactionService
+					.retrieveSavingsAccountTransactionById(customerId, transactionId));
+		} catch (Exception e) {
+			log.error("Error retrieving transaction {} for customer {}: {}", transactionId, springSecurityAuditorAware.getAuthenticatedUser().getUserId(), e.getMessage(), e);
+			throw new ValidationException("error.transaction.not.found", "We're unable to find the requested transaction.", e.getMessage());
+		}
 	}
 
 	@GetMapping("/receipt")
@@ -578,10 +600,10 @@ public class WalletAccountTransactionApiResource {
 			HttpServletRequest request,
 			HttpServletResponse response
 	) {
-		SavingsAccountTransactionRequest savingsAccountTransactionRequest = this.redisService.retrieveData(reference, SavingsAccountTransactionRequest.class);
-		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-
 		try {
+			SavingsAccountTransactionRequest savingsAccountTransactionRequest = this.redisService.retrieveData(reference, SavingsAccountTransactionRequest.class);
+			Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+
 			log.info("Generating receipt for transaction: {} for customer: {} in format: {}",
 					reference, customerId, format);
 
@@ -610,12 +632,9 @@ public class WalletAccountTransactionApiResource {
 			log.info("Receipt generated successfully for transaction: {}", reference);
 			return ResponseEntity.ok().build();
 
-		} catch (InvalidParameterException e) {
-			log.error("Invalid parameters for receipt generation: {}", e.getMessage(), e);
-			return ResponseEntity.badRequest().build();
 		} catch (Exception e) {
-			log.error("Error generating receipt for transaction: {}", reference, e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			log.error("Error generating receipt for transaction {}: {}", reference, e.getMessage(), e);
+			throw new ValidationException("error.receipt.generation", "We're unable to generate your transaction receipt at the moment. Please verify the transaction reference and try again", e.getMessage());
 		}
 	}
 }
