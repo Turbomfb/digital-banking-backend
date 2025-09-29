@@ -303,7 +303,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         CustomerIdentityVerificationResponse customerIdentityVerificationResponse =
                 identityVerificationService.verifyNin(customerKycRequest.getNin(), foundCustomer);
         foundCustomer.setNin(customerKycRequest.getNin());
-//        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
+        finalizeValidations(customerIdentityVerificationResponse, IdentityVerificationDataType.NIN);
 
         customerIdentityVerificationResponse = identityVerificationService.verifyBvn(customerKycRequest.getBvn(), foundCustomer);
         foundCustomer.setBvn(customerKycRequest.getBvn());

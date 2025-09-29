@@ -54,7 +54,7 @@ public class WalletAccountServiceImpl implements WalletAccountService {
 		BigDecimal currentBalance = savingsAccount.getAccountBalance();
 
 		// Get annual interest rate as decimal (e.g., 5% = 0.05)
-		BigDecimal annualInterestRate = BigDecimal.valueOf(savingsAccount.getAnnualInterestRate())
+		BigDecimal annualInterestRate = BigDecimal.valueOf(savingsAccount.getAnnualInterestRate() != null ? savingsAccount.getAnnualInterestRate() : 0)
 				.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP);
 
 		List<SavingsInterestBreakdownResponse> savingsInterestBreakdownResponses = new ArrayList<>();
