@@ -183,8 +183,8 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerDashboardResponse customerDashboardResponse = CustomerDashboardResponse.builder()
                 .walletAccount(
                         new CustomerDashboardResponse.Account(
-                                walletAccount.getAccountBalance() == null ? BigDecimal.ZERO : flexAccount.getAccountBalance(),
-                                walletAccount.getInterestEarned() == null ? BigDecimal.ZERO : flexAccount.getInterestEarned(),
+                                walletAccount.getAccountBalance() == null ? BigDecimal.ZERO : walletAccount.getAccountBalance(),
+                                walletAccount.getInterestEarned() == null ? BigDecimal.ZERO : walletAccount.getInterestEarned(),
                                 BigDecimal.ZERO,
                                 BigDecimal.ZERO,
                                 (long) savingsAccounts.size()
