@@ -114,39 +114,51 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			ExternalPaymentTransactionOtpGenerationResponse.Data responseData = new ExternalPaymentTransactionOtpGenerationResponse.Data(request.getAmount(), otpDto.getUniqueId());
 			return new GenericApiResponse(message, "success", responseData);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
-			SavingsAccountTransactionRequest otpData = (SavingsAccountTransactionRequest) this.redisService.validateOtpWithoutDeletingRecord(request.getReference(), request.getOtp(), OtpType.KYC_UPGRADE).getData();
-			if (otpData.getAmount().compareTo(request.getAmount()) != 0) {
-				throw new ValidationException("error.msg.customer.transaction.amount.mismatch",
-						"Invalid payment reference provided");
-			}
-			this.validateCustomerAccount(request, customerId);
-			request.validateForOtpVerification();
-			ExternalPaymentTransactionOtpVerificationResponse response = externalPaymentService.initiateTransfer(request);
-			this.redisService.validateOtp(request.getReference(), request.getOtp(), OtpType.TRANSFER);
-			this.redisService.save(request, OtpType.TRANSFER, request.getReference());
-			return new GenericApiResponse(
-					response.getMessage(),
-					response.getStatus(),
-					response.getData()
-			);
-		}
+            SavingsAccountTransactionRequest otpData = (SavingsAccountTransactionRequest) this.redisService.validateOtpWithoutDeletingRecord(request.getReference(), request.getOtp(), OtpType.KYC_UPGRADE).getData();
+            if (otpData.getAmount().compareTo(request.getAmount()) != 0) {
+                throw new ValidationException("error.msg.customer.transaction.amount.mismatch",
+                        "Invalid payment reference provided");
+            }
+            this.validateCustomerAccount(request, customerId);
+            request.validateForOtpVerification();
+            ExternalPaymentTransactionOtpVerificationResponse response;
+            try {
+                response = externalPaymentService.initiateTransfer(request);
+            } catch (Exception e) {
+                log.error("Error processing transaction command: {}", e.getMessage(), e);
+                throw new ValidationException("error.processing.transaction", "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists", e);
+            }
+            this.redisService.validateOtp(request.getReference(), request.getOtp(), OtpType.TRANSFER);
+            this.redisService.save(request, OtpType.TRANSFER, request.getReference());
+            return new GenericApiResponse(
+                    response.getMessage(),
+                    response.getStatus(),
+                    response.getData()
+            );
+        }
 		return null;
 	}
 
 	@Override
-	public WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId) throws Exception {
-		Customer customer = customerService.getCustomerById(customerId);
-		PaymentOrder paymentOrder = new PaymentOrder();
-		paymentOrder.setAmount(request.getAmount());
-		String reference = UUID.randomUUID().toString();
-		paymentOrder.setReference(reference);
-		paymentOrder.setCurrency(request.getCurrency());
-		paymentOrder.setCustomerId(customerId);
-		paymentOrder.setStatus(PaymentOrderStatus.IN_PROGRESS);
-		WalletPaymentOrderResponse response = externalPaymentService.initiateOrder(request, customer, reference);
-		paymentOrderRepository.save(paymentOrder);
-		return response;
-	}
+	public WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId) {
+        Customer customer = customerService.getCustomerById(customerId);
+        PaymentOrder paymentOrder = new PaymentOrder();
+        paymentOrder.setAmount(request.getAmount());
+        String reference = UUID.randomUUID().toString();
+        paymentOrder.setReference(reference);
+        paymentOrder.setCurrency(request.getCurrency());
+        paymentOrder.setCustomerId(customerId);
+        paymentOrder.setStatus(PaymentOrderStatus.IN_PROGRESS);
+        WalletPaymentOrderResponse response;
+        try {
+            response = externalPaymentService.initiateOrder(request, customer, reference);
+        } catch (Exception e) {
+            log.error("Error initiating payment order for customer {}: {}", customerId, e.getMessage(), e);
+            throw new ValidationException("error.payment.order.initiation", "We're unable to process your payment order at the moment. Please try again or contact support if the issue persists", e);
+        }
+        paymentOrderRepository.save(paymentOrder);
+        return response;
+    }
 
 	@Override
 	public GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request) {

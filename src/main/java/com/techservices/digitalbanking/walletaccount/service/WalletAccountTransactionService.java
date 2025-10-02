@@ -26,7 +26,7 @@ public interface WalletAccountTransactionService {
 
 	GenericApiResponse processTransactionCommand(@Valid String command, SavingsAccountTransactionRequest request, Long customerId);
 
-	WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId) throws Exception;
+	WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId);
 
     GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request);
 }
