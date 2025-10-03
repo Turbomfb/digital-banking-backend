@@ -312,7 +312,7 @@ public class CustomerApiResource {
 		try {
 			offers = loanApplicationService.retrieveCustomerLoanOffers(customerId);
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			log.error(e.getMessage(), e);
 			response.setPreQualifiedForLoan(false);
 		}
 		response.setPreQualifiedForLoan(offers != null && !offers.getData().isEmpty());
