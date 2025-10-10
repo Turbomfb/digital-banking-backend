@@ -239,7 +239,7 @@ public class ReceiptService {
         addReceiptTableRow(table, "Reference:", request.getTransactionId(), labelFont, valueFont);
 
         // Sender details
-        addReceiptTableRow(table, "From Account:", accountData.getAccountNumber(), labelFont, valueFont);
+        addReceiptTableRow(table, "From Account:", accountData.getNuban(), labelFont, valueFont);
         addReceiptTableRow(table, "Account Holder:", foundCustomer.getFullName(), labelFont, valueFont);
 
         document.add(table);
@@ -325,7 +325,7 @@ public class ReceiptService {
         y = drawDetailRow(g2d, "Date & Time:", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")), padding, y, width);
         y = drawDetailRow(g2d, "Amount:", formatCurrency(request.getAmount()) + " " + request.getCurrency(), padding, y, width);
         y = drawDetailRow(g2d, "Status:", "SUCCESSFUL", padding, y, width);
-        y = drawDetailRow(g2d, "From Account:", accountData.getAccountNumber(), padding, y, width);
+        y = drawDetailRow(g2d, "From Account:", accountData.getNuban(), padding, y, width);
         y = drawDetailRow(g2d, "Account Holder:", foundCustomer.getFullName(), padding, y, width);
 
         y += 20;
