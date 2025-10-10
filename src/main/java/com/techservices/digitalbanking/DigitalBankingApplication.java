@@ -3,10 +3,13 @@ package com.techservices.digitalbanking;
 
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.IdentityVerificationDataRepository;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.eBanking.api.CustomerApiClient;
+import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.eBanking.service.ClientService;
 import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.investment.service.InvestmentService;
 import jakarta.annotation.PostConstruct;
@@ -35,6 +38,7 @@ public class DigitalBankingApplication {
     private final AddressRepository addressRepository;
     private final CustomerApiClient customerApiClient;
     private final InvestmentService investmentService;
+    private final AccountService accountService;
 
     public static void main(String[] args) {
         SpringApplication.run(DigitalBankingApplication.class, args);
@@ -42,5 +46,15 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
+        for (Customer customer : customerRepository.findAll()) {
+            try {
+                String accountNo = customer.getAccountId();
+                AccountDto accountDto = accountService.retrieveSavingsAccount(accountNo);
+                customer.setNuban(accountDto.getNuban());
+                customerRepository.save(customer);
+            } catch (Exception e) {
+                System.out.println("Error processing customer ID " + customer.getId() + ": " + e.getMessage());
+            }
+        }
     }
 }

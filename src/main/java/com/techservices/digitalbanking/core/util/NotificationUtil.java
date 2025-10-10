@@ -4,6 +4,9 @@ import com.techservices.digitalbanking.core.configuration.BankConfigurationServi
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+
 import static com.techservices.digitalbanking.core.util.DateUtil.getCurrentDate;
 import static com.techservices.digitalbanking.core.util.DateUtil.getCurrentTime;
 
@@ -31,7 +34,8 @@ public class NotificationUtil {
             Desc: %s
             """;
 
-    public String getTransactionNotificationTemplate(String transactionType, String amount, String balance, String description) {
-        return String.format(TRANSACTION_NOTIFICATION_TEMPLATE, transactionType, amount, balance, getCurrentDate(), getCurrentTime(), description);
+    public String getTransactionNotificationTemplate(String transactionType, String amount, BigDecimal balance, String description) {
+        String formattedBalance = AppUtil.formatAmount(balance);
+        return String.format(TRANSACTION_NOTIFICATION_TEMPLATE, transactionType, amount, formattedBalance, getCurrentDate(), getCurrentTime(), description);
     }
 }

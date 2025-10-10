@@ -26,6 +26,9 @@ public class Customer extends BaseEntity {
     @Column(name = "account_id")
     private String accountId;
 
+    @Column(name = "nuban")
+    private String nuban;
+
     @Column(name = "recurring_deposit_account_id")
     private String flexAccountId;
 

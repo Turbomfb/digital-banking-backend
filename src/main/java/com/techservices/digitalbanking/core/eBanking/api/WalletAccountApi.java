@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.core.eBanking.api;
 
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.eBanking.model.request.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,7 +46,7 @@ public interface WalletAccountApi {
 	@PostMapping(value = "/walletaccounts/{walletAccountNo}/transactions")
 	PostSavingsAccountTransactionsResponse handleTransactionCommand(@PathVariable("walletAccountNo") String walletAccountNo,
 			@Valid @RequestBody PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest,
-			@Valid @RequestParam(value = "command", required = false) String command);
+			@Valid @RequestParam(value = "command", required = false) TransactionType command);
 
 	@PostMapping(value = "/walletaccounts/{walletAccountNo}/transactions/{transactionId}")
 	PostSavingsAccountTransactionsResponse handleCommandUsingTransactionId(@PathVariable("walletAccountNo") Long walletAccountNo,

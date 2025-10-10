@@ -5,6 +5,8 @@ import com.techservices.digitalbanking.core.exception.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.StringJoiner;
 
 public class AppUtil {
@@ -12,6 +14,7 @@ public class AppUtil {
 	public static final String EXTERNAL = "External";
 	public static final String INTERNAL = "Internal";
 	public static final String DEFAULT_CURRENCY = "NGN";
+	public static final String SUCCESS = "Success";
 
 	public static final String[] PUBLIC_ENDPOINTS = {
 			"/api-docs/**",
@@ -103,4 +106,9 @@ public class AppUtil {
 				.add(b == null ? BigDecimal.ZERO : b);
 	}
 
+	public static String formatAmount(BigDecimal balance) {
+		balance = balance.setScale(2, RoundingMode.DOWN);
+		DecimalFormat df = new DecimalFormat("#,##0.00");
+		return df.format(balance);
+	}
 }

@@ -1,7 +1,10 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.walletaccount.service.impl;
 
+import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
 import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
+import com.techservices.digitalbanking.core.domain.data.model.TransactionLog;
+import com.techservices.digitalbanking.core.domain.data.repository.TransactionLogRepository;
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
@@ -10,6 +13,7 @@ import com.techservices.digitalbanking.core.domain.dto.request.NotificationReque
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.enums.AlertType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
@@ -18,6 +22,7 @@ import com.techservices.digitalbanking.core.service.ExternalPaymentService;
 import com.techservices.digitalbanking.core.service.NotificationService;
 import com.techservices.digitalbanking.core.util.NotificationUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import com.techservices.digitalbanking.walletaccount.domain.data.PaymentOrderStatus;
 import com.techservices.digitalbanking.walletaccount.domain.data.model.PaymentOrder;
@@ -49,6 +54,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.techservices.digitalbanking.core.domain.enums.TransactionType.INTER_BANK_OUTBOUND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
 
@@ -67,6 +73,9 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	private final NotificationService notificationService;
 	private final NotificationUtil notificationUtil;
 	private final WalletAccountService walletAccountService;
+	private final BankConfigurationService bankConfigurationService;
+	private final CustomerRepository customerRepository;
+	private final TransactionLogRepository transactionLogRepository;
 
 
 	@Override
@@ -100,43 +109,100 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	@Override
 	public GenericApiResponse processTransactionCommand(String command, SavingsAccountTransactionRequest request, Long customerId) {
 
+		Customer sender = this.validateCustomerAccount(request, customerId);
 		if (GENERATE_OTP_COMMAND.equals(command)) {
-			Customer customer = this.validateCustomerAccount(request, customerId);
 			request.validateForOtpGeneration();
-			if (!passwordEncoder.matches(request.getTransactionPin(), customer.getTransactionPin())) {
-				throw new AbstractPlatformDomainRuleException("error.msg.customer.transaction.pin.mismatch",
+			if (!passwordEncoder.matches(request.getTransactionPin(), sender.getTransactionPin())) {
+				throw new AbstractPlatformDomainRuleException("error.msg.sender.transaction.pin.mismatch",
 						"Customer transaction pin is not correct");
 			}
 			request.setTransactionPin(null);
-			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(customer.getPhoneNumber(), customer.getEmailAddress());
+			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(sender.getPhoneNumber(), sender.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.TRANSFER, notificationRequestDto, request.getAmount());
 			String message = notificationRequestDto.getOtpResponseMessage();
 			ExternalPaymentTransactionOtpGenerationResponse.Data responseData = new ExternalPaymentTransactionOtpGenerationResponse.Data(request.getAmount(), otpDto.getUniqueId());
 			return new GenericApiResponse(message, "success", responseData);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
+
             SavingsAccountTransactionRequest otpData = (SavingsAccountTransactionRequest) this.redisService.validateOtpWithoutDeletingRecord(request.getReference(), request.getOtp(), OtpType.KYC_UPGRADE).getData();
             if (otpData.getAmount().compareTo(request.getAmount()) != 0) {
-                throw new ValidationException("error.msg.customer.transaction.amount.mismatch",
+                throw new ValidationException("error.msg.sender.transaction.amount.mismatch",
                         "Invalid payment reference provided");
             }
             this.validateCustomerAccount(request, customerId);
             request.validateForOtpVerification();
             ExternalPaymentTransactionOtpVerificationResponse response;
-            try {
-                response = externalPaymentService.initiateTransfer(request);
-            } catch (Exception e) {
-                log.error("Error processing transaction command: {}", e.getMessage(), e);
-                throw new ValidationException("error.processing.transaction", "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists", e);
+
+            boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankNipCode(), bankConfigurationService.getBankCode());
+            TransactionLog transactionLog = null;
+			AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(sender.getId());
+			BigDecimal balance = accountResponse.getAccountBalance().subtract(otpData.getAmount());
+            if (isIntraBankTransfer) {
+                try {
+                    Optional<Customer> recipient = customerRepository.findByNuban(request.getAccountNumber());
+                    if (recipient.isPresent()) {
+                        Customer foundRecipient = recipient.get();
+                        accountTransactionService.processIntraTransafer(sender.getAccountId(),
+                                foundRecipient.getAccountId(), request.getAmount(), "Transfer | " + request.getNarration());
+                    }
+                } catch (Exception e) {
+                    log.error("Error processing transaction command: {}", e.getMessage(), e);
+                    throw new ValidationException("error.processing.transaction", "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists", e);
+                }
+            } else {
+                try {
+                    transactionLog = createInterbankTransactionLog(request, sender);
+                    transactionLog = transactionLogRepository.save(transactionLog);
+                    log.info("Created interbank transaction log with PENDING status: {}", transactionLog.getTransactionReference());
+
+                    accountTransactionService.handleWithdrawal(sender.getAccountId(), request.getAmount(), null, "Transfer | " + request.getNarration());
+                    log.info("Successfully debited sender account for transaction: {}", transactionLog.getTransactionReference());
+                } catch (Exception e) {
+                    log.error("Error processing transaction command: {}", e.getMessage(), e);
+                    throw new ValidationException("error.processing.transaction", "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists", e);
+                }
+                try {
+                    externalPaymentService.initiateTransfer(request, transactionLog);
+                } catch (Exception e) {
+					transactionLog.setResponseCode("99");
+					transactionLog.setResponseMessage(e.getMessage());
+                    log.error("Error processing transaction command: {}", e.getMessage(), e);
+                }
             }
+			if (transactionLog != null) {
+				transactionLogRepository.save(transactionLog);
+			}
             this.redisService.validateOtp(request.getReference(), request.getOtp(), OtpType.TRANSFER);
             this.redisService.save(request, OtpType.TRANSFER, request.getReference());
-            return new GenericApiResponse(
-                    response.getMessage(),
-                    response.getStatus(),
-                    response.getData()
+			try {
+				String transactionMessage = notificationUtil.getTransactionNotificationTemplate(TransactionType.DEBIT.name(), request.getAmount().toString(), balance, request.getNarration());
+				notificationService.notifyUser(sender, transactionMessage, AlertType.TRANSACTION);
+			} catch (Exception e) {
+				log.error("Error sending transaction notification: {}", e.getMessage(), e);
+			}
+			return new GenericApiResponse(
+                    "Transaction has been processed successfully",
+                    "success",
+                    null
             );
         }
-		return null;
+		throw new ValidationException("error.command.not.supported",
+				"Command not supported. Supported commands are: " + GENERATE_OTP_COMMAND + ", " + VERIFY_OTP_COMMAND);
+	}
+	private TransactionLog createInterbankTransactionLog(SavingsAccountTransactionRequest request, Customer customer) {
+		TransactionLog log = new TransactionLog();
+		log.setId(UUID.randomUUID().toString());
+		log.setCustomerId(customer.getId());
+		log.setBeneficiaryAccountNumber(request.getAccountNumber());
+		log.setBeneficiaryAccountName(request.getAccountName());
+		log.setBeneficiaryBankName(request.getBankName());
+		log.setBeneficiaryBankCode(request.getBankNipCode());
+		log.setAmount(request.getAmount());
+		log.setNarration(request.getNarration());
+		log.setTransactionReference(request.getReference());
+		log.setStatus("PENDING");
+		log.setTransactionType(INTER_BANK_OUTBOUND.name());
+		return log;
 	}
 
 	@Override
@@ -184,10 +250,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 					paymentOrderRepository.save(paymentOrderEntity);
 					AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(customer.getId());
 					BigDecimal balance = accountResponse.getAccountBalance();
-					balance = balance.setScale(2, RoundingMode.DOWN);
-					DecimalFormat df = new DecimalFormat("#,##0.00");
-					String formattedBalance = df.format(balance);
-					String transactionMessage = notificationUtil.getTransactionNotificationTemplate("CREDIT", paymentOrderEntity.getAmount().toString(), formattedBalance, paymentOrderEntity.getReference());
+					String transactionMessage = notificationUtil.getTransactionNotificationTemplate(TransactionType.CREDIT.name(), paymentOrderEntity.getAmount().toString(), balance, paymentOrderEntity.getReference());
 					notificationService.notifyUser(customer, transactionMessage, AlertType.TRANSACTION);
 					return new GenericApiResponse("Inbound transaction successfully processed", "success");
 				} catch (Exception e) {

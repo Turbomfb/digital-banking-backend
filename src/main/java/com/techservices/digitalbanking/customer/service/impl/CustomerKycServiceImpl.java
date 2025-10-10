@@ -363,9 +363,9 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         String externalId = createOrUpgradeClient(foundCustomer, customerKycRequest, customerKycTier, customer, verificationResponse);
 
         if (StringUtils.isNotBlank(externalId)) {
-            String savingsAccountNo = createOrRetrieveSavingsAccount(externalId, verificationResponse, customerKycTier);
+            AccountDto savingsAccount = createOrRetrieveSavingsAccount(externalId, verificationResponse, customerKycTier);
             String flexAccountNo = createOrRetrieveFlexInvestmentAccount(externalId, verificationResponse);
-            updateCustomerWithAccountDetails(foundCustomer, externalId, savingsAccountNo, flexAccountNo);
+            updateCustomerWithAccountDetails(foundCustomer, externalId, savingsAccount.getAccountNumber(), flexAccountNo, savingsAccount.getNuban());
         }
     }
 
@@ -390,7 +390,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         return customer.getId();
     }
 
-    private String createOrRetrieveSavingsAccount(String externalId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse,
+    private AccountDto createOrRetrieveSavingsAccount(String externalId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse,
                                                   CustomerKycTier customerKycTier) {
         log.info("Client ID found: {}", externalId);
         List<@Valid AccountDto> clientAccounts = clientService.getAllWalletAccountByExternalId(externalId);
@@ -398,13 +398,13 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         log.info("Savings account found: {}", savingsAccount);
 
         if (savingsAccount.isPresent()) {
-            return savingsAccount.get().getAccountNumber();
+            return savingsAccount.get();
         } else {
             String gender = verificationResponse.getGender();
             PostSavingsAccountsResponse savingsAccountsResponse = accountService.createSavingsAccount(
                     externalId, gender, customerKycTier.getCode()
             );
-            return savingsAccountsResponse != null ? savingsAccountsResponse.getAccountNumber() : null;
+            return savingsAccountsResponse != null ? savingsAccountsResponse.parse() : null;
         }
     }
 
@@ -427,12 +427,12 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         }
     }
 
-    private void updateCustomerWithAccountDetails(Customer foundCustomer, String clientId, String savingsAccountNo, String flexAccountNo) {
+    private void updateCustomerWithAccountDetails(Customer foundCustomer, String clientId, String savingsAccountNo, String flexAccountNo, String nuban) {
         foundCustomer.setExternalId(clientId);
         foundCustomer.setAccountId(savingsAccountNo);
         foundCustomer.setActive(true);
         foundCustomer.setFlexAccountId(flexAccountNo);
-
+        foundCustomer.setNuban(nuban);
     }
 
     private void updateCustomerDetails(Customer foundCustomer, CustomerKycRequest customerKycRequest,

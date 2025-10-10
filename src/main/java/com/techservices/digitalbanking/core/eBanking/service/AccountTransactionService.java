@@ -39,9 +39,8 @@ import static com.techservices.digitalbanking.core.util.TransactionUtil.DEPOSIT;
 public class AccountTransactionService {
     private final WalletAccountApiClient walletAccountApiClient;
 	private final TransactionApiClient transactionApiClient;
-	public static final String SAVINGS_ACCOUNT_TRANSACTION_DATATABLE_NAME = "dt_additional_transaction_information";
 
-	private PostSavingsAccountTransactionsResponse getPostSavingsAccountTransactionsResponse(String command,
+	private PostSavingsAccountTransactionsResponse getPostSavingsAccountTransactionsResponse(TransactionType command,
 			String savingsAccountId, PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest) {
 
 		return walletAccountApiClient.handleTransactionCommand(savingsAccountId, postSavingsAccountTransactionsRequest,
@@ -53,7 +52,16 @@ public class AccountTransactionService {
 		PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest = getSavingsAccountTransactionRequest(
 				transactionAmount, narration, transactionReference);
 
-		return getPostSavingsAccountTransactionsResponse(DEPOSIT, savingsAccountId,
+		return getPostSavingsAccountTransactionsResponse(TransactionType.CREDIT, savingsAccountId,
+				postSavingsAccountTransactionsRequest);
+	}
+
+	public PostSavingsAccountTransactionsResponse handleWithdrawal(String savingsAccountId, BigDecimal transactionAmount,
+			String transactionReference, String narration) {
+		PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest = getSavingsAccountTransactionRequest(
+				transactionAmount, narration, transactionReference);
+
+		return getPostSavingsAccountTransactionsResponse(TransactionType.DEBIT, savingsAccountId,
 				postSavingsAccountTransactionsRequest);
 	}
 
@@ -66,45 +74,13 @@ public class AccountTransactionService {
 		return postSavingsAccountTransactionsRequest;
 	}
 
-	private static PostClientsDatatable getTransactionMetadata(BigDecimal transactionAmount,
-			TransactionMetadata transactionMetadata) {
-		PostClientsDatatable postClientsDatatable = new PostClientsDatatable();
-		postClientsDatatable.setRegisteredTableName(SAVINGS_ACCOUNT_TRANSACTION_DATATABLE_NAME);
-		Map<String, Object> additionalTransactionInformation = new HashMap<>();
-		additionalTransactionInformation.put("debit_account_number", transactionMetadata.getDebitAccountNumber());
-		additionalTransactionInformation.put("debit_account_name", transactionMetadata.getDebitAccountName());
-		additionalTransactionInformation.put("amount", transactionAmount);
-		additionalTransactionInformation.put("credit_account_number", transactionMetadata.getCreditAccountNumber());
-		additionalTransactionInformation.put("credit_account_name", transactionMetadata.getCreditAccountName());
-		additionalTransactionInformation.put("transaction_reference", transactionMetadata.getTransactionReference());
-		additionalTransactionInformation.put("debit_bvn", transactionMetadata.getDebitBvn());
-		postClientsDatatable.setData(additionalTransactionInformation);
-		return postClientsDatatable;
-	}
-
-	public FineractPageResponse<SavingsAccountTransactionData> retrieveSavingsAccountTransactions(String savingsAccountId,
-																								  String startDate, String endDate, String dateFormat, Long limit, Long offset, @Valid String transactionType) {
-
-		FineractPageTransactionResponse<SavingsAccountTransactionData> savingsAccountTransactions = walletAccountApiClient
-				.searchTransactions(savingsAccountId, startDate, endDate, dateFormat, offset, limit);
-		if (StringUtils.isNotBlank(transactionType)) {
-			savingsAccountTransactions.setContent(
-					savingsAccountTransactions.getContent().stream()
-							.filter(transaction -> transaction != null && StringUtils.equalsIgnoreCase(transaction.getActualTransactionType(), transactionType))
-							.toList()
-			);
-		}
-
-		return FineractPageResponse.create(savingsAccountTransactions);
-	}
-
 	public PostAccountTransfersResponse processIntraTransafer(
-			String fromSavingsAccount,
-			String flexAccountId, BigDecimal transactionAmount, String narration) {
+			String senderAccountNumber,
+			String recipientAccountNumber, BigDecimal transactionAmount, String narration) {
 
 		PostAccountTransfersRequest postAccountTransfersRequest = new PostAccountTransfersRequest();
-		postAccountTransfersRequest.setFromAccountId(fromSavingsAccount);
-		postAccountTransfersRequest.setToAccountId(flexAccountId);
+		postAccountTransfersRequest.setFromAccountId(senderAccountNumber);
+		postAccountTransfersRequest.setToAccountId(recipientAccountNumber);
 		postAccountTransfersRequest.setTransferAmount(transactionAmount);
 		postAccountTransfersRequest.setTransferDescription(narration);
 		return transactionApiClient

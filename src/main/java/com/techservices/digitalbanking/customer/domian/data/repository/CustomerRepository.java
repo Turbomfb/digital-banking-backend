@@ -39,4 +39,6 @@ public interface CustomerRepository extends CrudRepository<Customer, Long> {
     Optional<Customer> findByRcNumber(String rcNumber);
 
     Optional<Customer> findByAccountId(String accountId);
+
+    Optional<Customer> findByNuban(String nuban);
 }

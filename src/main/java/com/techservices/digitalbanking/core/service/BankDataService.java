@@ -1,25 +1,32 @@
 package com.techservices.digitalbanking.core.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
 import com.techservices.digitalbanking.core.configuration.SystemProperty;
 import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
 import com.techservices.digitalbanking.core.domain.data.model.BankData;
+import com.techservices.digitalbanking.core.domain.data.model.NameEnquiryCache;
 import com.techservices.digitalbanking.core.domain.data.repository.BankDataRepository;
+import com.techservices.digitalbanking.core.domain.data.repository.NameEnquiryCacheRepository;
 import com.techservices.digitalbanking.core.domain.dto.response.BankDataResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.YouverifyBankDataResponse;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.walletaccount.domain.request.NameEnquiryRequest;
 import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse;
-import io.micrometer.common.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -31,10 +38,11 @@ public class BankDataService {
     private final ApiService apiService;
     private final SystemProperty systemProperty;
     private final BankDataRepository bankDataRepository;
+    private final NameEnquiryCacheRepository nameEnquiryCacheRepository;
 
     private static final double SCORE_THRESHOLD = 0.85;
 
-    private static final String ACCOUNT_VERIFICATION_FAILED_ERROR =
+    public static final String ACCOUNT_VERIFICATION_FAILED_ERROR =
             "Account verification failed. Please check the details or try again later.";
 
     private static final Pattern STOP_WORDS = Pattern.compile(
@@ -64,6 +72,8 @@ public class BankDataService {
 
     private final JaroWinklerDistance distance = new JaroWinklerDistance();
     private final String pathUrl = "/v2/api/identity/ng/bank-account-number/";
+    private final BankConfigurationService bankConfigurationService;
+    private final CustomerRepository customerRepository;
 
     public BankDataResponse retrieveAllBanks() {
         BankDataResponse bankDataResponse = new BankDataResponse();
@@ -84,14 +94,45 @@ public class BankDataService {
 
         validateRequest(request);
 
+        Optional<NameEnquiryCache> cachedData = nameEnquiryCacheRepository.findByAccountNumberAndBankCode(
+                request.getAccountNumber(),
+                request.getBankCode()
+        );
+
+        if (cachedData.isPresent()) {
+            log.info("Name enquiry data found in cache for: accountNumber={}, bankCode={}",
+                    request.getAccountNumber(), request.getBankCode());
+            return cachedData.get().toResponse();
+        }
+
+        boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankCode(), bankConfigurationService.getBankCode());
+        if (isIntraBankTransfer) {
+            Optional<Customer> customer = customerRepository.findByNuban(request.getAccountNumber());
+            log.info("Customer lookup for intra-bank transfer: accountNumber={}, found={}", request.getAccountNumber(), customer.isPresent());
+            if (customer.orElseThrow(() -> new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR)) != null) {
+                return NameEnquiryResponse.from(customer.get(), bankConfigurationService);
+            }
+        }
+
+        log.info("Fetching name enquiry data from external API for: accountNumber={}, bankCode={}",
+                request.getAccountNumber(), request.getBankCode());
+        NameEnquiryResponse resp;
         try {
             request.setSubjectConsent(true);
-            return callYouverifyResolve(request);
+            resp = this.callYouverifyResolve(request);
         } catch (Exception directFailure) {
             log.info("Direct enquiry failed ({}). Falling back to fuzzy match.",
                     directFailure.getMessage());
-            return processWithFuzzyMatching(request);
+            resp = this.processWithFuzzyMatching(request);
         }
+        try {
+            NameEnquiryCache cache = NameEnquiryCache.parse(resp, request.getAccountNumber(), request.getBankCode());
+            log.info("Saving name enquiry data to cache: {}", cache);
+            nameEnquiryCacheRepository.save(cache);
+        } catch (Exception e) {
+            log.error("Failed to save name enquiry data to cache: {}", e.getMessage(), e);
+        }
+        return resp;
     }
 
     private NameEnquiryResponse processWithFuzzyMatching(NameEnquiryRequest originalRequest) {
@@ -125,18 +166,29 @@ public class BankDataService {
         return headers;
     }
 
-    private NameEnquiryResponse callYouverifyResolve(NameEnquiryRequest req)
+    @Transactional
+    public NameEnquiryResponse callYouverifyResolve(NameEnquiryRequest req)
             throws JsonProcessingException, PlatformServiceException {
 
+        log.info("Resolving account name for: accountNumber={}, bankCode={}", req.getAccountNumber(), req.getBankCode());
+
         String url = systemProperty.getYouverifyIntegrationUrl() + pathUrl + "resolve";
-        NameEnquiryResponse resp =
-                apiService.callExternalApi(url, NameEnquiryResponse.class, HttpMethod.POST, req, getHeaders());
+        NameEnquiryResponse resp = apiService.callExternalApi(
+                url,
+                NameEnquiryResponse.class,
+                HttpMethod.POST,
+                req,
+                getHeaders()
+        );
 
         if (resp.getData() == null ||
                 resp.getData().getBankDetails() == null ||
                 StringUtils.isBlank(resp.getData().getBankDetails().getAccountName())) {
+            log.error("Account verification failed for: accountNumber={}, bankCode={}",
+                    req.getAccountNumber(), req.getBankCode());
             throw new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR);
         }
+
         return resp;
     }
 
