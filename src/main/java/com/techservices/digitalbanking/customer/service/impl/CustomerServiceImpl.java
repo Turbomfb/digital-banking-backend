@@ -309,7 +309,7 @@ public class CustomerServiceImpl implements CustomerService {
     public GenericApiResponse activateAccount(CustomerAccountActivationRequest request, UserType userType) {
         Customer customer;
         if (request.getCustomerId() == null) {
-            if (StringUtils.isAnyBlank(request.getEmailAddress(), request.getPhoneNumber())) {
+            if (StringUtils.isAllBlank(request.getEmailAddress(), request.getPhoneNumber())) {
                 throw new ValidationException("validation.error.email.or.phone", "Either customerId, emailAddress or phoneNumber is required");
             }
             customer = this.getCustomerByEmailOrPhoneNumber(request.getEmailAddress(), request.getPhoneNumber(), userType);
