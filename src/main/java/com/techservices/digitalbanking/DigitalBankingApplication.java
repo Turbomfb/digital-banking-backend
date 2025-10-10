@@ -46,15 +46,5 @@ public class DigitalBankingApplication {
 
     @PostConstruct
     public void init() {
-        for (Customer customer : customerRepository.findAll()) {
-            try {
-                String accountNo = customer.getAccountId();
-                AccountDto accountDto = accountService.retrieveSavingsAccount(accountNo);
-                customer.setNuban(accountDto.getNuban());
-                customerRepository.save(customer);
-            } catch (Exception e) {
-                System.out.println("Error processing customer ID " + customer.getId() + ": " + e.getMessage());
-            }
-        }
     }
 }

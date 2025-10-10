@@ -123,6 +123,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			ExternalPaymentTransactionOtpGenerationResponse.Data responseData = new ExternalPaymentTransactionOtpGenerationResponse.Data(request.getAmount(), otpDto.getUniqueId());
 			return new GenericApiResponse(message, "success", responseData);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
+			Optional<Customer> recipient = customerRepository.findByNuban(request.getAccountNumber());
 
             SavingsAccountTransactionRequest otpData = (SavingsAccountTransactionRequest) this.redisService.validateOtpWithoutDeletingRecord(request.getReference(), request.getOtp(), OtpType.KYC_UPGRADE).getData();
             if (otpData.getAmount().compareTo(request.getAmount()) != 0) {
@@ -137,14 +138,18 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
             TransactionLog transactionLog = null;
 			AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(sender.getId());
 			BigDecimal balance = accountResponse.getAccountBalance().subtract(otpData.getAmount());
+			BigDecimal recipientBalance = null;
             if (isIntraBankTransfer) {
                 try {
-                    Optional<Customer> recipient = customerRepository.findByNuban(request.getAccountNumber());
                     if (recipient.isPresent()) {
-                        Customer foundRecipient = recipient.get();
+						Customer foundRecipient = recipient.get();
+						recipientBalance = walletAccountService.retrieveSavingsAccountById(foundRecipient.getId()).getAccountBalance().add(otpData.getAmount());
                         accountTransactionService.processIntraTransafer(sender.getAccountId(),
                                 foundRecipient.getAccountId(), request.getAmount(), "Transfer | " + request.getNarration());
-                    }
+                    } else {
+						log.error("Recipient with account number {} not found for intra-bank transfer", request.getAccountNumber());
+						throw new ValidationException("error.processing.transaction", "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists");
+					}
                 } catch (Exception e) {
                     log.error("Error processing transaction command: {}", e.getMessage(), e);
                     throw new ValidationException("error.processing.transaction", "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists", e);
@@ -177,6 +182,12 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			try {
 				String transactionMessage = notificationUtil.getTransactionNotificationTemplate(TransactionType.DEBIT.name(), request.getAmount().toString(), balance, request.getNarration());
 				notificationService.notifyUser(sender, transactionMessage, AlertType.TRANSACTION);
+
+				if (isIntraBankTransfer) {
+					Customer foundRecipient = recipient.get();
+					transactionMessage = notificationUtil.getTransactionNotificationTemplate(TransactionType.CREDIT.name(), request.getAmount().toString(), recipientBalance, request.getNarration());
+					notificationService.notifyUser(foundRecipient, transactionMessage, AlertType.TRANSACTION);
+				}
 			} catch (Exception e) {
 				log.error("Error sending transaction notification: {}", e.getMessage(), e);
 			}
