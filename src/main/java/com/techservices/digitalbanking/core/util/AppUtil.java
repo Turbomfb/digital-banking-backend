@@ -26,6 +26,7 @@ public class AppUtil {
 			"/api/v1/customers",
 			"/api/v1/loan-products/loan-schedule-calculation",
 			"/api/v1/customers/{customerId}/transaction-pin",
+			"/api/v1/customers/me/activate-account",
 			"/api/v1/auth",
 			"/api/v1/wallet-accounts/me/transactions/webhooks",
 			"/api/v1/auth/create-password",

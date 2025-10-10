@@ -15,6 +15,7 @@ import com.techservices.digitalbanking.core.domain.enums.CustomerStatusAuditType
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.eBanking.service.LockDepositAccountService;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
+import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
@@ -22,14 +23,11 @@ import com.techservices.digitalbanking.core.service.AlertPreferenceService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
+import com.techservices.digitalbanking.customer.domian.dto.request.*;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.*;
 import com.techservices.digitalbanking.core.eBanking.service.ClientService;
-import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -287,6 +285,50 @@ public class CustomerServiceImpl implements CustomerService {
         return GenericApiResponse.builder()
                 .status(HttpStatus.OK.name())
                 .message("Account closed successfully")
+                .build();
+    }
+
+    @Override
+    public Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber, UserType customerType) {
+        Customer foundCustomer;
+
+        if (StringUtils.isNotBlank(emailAddress)) {
+            foundCustomer = this.getCustomerByEmailAddressAndUserType(emailAddress, customerType)
+                    .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid email or password"));
+        } else if (StringUtils.isNotBlank(phoneNumber)) {
+            foundCustomer = this.getCustomerByPhoneNumberAndUserType(phoneNumber, customerType)
+                    .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid phone number or password"));
+        } else {
+            throw new ValidationException("Invalid.credentials.provided", "Email or phone number must be provided");
+        }
+
+        return foundCustomer;
+    }
+
+    @Override
+    public GenericApiResponse activateAccount(CustomerAccountActivationRequest request, UserType userType) {
+        Customer customer;
+        if (request.getCustomerId() == null) {
+            if (StringUtils.isAnyBlank(request.getEmailAddress(), request.getPhoneNumber())) {
+                throw new ValidationException("validation.error.email.or.phone", "Either customerId, emailAddress or phoneNumber is required");
+            }
+            customer = this.getCustomerByEmailOrPhoneNumber(request.getEmailAddress(), request.getPhoneNumber(), userType);
+        } else {
+            customer = this.getCustomerById(request.getCustomerId());
+        }
+
+        Optional<CustomerStatusAudit> customerStatusAudit = customerStatusAuditRepository.findByCustomerIdAndTypeAndIsActive(customer.getId(), CustomerStatusAuditType.ACCOUNT_CLOSURE, true);
+        if (customerStatusAudit.isPresent()) {
+            CustomerStatusAudit audit = customerStatusAudit.get();
+            audit.setActive(false);
+            customerStatusAuditRepository.save(audit);
+        }else {
+            throw new ValidationException("validation.error.exists", "Account is already active");
+        }
+
+        return GenericApiResponse.builder()
+                .status(HttpStatus.OK.name())
+                .message("Account activated successfully")
                 .build();
     }
 

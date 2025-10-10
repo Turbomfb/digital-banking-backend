@@ -6,10 +6,7 @@ import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
-import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
+import com.techservices.digitalbanking.customer.domian.dto.request.*;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import org.springframework.data.domain.Pageable;
@@ -39,4 +36,8 @@ public interface CustomerService {
 	GenericApiResponse closeAccount(Long customerId, CustomerAccountClosureRequest request);
 
 	void validateDuplicateCustomerByRcNumber(String rcNumber);
+
+    GenericApiResponse activateAccount(CustomerAccountActivationRequest request, UserType userType);
+
+	Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber, UserType customerType);
 }

@@ -11,8 +11,7 @@ import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerifica
 import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerAccountClosureRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
+import com.techservices.digitalbanking.customer.domian.dto.request.*;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
@@ -32,8 +31,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -484,6 +481,15 @@ public class CustomerApiResource {
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		GenericApiResponse genericApiResponse = customerService.closeAccount(customerId, request);
+		return ResponseEntity.ok(genericApiResponse);
+	}
+
+	@PostMapping("me/activate-account")
+	public ResponseEntity<GenericApiResponse> activateAccount(
+			@RequestBody CustomerAccountActivationRequest request,
+			@RequestParam UserType userType
+	) {
+		GenericApiResponse genericApiResponse = customerService.activateAccount(request, userType);
 		return ResponseEntity.ok(genericApiResponse);
 	}
 }

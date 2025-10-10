@@ -88,7 +88,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType, String userAgent, HttpServletRequest request) {
         Map<String, Object> claims = new HashMap<>();
-        Customer foundCustomer = getCustomerByEmailOrPhoneNumber(postAuthenticationRequest.getEmailAddress(), postAuthenticationRequest.getPhoneNumber(), customerType);
+        Customer foundCustomer = customerService.getCustomerByEmailOrPhoneNumber(postAuthenticationRequest.getEmailAddress(), postAuthenticationRequest.getPhoneNumber(), customerType);
 
         assert foundCustomer != null;
         log.info("Found customer with email address {}", foundCustomer.getEmailAddress());
@@ -176,21 +176,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("user activity: {}", activity);
         userLoginActivityRepository.save(activity);
     }
-    private Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber, UserType customerType) {
-        Customer foundCustomer;
-
-        if (StringUtils.isNotBlank(emailAddress)) {
-            foundCustomer = customerService.getCustomerByEmailAddressAndUserType(emailAddress, customerType)
-                    .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid email or password"));
-        } else if (StringUtils.isNotBlank(phoneNumber)) {
-            foundCustomer = customerService.getCustomerByPhoneNumberAndUserType(phoneNumber, customerType)
-                    .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid phone number or password"));
-        } else {
-            throw new ValidationException("Invalid.credentials.provided", "Email or phone number must be provided");
-        }
-
-        return foundCustomer;
-    }
 
     @Override
     public GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest) {
@@ -210,7 +195,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command, UserType customerType) {
         if (StringUtils.equals(GENERATE_OTP_COMMAND, command)){
-            Customer foundCustomer = getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber(), customerType);
+            Customer foundCustomer = customerService.getCustomerByEmailOrPhoneNumber(passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber(), customerType);
             NotificationRequestDto notificationRequestDto = new NotificationRequestDto(passwordMgtRequest.getPhoneNumber(), passwordMgtRequest.getEmailAddress());
             passwordMgtRequest.setCustomerId(foundCustomer.getId());
             OtpDto otpDto = this.redisService.generateOtpRequest(passwordMgtRequest, OtpType.FORGOT_PASSWORD, notificationRequestDto, null);
