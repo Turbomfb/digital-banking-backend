@@ -7,6 +7,7 @@ import com.techservices.digitalbanking.core.eBanking.model.response.EnumOptionDa
 import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsStatus;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Setter
 @Getter
+@ToString
 public class AccountDto {
 
     private String id;

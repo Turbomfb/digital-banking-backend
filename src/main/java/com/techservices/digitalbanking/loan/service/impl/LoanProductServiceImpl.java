@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.loan.service.impl;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.LoanProductListResponse;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.eBanking.model.request.PostLoanProductsRequest;
@@ -20,7 +21,7 @@ public class LoanProductServiceImpl implements LoanProductService {
 	private final LoanService loanProductService;
 
 	@Override
-	public BasePageResponse<GetLoanProductsProductIdResponse> getLoanProducts(Long fields) {
+	public BasePageResponse<LoanProductListResponse> getLoanProducts(Long fields) {
 		return BasePageResponse.instance(loanProductService.getLoanProducts(fields));
 	}
 

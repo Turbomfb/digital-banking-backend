@@ -211,8 +211,12 @@ public class ClientService {
         return customerApiClient.retrieveCustomerAccounts(externalId, InvestmentType.WALLET);
     }
 
-    public AccountDto getWalletAccountByCustomerId(Customer customer) {
+    public AccountDto getCustomerWalletAccount(Customer customer) {
         return getCustomerActualAccount(this.getAllWalletAccountByExternalId(customer.getExternalId()), customer.getAccountId());
+    }
+
+    public AccountDto getCustomerWalletAccount(String externalId, String accountId) {
+        return getCustomerActualAccount(this.getAllWalletAccountByExternalId(externalId), accountId);
     }
 
     public AccountDto getFlexAccountByCustomer(Customer customer) {

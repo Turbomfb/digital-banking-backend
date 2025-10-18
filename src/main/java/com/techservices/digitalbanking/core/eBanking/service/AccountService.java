@@ -2,23 +2,18 @@
 package com.techservices.digitalbanking.core.eBanking.service;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.eBanking.model.request.WalletAccountCreationRequest;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.exception.AbstractPlatformDomainRuleException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.eBanking.api.WalletAccountApiClient;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsDatatable;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAccountsAccountIdRequest;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAccountsRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountsAccountIdResponse;
@@ -144,6 +139,6 @@ public class AccountService {
 	public AccountDto retrieveSavingsAccount(String walletAccountNo) {
 		Customer customer = customerRepository.findByAccountId(walletAccountNo)
 				.orElseThrow(() -> new AbstractPlatformDomainRuleException(NOT_FOUND, "Savings account not found"));
-		return clientService.getWalletAccountByCustomerId(customer);
+		return clientService.getCustomerWalletAccount(customer);
 	}
 }

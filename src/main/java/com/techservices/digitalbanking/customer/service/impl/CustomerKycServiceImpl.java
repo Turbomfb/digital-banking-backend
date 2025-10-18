@@ -3,12 +3,17 @@ package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
-import com.techservices.digitalbanking.core.domain.dto.*;
 import com.techservices.digitalbanking.core.domain.data.model.Address;
 import com.techservices.digitalbanking.core.domain.data.model.IndustrySector;
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.IndustrySectorRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.KycTierRepository;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.CustomerDto;
+import com.techservices.digitalbanking.core.domain.dto.CustomerFilterDto;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.KycTierDto;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
@@ -19,14 +24,19 @@ import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDat
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
 import com.techservices.digitalbanking.core.eBanking.model.request.FlexInvestmentCreationRequest;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.FlexInvestmentCreationResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetClientsClientIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostClientsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PutClientsClientIdResponse;
 import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutDataTableRequest;
-import com.techservices.digitalbanking.core.eBanking.model.response.*;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.eBanking.service.ClientService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
+import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
@@ -47,8 +57,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.techservices.digitalbanking.common.domain.enums.UserType.CORPORATE;
-import static com.techservices.digitalbanking.common.domain.enums.UserType.INDIVIDUAL;
-import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.*;
+import static com.techservices.digitalbanking.common.domain.enums.UserType.RETAIL;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.BVN;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.NIN;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.RC_NUMBER;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.TIN;
 import static com.techservices.digitalbanking.core.util.AppUtil.EXTERNAL;
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
@@ -364,7 +377,9 @@ public class CustomerKycServiceImpl implements CustomerKycService {
 
         if (StringUtils.isNotBlank(externalId)) {
             AccountDto savingsAccount = createOrRetrieveSavingsAccount(externalId, verificationResponse, customerKycTier);
+            log.info("Savings account found: {}", savingsAccount);
             String flexAccountNo = createOrRetrieveFlexInvestmentAccount(externalId, verificationResponse);
+            log.info("Flex account found: {}", flexAccountNo);
             updateCustomerWithAccountDetails(foundCustomer, externalId, savingsAccount.getAccountNumber(), flexAccountNo, savingsAccount.getNuban());
         }
     }
@@ -404,7 +419,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
             PostSavingsAccountsResponse savingsAccountsResponse = accountService.createSavingsAccount(
                     externalId, gender, customerKycTier.getCode()
             );
-            return savingsAccountsResponse != null ? savingsAccountsResponse.parse() : null;
+            return clientService.getCustomerWalletAccount(externalId, savingsAccountsResponse.getAccountNumber());
         }
     }
 
@@ -417,7 +432,6 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         if (savingsAccount.isPresent()) {
             return savingsAccount.get().getAccountNumber();
         } else {
-
             FlexInvestmentCreationRequest flexInvestmentCreationRequest = new FlexInvestmentCreationRequest();
             flexInvestmentCreationRequest.setExternalId(externalId);
             String gender = verificationResponse.getGender();
@@ -510,7 +524,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     }
 
     private void setupIndividualCustomerRequest(CreateCustomerRequest createCustomerRequest) {
-        createCustomerRequest.setCustomerType(INDIVIDUAL);
+        createCustomerRequest.setCustomerType(RETAIL);
     }
 
     private void setupCommonCustomerFields(CreateCustomerRequest createCustomerRequest, Customer foundCustomer, CustomerKycTier customerKycTier, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse, CustomerKycRequest customerKycRequest) {
@@ -524,11 +538,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         createCustomerRequest.setNin(customerKycRequest.getNin());
         if (verificationResponse.getAddress() != null) {
             IdentityVerificationResponse.IdentityVerificationResponseData.Address address = verificationResponse.getAddress();
-            PostClientsAddressRequest postClientsAddressRequest = new PostClientsAddressRequest();
-            postClientsAddressRequest.setAddressLine1(address.getAddressLine());
-            postClientsAddressRequest.setCity(address.getTown());
-            postClientsAddressRequest.setLga(address.getLga());
-            postClientsAddressRequest.setState(address.getState());
+            PostClientsAddressRequest postClientsAddressRequest = PostClientsAddressRequest.parse(address);
             createCustomerRequest.setAddress(List.of(postClientsAddressRequest));
         }
 

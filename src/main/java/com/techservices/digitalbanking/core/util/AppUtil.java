@@ -1,13 +1,25 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.util;
 
+import com.techservices.digitalbanking.core.domain.data.model.IndustrySector;
+import com.techservices.digitalbanking.core.domain.data.repository.IndustrySectorRepository;
+import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.StringJoiner;
+
+import static com.techservices.digitalbanking.common.domain.enums.UserType.CORPORATE;
+import static com.techservices.digitalbanking.common.domain.enums.UserType.RETAIL;
 
 public class AppUtil {
 	public static final String ROLES = "roles";

@@ -6,7 +6,11 @@ import java.util.List;
 import com.techservices.digitalbanking.core.domain.dto.LoanDto;
 import com.techservices.digitalbanking.core.eBanking.model.request.*;
 import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
+import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -104,6 +108,15 @@ public interface LoansApi {
 			@Valid @RequestBody PostLoanApplicationRequest postLoansRequest,
 			@Valid @RequestParam(value = "command", required = false) String command);
 
+
+	@PostMapping(value = "/loans/calculate-schedule", produces = {"application/json"}, consumes = "application/json")
+	LoanScheduleCalculationResponse calculateLoanSchedule(
+			@Valid @RequestBody LoanScheduleCalculationRequest loanScheduleCalculationRequest);
+
+	@PostMapping(value = "/loans/new", produces = {"application/json"}, consumes = "application/json")
+	LoanApplicationResponse submitLoanApplication(
+			@RequestBody PostNewLoanApplicationRequest loanScheduleCalculationRequest);
+
 	/**
 	 * POST /loans/{loanId}/schedule : Calculate loan repayment schedule based on
 	 * Loan term variations | Updates loan repayment schedule based on Loan term
@@ -127,6 +140,18 @@ public interface LoansApi {
 	@PostMapping(value = "/loans/{loanId}/schedule", produces = {"application/json"}, consumes = "application/json")
 	PostLoansLoanIdScheduleResponse calculateLoanScheduleOrSubmitVariableSchedule(@PathVariable("loanId") Long loanId,
 			@Valid @RequestBody Object body, @Valid @RequestParam(value = "command", required = false) String command);
+
+	@PostMapping(value = "/loans/{loanId}/documents", produces = {"application/json"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	Object uploadDocument(
+			@Parameter(description = "Loan ID", required = true)
+			@PathVariable Long loanId,
+			@Parameter(description = "Document file", required = true)
+			@RequestPart("file") MultipartFile file,
+			@Parameter(description = "Document name", required = true)
+			@RequestPart("name") String name,
+			@Parameter(description = "Document description")
+			@RequestPart(value = "description", required = false) String description
+	);
 
 	/**
 	 * POST /loans/{loanId}/collaterals : Create a Collateral Note: Currently,
@@ -654,6 +679,10 @@ public interface LoansApi {
 			@PathVariable("transactionId") Long transactionId,
 			@Valid @RequestParam(value = "fields", required = false) String fields);
 
+
+	@GetMapping(value = "/loans/{loanId}/transactions", produces = {"application/json"})
+	List<LoanTransactionResponse> retrieveAllLoanTransactions(@PathVariable("loanId") Long loanId);
+
 	/**
 	 * GET /loans/{loanId}/transactions/template : Retrieve Loan Transaction
 	 * Template This is a convenience resource. It can be useful when building
@@ -859,8 +888,8 @@ public interface LoansApi {
 	@PostMapping(value = "/loanproducts")
 	PostLoanProductsResponse createALoanProduct(@RequestBody PostLoanProductsRequest postLoanProductsRequest);
 
-	@GetMapping(value = "/loanproducts")
-	List<GetLoanProductsProductIdResponse> getLoanProducts(
+	@GetMapping(value = "/loans/products")
+	List<LoanProductListResponse> getLoanProducts(
 			@RequestParam(value = "fields", required = false) Long fields);
 
 	@GetMapping(value = "/loanproducts/{productId}")

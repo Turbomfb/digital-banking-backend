@@ -2,10 +2,9 @@
 package com.techservices.digitalbanking.loan.api;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostLoanProductsRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsProductIdResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsTemplateResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.PostLoanProductsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.LoanProductListResponse;
 import com.techservices.digitalbanking.core.eBanking.service.LoanService;
 import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
 import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
@@ -20,7 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Loan Products", description = "API for managing loan product configurations, templates, and loan schedule calculations")
@@ -31,6 +29,18 @@ public class LoanProductApiResource {
 
 	private final LoanProductService loanProductService;
 	private final LoanService loanService;
+
+
+
+	@Operation(summary = "Retrieve loan product list")
+	@GetMapping
+	public ResponseEntity<BasePageResponse<LoanProductListResponse>> getLoanProducts(
+			@RequestParam(value = "fields", required = false) Long fields) {
+		BasePageResponse<LoanProductListResponse> getLoanProductsProductIdResponses = loanProductService
+				.getLoanProducts(fields);
+
+		return ResponseEntity.ok(getLoanProductsProductIdResponses);
+	}
 
 	@Operation(
 			summary = "Retrieve a loan product by ID",

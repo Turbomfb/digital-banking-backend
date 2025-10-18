@@ -175,7 +175,7 @@ public class CustomerServiceImpl implements CustomerService {
         String externalId = foundCustomer.getExternalId();
         List<@Valid AccountDto> savingsAccounts = clientService.getAllWalletAccountByExternalId(externalId);
         List<@Valid AccountDto> flexAccounts = clientService.getAllFlexAccountByExternalId(externalId);
-        AccountDto walletAccount = clientService.getWalletAccountByCustomerId(foundCustomer);
+        AccountDto walletAccount = clientService.getCustomerWalletAccount(foundCustomer);
         AccountDto flexAccount = clientService.getFlexAccountByCustomer(foundCustomer);
         List<@Valid AccountDto> lockAccount = lockDepositAccountService.retrieveAllLockInvestmentForAnAccount(foundCustomer.getAccountId());
         CustomerDashboardResponse customerDashboardResponse = CustomerDashboardResponse.builder()

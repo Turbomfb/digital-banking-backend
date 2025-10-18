@@ -1,13 +1,15 @@
 package com.techservices.digitalbanking.core.domain.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
-@Data
+@Setter
+@Getter
+@ToString
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class LoanDto {
@@ -18,13 +20,33 @@ public class LoanDto {
     private String productName;
     private BigDecimal principalAmount;
     private BigDecimal outstandingBalance;
+    private BigDecimal totalRepaid;
     private BigDecimal totalExpectedRepayment;
-    private BigDecimal totalPaid;
     private BigDecimal interestAmount;
-    private Double interestRate;
+    private Double annualInterestRate;
+    private Double interestRatePerPeriod;
     private String status;
     private LocalDate disbursementDate;
     private LocalDate lastPaymentDate;
     private LocalDate maturityDate;
 
+    public boolean isPending() {
+        List<String> pendingStatuses = List.of("Pending", "WaitingForDisbursal", "Submitted and pending approval", "Approved");
+        return pendingStatuses.contains(this.status);
+    }
+
+    public boolean isActive() {
+        List<String> pendingStatuses = List.of("Active");
+        return pendingStatuses.contains(this.status);
+    }
+
+    public boolean isLiquidated() {
+        List<String> pendingStatuses = List.of("Liquidated");
+        return pendingStatuses.contains(this.status);
+    }
+
+    public boolean isClosed() {
+        List<String> pendingStatuses = List.of("Closed");
+        return pendingStatuses.contains(this.status);
+    }
 }

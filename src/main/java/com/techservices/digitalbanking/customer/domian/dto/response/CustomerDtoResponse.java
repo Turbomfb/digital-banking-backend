@@ -32,6 +32,7 @@ public class CustomerDtoResponse extends BaseAppResponse {
     private String externalId;
     private String phoneNumber;
     private String referralCode;
+    private String businessName;
     private String nin;
     private String bvn;
     private String rcNumber;
@@ -67,6 +68,7 @@ public class CustomerDtoResponse extends BaseAppResponse {
         customerDtoResponse.setAccountId(customer.getAccountId());
         customerDtoResponse.setFirstname(customer.getFirstname());
         customerDtoResponse.setLastname(customer.getLastname());
+        customerDtoResponse.setBusinessName(customer.getBusinessName());
         customerDtoResponse.setEmailAddress(customer.getEmailAddress());
         customerDtoResponse.setExternalId(customer.getExternalId());
         customerDtoResponse.setPhoneNumber(customer.getPhoneNumber());

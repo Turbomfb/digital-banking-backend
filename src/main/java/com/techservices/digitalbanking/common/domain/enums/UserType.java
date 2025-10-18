@@ -5,8 +5,7 @@ import lombok.Getter;
 @Getter
 public enum UserType {
     RETAIL(1L),
-    CORPORATE(2L),
-    INDIVIDUAL(3L);
+    CORPORATE(2L);
 
     private final Long id;
 

@@ -5,6 +5,8 @@ import com.techservices.digitalbanking.core.configuration.security.SpringSecurit
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.LoanDto;
+import com.techservices.digitalbanking.core.eBanking.model.response.LoanApplicationResponse;
+import com.techservices.digitalbanking.loan.domain.request.NewLoanApplicationRequest;
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import org.springframework.http.ResponseEntity;
@@ -86,9 +88,7 @@ public class LoanApplicationApiResource {
 
 	@Operation(
 			summary = "Apply for a loan",
-			description = "Submits a new loan application for the authenticated customer. " +
-					"The application undergoes validation, credit assessment, and approval workflow. " +
-					"Requires complete borrower information, loan details, and supporting documentation references."
+			description = "Submits a new loan application for the authenticated customer."
 	)
 	@ApiResponses(value = {
 			@ApiResponse(
@@ -128,8 +128,7 @@ public class LoanApplicationApiResource {
 	@PostMapping("application")
 	public ResponseEntity<GenericApiResponse> processLoanApplication(
 			@Parameter(
-					description = "Complete loan application details including loan amount, purpose, term, " +
-							"employment information, financial details, and references to supporting documents.",
+					description = "Complete loan application",
 					required = true,
 					content = @Content(
 							mediaType = "application/json",
@@ -140,6 +139,31 @@ public class LoanApplicationApiResource {
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		GenericApiResponse genericApiResponse = loanService.processLoanApplication(customerId, loanApplicationRequest);
+
+		return ResponseEntity.ok(genericApiResponse);
+	}
+
+	@Operation(
+			summary = "Apply for a new loan",
+			description = "Submits a new loan application for the authenticated customer. " +
+					"The application undergoes validation, credit assessment, and approval workflow. " +
+					"Requires complete borrower information, loan details, and supporting documentation references."
+	)
+	@PostMapping("new-application")
+	public ResponseEntity<LoanApplicationResponse> processNewLoanApplication(
+			@Parameter(
+					description = "Submits a new loan application details including loan amount, purpose, term, " +
+							"employment information, financial details, and references to supporting documents.",
+					required = true,
+					content = @Content(
+							mediaType = "application/json",
+							schema = @Schema(implementation = NewLoanApplicationRequest.class)
+					)
+			)
+			@RequestBody @Valid NewLoanApplicationRequest loanApplicationRequest
+	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		LoanApplicationResponse genericApiResponse = loanService.processNewLoanApplication(customerId, loanApplicationRequest);
 
 		return ResponseEntity.ok(genericApiResponse);
 	}
@@ -220,41 +244,17 @@ public class LoanApplicationApiResource {
 			)
 	})
 	@GetMapping("{loanId}")
-	public ResponseEntity<GetLoansLoanIdResponse> retrieveLoanById(
+	public ResponseEntity<LoanDto> retrieveLoanById(
 			@Parameter(
 					name = "loanId",
 					description = "Unique identifier of the loan account to retrieve",
 					required = true,
 					schema = @Schema(type = "integer", format = "int64", minimum = "1")
 			)
-			@PathVariable Long loanId,
-			@Parameter(
-					name = "staffInSelectedOfficeOnly",
-					description = "Filter results to include only staff from the selected office context",
-					schema = @Schema(type = "boolean", defaultValue = "false")
-			)
-			@Valid @RequestParam(value = "staffInSelectedOfficeOnly", required = false, defaultValue = "false") Boolean staffInSelectedOfficeOnly,
-			@Parameter(
-					name = "associations",
-					description = "Comma-separated list of associated data to include in the response. " +
-							"Options include: transactions, charges, collateral, guarantors, linkedaccount, multiDisburseDetails",
-					schema = @Schema(type = "string", defaultValue = "all")
-			)
-			@Valid @RequestParam(value = "associations", required = false, defaultValue = "all") String associations,
-			@Parameter(
-					name = "exclude",
-					description = "Comma-separated list of data to exclude from the response for performance optimization",
-					schema = @Schema(type = "string", defaultValue = "transactions")
-			)
-			@Valid @RequestParam(value = "exclude", required = false, defaultValue = "transactions") String exclude,
-			@Parameter(
-					name = "fields",
-					description = "Comma-separated list of specific fields to return, enabling response customization and bandwidth optimization"
-			)
-			@Valid @RequestParam(value = "fields", required = false) String fields) {
+			@PathVariable Long loanId
+	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		GetLoansLoanIdResponse getLoansLoanIdResponse = loanService.retrieveLoanById(loanId, staffInSelectedOfficeOnly,
-				associations, exclude, fields, customerId);
+		LoanDto getLoansLoanIdResponse = loanService.retrieveLoanById(loanId, customerId);
 
 		return ResponseEntity.ok(getLoansLoanIdResponse);
 	}
@@ -352,7 +352,7 @@ public class LoanApplicationApiResource {
 			)
 	})
 	@GetMapping("{loanId}/transactions")
-	public ResponseEntity<FineractPageResponse<LoanTransactionResponse>> retrieveLoanTransactions(
+	public ResponseEntity<BasePageResponse<LoanTransactionResponse>> retrieveLoanTransactions(
 			@Parameter(
 					name = "loanId",
 					description = "Unique identifier of the loan account whose transactions to retrieve",
@@ -361,7 +361,7 @@ public class LoanApplicationApiResource {
 			)
 			@Valid @PathVariable(value = "loanId") Long loanId) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		FineractPageResponse<LoanTransactionResponse> transactions = loanService.retrieveLoanTransactions(loanId, customerId);
+		BasePageResponse<LoanTransactionResponse> transactions = loanService.retrieveLoanTransactions(loanId, customerId);
 
 		return ResponseEntity.ok(transactions);
 	}

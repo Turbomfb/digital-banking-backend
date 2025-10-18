@@ -1,5 +1,6 @@
 package com.techservices.digitalbanking.core.eBanking.model.request;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,11 @@ import lombok.RequiredArgsConstructor;
 public class FilterDto {
     private String accountNumber;
     private String customerId;
+    private Long loanId;
     private String fromDate;
+    private UserType customerType;
+    private String bvn;
+    private String emailAddress;
     private String toDate;
     private Long size;
 
@@ -31,8 +36,28 @@ public class FilterDto {
         return this;
     }
 
+    public FilterDto customerType(UserType customerType) {
+        this.customerType = customerType;
+        return this;
+    }
+
+    public FilterDto bvn(String bvn) {
+        this.bvn = bvn;
+        return this;
+    }
+
+    public FilterDto emailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+        return this;
+    }
+
     public FilterDto size(Long limit) {
         this.size = limit;
+        return this;
+    }
+
+    public FilterDto loanId(Long loanId) {
+        this.loanId = loanId;
         return this;
     }
 }

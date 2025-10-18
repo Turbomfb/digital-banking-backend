@@ -23,13 +23,4 @@ public class PostSavingsAccountsResponse {
 
 	private String accountNumber;
 	private String nuban;
-
-	public AccountDto parse() {
-		AccountDto dto = new AccountDto();
-		dto.setId(String.valueOf(this.savingsId));
-		dto.setAccountNumber(this.accountNumber);
-		dto.setCustomerId(String.valueOf(this.customerId));
-		dto.setNuban(this.nuban);
-		return dto;
-	}
 }

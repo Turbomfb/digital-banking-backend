@@ -124,10 +124,6 @@ public class Customer extends BaseEntity {
         return this.userType == UserType.CORPORATE;
     }
 
-    public boolean isIndividualUser() {
-        return this.userType == UserType.RETAIL || this.userType == UserType.INDIVIDUAL;
-    }
-
     public String getFullName() {
         return this.firstname + " " + this.lastname;
     }

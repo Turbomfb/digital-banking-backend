@@ -25,5 +25,4 @@ public class LoanDashboardResponse {
     private Long activeLoanCount;
     private Long pendingLoanCount;
     private Long liquidatedLoanCount;
-    private List<LoanDto> loans;
 }
