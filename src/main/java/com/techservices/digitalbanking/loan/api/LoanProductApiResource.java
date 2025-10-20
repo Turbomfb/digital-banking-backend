@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 public class LoanProductApiResource {
 
 	private final LoanProductService loanProductService;
-	private final LoanService loanService;
 
 
 
@@ -132,59 +131,5 @@ public class LoanProductApiResource {
 				.retrieveLoanProductTemplate();
 
 		return ResponseEntity.ok(getLoanProductsTemplateResponse);
-	}
-
-	@Operation(
-			summary = "Calculate loan schedule",
-			description = "Performs comprehensive loan schedule calculation based on specified loan parameters including " +
-					"principal amount, interest rate, term, repayment frequency, and calculation method. " +
-					"Returns detailed amortization schedule with payment breakdowns, interest calculations, " +
-					"principal allocations, and outstanding balances for each installment. " +
-					"Useful for loan origination, customer consultations, and financial planning."
-	)
-	@ApiResponses(value = {
-			@ApiResponse(
-					responseCode = "200",
-					description = "Loan schedule calculated successfully",
-					content = @Content(
-							mediaType = "application/json",
-							schema = @Schema(implementation = LoanScheduleCalculationResponse.class)
-					)
-			),
-			@ApiResponse(
-					responseCode = "400",
-					description = "Invalid calculation parameters, missing required fields, or invalid loan terms combination",
-					content = @Content(schema = @Schema(hidden = true))
-			),
-			@ApiResponse(
-					responseCode = "422",
-					description = "Calculation cannot be performed due to business rule violations, " +
-							"invalid interest rate ranges, or unsupported parameter combinations",
-					content = @Content(schema = @Schema(hidden = true))
-			),
-			@ApiResponse(
-					responseCode = "500",
-					description = "Internal server error occurred during loan schedule calculation",
-					content = @Content(schema = @Schema(hidden = true))
-			)
-	})
-	@PostMapping("loan-schedule-calculation")
-	public ResponseEntity<LoanScheduleCalculationResponse> calculateLoanSchedule(
-			@Parameter(
-					description = "Loan calculation parameters including principal amount, annual interest rate, " +
-							"loan term (number of payments), repayment frequency, calculation method, " +
-							"disbursement date, and optional fees or charges. " +
-							"All monetary amounts should be positive values, and interest rates should be within acceptable ranges.",
-					required = true,
-					content = @Content(
-							mediaType = "application/json",
-							schema = @Schema(implementation = LoanScheduleCalculationRequest.class)
-					)
-			)
-			@RequestBody @Valid LoanScheduleCalculationRequest loanScheduleCalculationRequest
-	) {
-		LoanScheduleCalculationResponse loanScheduleCalculationResponse = loanService.calculateLoanSchedule(loanScheduleCalculationRequest);
-
-		return ResponseEntity.ok(loanScheduleCalculationResponse);
 	}
 }

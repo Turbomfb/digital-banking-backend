@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.core.eBanking.service;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
@@ -102,7 +103,11 @@ public class LoanService {
 	}
 
 	public LoanScheduleCalculationResponse calculateLoanSchedule(@Valid LoanScheduleCalculationRequest loanScheduleCalculationRequest) {
-		return loansApiClient.calculateLoanSchedule(loanScheduleCalculationRequest);
+		LoanScheduleCalculationResponse response = loansApiClient.calculateLoanSchedule(loanScheduleCalculationRequest);
+		if (!response.getPeriods().isEmpty()) {
+			response.getPeriods().sort(Comparator.comparing(LoanScheduleCalculationResponse.Period::getPeriod));
+		}
+		return response;
 	}
 
 	public LoanApplicationResponse processLoanApplication(PostNewLoanApplicationRequest loanApplicationRequest) {

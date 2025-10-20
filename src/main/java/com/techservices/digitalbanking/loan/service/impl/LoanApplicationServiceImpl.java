@@ -16,9 +16,11 @@ import com.techservices.digitalbanking.core.service.IdentityVerificationService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
+import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
 import com.techservices.digitalbanking.loan.domain.request.NewLoanApplicationRequest;
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
+import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -160,6 +162,11 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 				.pendingLoanCount(getPendingLoanCount(customerLoans))
 				.liquidatedLoanCount(getLiquidatedLoanCount(customerLoans))
 				.build();
+	}
+
+	@Override
+	public LoanScheduleCalculationResponse calculateLoanSchedule(LoanScheduleCalculationRequest loanScheduleCalculationRequest) {
+		return loanService.calculateLoanSchedule(loanScheduleCalculationRequest);
 	}
 
 	public BigDecimal getActiveLoanBalance(List<LoanDto> customerLoans) {

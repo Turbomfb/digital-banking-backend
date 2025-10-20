@@ -9,9 +9,11 @@ import com.techservices.digitalbanking.core.eBanking.model.response.LoanTransact
 import com.techservices.digitalbanking.loan.domain.request.LoanApplicationRequest;
 import com.techservices.digitalbanking.loan.domain.request.LoanRepaymentRequest;
 
+import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
 import com.techservices.digitalbanking.loan.domain.request.NewLoanApplicationRequest;
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
+import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
 import jakarta.validation.Valid;
 
 public interface LoanApplicationService {
@@ -33,4 +35,6 @@ public interface LoanApplicationService {
 	LoanApplicationResponse processNewLoanApplication(Long customerId, NewLoanApplicationRequest loanApplicationRequest);
 
 	LoanDashboardResponse retrieveCustomerLoanDashboard(Long customerId);
+
+	LoanScheduleCalculationResponse calculateLoanSchedule(@Valid LoanScheduleCalculationRequest loanScheduleCalculationRequest);
 }

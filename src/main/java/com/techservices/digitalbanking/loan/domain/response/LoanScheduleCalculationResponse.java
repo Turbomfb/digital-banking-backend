@@ -8,9 +8,13 @@ import com.techservices.digitalbanking.core.eBanking.model.response.PostLoansRes
 import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
 import jakarta.validation.Valid;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -19,6 +23,20 @@ public class LoanScheduleCalculationResponse {
 	private BigDecimal monthlyRepayment;
 	private Double interestRate;
 	private BigDecimal totalRepayable;
+	private List<Period> periods;
+
+
+	@Setter
+	@Getter
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class Period {
+		private Long period;
+		private LocalDate dueDate;
+		private BigDecimal principalDue;
+		private BigDecimal interestDue;
+		private BigDecimal totalDueForPeriod;
+	}
 
 	public static LoanScheduleCalculationResponse parse(PostLoansResponse loanSchedule, GetLoanProductsProductIdResponse product, @Valid LoanScheduleCalculationRequest loanScheduleCalculationRequest) {
 		LoanScheduleCalculationResponse loanScheduleCalculationResponse = new LoanScheduleCalculationResponse();
