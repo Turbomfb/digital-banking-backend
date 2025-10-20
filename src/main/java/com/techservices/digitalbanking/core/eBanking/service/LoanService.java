@@ -26,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_DATE_FORMAT;
 import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_LOCALE;
-import static com.techservices.digitalbanking.core.util.DateUtil.getCurrentDate;
 
 @Service
 @Slf4j
@@ -58,23 +57,10 @@ public class LoanService {
 		return loansApiClient.retrieveAllCustomerLoans(filterDto);
 	}
 
-	public PostLoansLoanIdTransactionsResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest loanRepaymentRequest,
-			String command) {
-		PostLoansLoanIdTransactionsRequest postLoansLoanIdTransactionsRequest = new PostLoansLoanIdTransactionsRequest();
-		postLoansLoanIdTransactionsRequest.setLocale(DEFAULT_LOCALE);
-		postLoansLoanIdTransactionsRequest.setDateFormat(DEFAULT_DATE_FORMAT);
-		postLoansLoanIdTransactionsRequest.setTransactionDate(getCurrentDate());
-		postLoansLoanIdTransactionsRequest.setTransactionAmount(loanRepaymentRequest.getTransactionAmount());
-		postLoansLoanIdTransactionsRequest.setPaymentTypeId(loanRepaymentRequest.getPaymentTypeId());
-		postLoansLoanIdTransactionsRequest.setNote(loanRepaymentRequest.getNote());
-		postLoansLoanIdTransactionsRequest.setExternalId(loanRepaymentRequest.getExternalId());
-		postLoansLoanIdTransactionsRequest.setAccountNumber(loanRepaymentRequest.getAccountNumber());
-		postLoansLoanIdTransactionsRequest.setBankNumber(loanRepaymentRequest.getBankNumber());
-		postLoansLoanIdTransactionsRequest.setCheckNumber(loanRepaymentRequest.getCheckNumber());
-		postLoansLoanIdTransactionsRequest.setReceiptNumber(loanRepaymentRequest.getReceiptNumber());
-		postLoansLoanIdTransactionsRequest.setRoutingCode(loanRepaymentRequest.getRoutingCode());
-
-		return loansApiClient.executeLoanTransaction(loanId, postLoansLoanIdTransactionsRequest, command);
+	public PostLoanRepaymentResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest loanRepaymentRequest) {
+		PostLoanRepaymentRequest postLoanRepaymentRequest = new PostLoanRepaymentRequest();
+		postLoanRepaymentRequest.setAmount(loanRepaymentRequest.getTransactionAmount());
+		return loansApiClient.repayLoan(loanId, postLoanRepaymentRequest);
 	}
 
 	public PostLoanProductsResponse createALoanProduct(PostLoanProductsRequest postLoanProductRequest) {

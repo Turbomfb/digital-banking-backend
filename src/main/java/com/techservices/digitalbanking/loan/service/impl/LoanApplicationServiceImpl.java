@@ -9,6 +9,7 @@ import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostNewLoanApplicationRequest;
 import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.core.eBanking.service.AccountTransactionService;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.service.ExternalLoanService;
@@ -48,6 +49,7 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	private final ExternalLoanService externalLoanService;
 	private final PasswordEncoder passwordEncoder;
 	private final IdentityVerificationService identityVerificationService;
+	private final AccountTransactionService accountTransactionService;
 
 	@Override
 	public LoanDto retrieveLoanById(Long loanId, Long customerId) {
@@ -61,8 +63,7 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 	}
 
 	@Override
-	public GenericApiResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest loanRepaymentRequest,
-										String command, Long customerId) {
+	public GenericApiResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest loanRepaymentRequest, Long customerId) {
 		this.retrieveLoanById(loanId, customerId);
 		if (StringUtils.isBlank(loanRepaymentRequest.getTransactionPin())){
 			throw new ValidationException("validation.msg.loan.repayment.transaction.pin.required",
@@ -73,8 +74,11 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 			throw new ValidationException("validation.msg.loan.repayment.transaction.pin.invalid",
 					"Invalid Transaction PIN provided for loan repayment");
 		}
-		PostLoansLoanIdTransactionsResponse response = loanService.repayLoan(loanId, loanRepaymentRequest, command);
-		if (response != null && response.getResourceId() != null) {
+
+		accountTransactionService.handleWithdrawal(customer.getAccountId(), loanRepaymentRequest.getTransactionAmount(), null, "Loan Repayment");
+
+		PostLoanRepaymentResponse response = loanService.repayLoan(loanId, loanRepaymentRequest);
+		if (response != null && response.getMessage() != null) {
 			return new GenericApiResponse("success", "Loan repayment successful");
 		}
 		log.info("Loan repayment failed {}", response);

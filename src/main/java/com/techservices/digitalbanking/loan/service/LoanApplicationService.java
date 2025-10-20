@@ -23,7 +23,7 @@ public interface LoanApplicationService {
 	BasePageResponse<LoanDto> retrieveAllLoans(Long limit, String accountNo, Long customerId);
 
 	GenericApiResponse repayLoan(Long loanId,
-								 @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest, String command, Long customerId);
+								 @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest, Long customerId);
 
 	BasePageResponse<LoanTransactionResponse> retrieveLoanTransactions(@Valid Long loanId, Long customerId);
 

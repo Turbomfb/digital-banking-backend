@@ -545,15 +545,9 @@ public class LoanApplicationApiResource {
 							schema = @Schema(implementation = LoanRepaymentRequest.class)
 					)
 			)
-			@RequestBody @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest,
-			@Parameter(
-					name = "command",
-					description = "Type of loan transaction command to execute",
-					schema = @Schema(type = "string", allowableValues = {"repayment", "prepayLoan"}, defaultValue = "repayment")
-			)
-			@RequestParam(required = false, defaultValue = "repayment") String command
+			@RequestBody @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest
 	) {
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		return loanService.repayLoan(loanId, postLoansLoanIdTransactionsRequest, command, customerId);
+		return loanService.repayLoan(loanId, postLoansLoanIdTransactionsRequest, customerId);
 	}
 }

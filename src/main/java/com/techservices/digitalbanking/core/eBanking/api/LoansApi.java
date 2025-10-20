@@ -285,36 +285,14 @@ public interface LoansApi {
 			@Valid @RequestBody PostLoansLoanIdChargesChargeIdRequest postLoansLoanIdChargesChargeIdRequest,
 			@Valid @RequestParam(value = "command", required = false) String command);
 
-	/**
-	 * POST /loans/{loanId}/transactions : Significant Loan Transactions This API
-	 * covers the major loan transaction functionality Example Requests:
-	 * loans/1/transactions?command&#x3D;repayment | Make a Repayment |
-	 * loans/1/transactions?command&#x3D;merchantIssuedRefund | Merchant Issued
-	 * Refund | loans/1/transactions?command&#x3D;payoutRefund | Payout Refund |
-	 * loans/1/transactions?command&#x3D;goodwillCredit | Goodwil Credit |
-	 * loans/1/transactions?command&#x3D;waiveinterest | Waive Interest |
-	 * loans/1/transactions?command&#x3D;writeoff | Write-off Loan |
-	 * loans/1/transactions?command&#x3D;close-rescheduled | Close Rescheduled Loan
-	 * | loans/1/transactions?command&#x3D;close | Close Loan |
-	 * loans/1/transactions?command&#x3D;undowriteoff | Undo Loan Write-off |
-	 * loans/1/transactions?command&#x3D;recoverypayment | Make Recovery Payment |
-	 * loans/1/transactions?command&#x3D;refundByCash | Make a Refund of an Active
-	 * Loan by Cash | loans/1/transactions?command&#x3D;foreclosure | Foreclosure of
-	 * an Active Loan | loans/1/transactions?command&#x3D;creditBalanceRefund |
-	 * Credit Balance Refund |
-	 *
-	 * @param loanId
-	 *            loanId (required)
-	 * @param postLoansLoanIdTransactionsRequest
-	 *            (required)
-	 * @param command
-	 *            command (optional)
-	 * @return OK (status code 200)
-	 */
-	@PostMapping(value = "/loans/{loanId}/transactions", produces = {"application/json"}, consumes = "application/json")
-	PostLoansLoanIdTransactionsResponse executeLoanTransaction(@PathVariable("loanId") Long loanId,
-			@Valid @RequestBody PostLoansLoanIdTransactionsRequest postLoansLoanIdTransactionsRequest,
-			@Valid @RequestParam(value = "command", required = false) String command);
+
+	@PostMapping(value = "/loans/{loanId}/repayment", produces = {
+			"application/json"}, consumes = "application/json")
+	PostLoanRepaymentResponse repayLoan(@PathVariable("loanId") Long loanId,
+			@Valid @RequestBody PostLoanRepaymentRequest postLoanRepaymentRequest
+	);
+
+
 
 	/**
 	 * GET /loans/glimAccount/{glimId}
