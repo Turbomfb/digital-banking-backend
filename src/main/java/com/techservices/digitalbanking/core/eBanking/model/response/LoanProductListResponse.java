@@ -10,16 +10,16 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoanProductListResponse {
-    private Long id;
+    private long id;
     private String productCode;
     private String productName;
     private Double annualInterestRate;
     private BigDecimal principal;
     private BigDecimal minPrincipal;
     private BigDecimal maxPrincipal;
-    private Long numberOfRepayments;
-    private Long minimumTenure;
-    private Long maximumTenure;
-    private Long repaymentEvery;
+    private long numberOfRepayments;
+    private long minimumTenure;
+    private long maximumTenure;
+    private long repaymentEvery;
     private String repaymentFrequencyType;
 }
