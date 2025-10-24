@@ -18,6 +18,8 @@ public class LoanProductListResponse {
     private BigDecimal minPrincipal;
     private BigDecimal maxPrincipal;
     private Long numberOfRepayments;
+    private Long minimumTenure;
+    private Long maximumTenure;
     private Long repaymentEvery;
     private String repaymentFrequencyType;
 }
