@@ -13,7 +13,7 @@ public class LoanProductListResponse {
     private long id;
     private String productCode;
     private String productName;
-    private Double annualInterestRate;
+    private double annualInterestRate;
     private BigDecimal principal;
     private BigDecimal minPrincipal;
     private BigDecimal maxPrincipal;
