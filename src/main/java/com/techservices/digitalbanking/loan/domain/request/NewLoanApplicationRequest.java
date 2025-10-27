@@ -17,4 +17,8 @@ public class NewLoanApplicationRequest {
 	private String productId;
 	private BigDecimal amount;
 	private Long duration;
+
+	private String employerCategory;
+	private String employerSector;
+	private String employerEmail;
 }

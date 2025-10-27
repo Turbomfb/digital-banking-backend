@@ -144,6 +144,9 @@ public class LoanApplicationServiceImpl implements LoanApplicationService {
 		createCustomerRequest.setNin(customer.getNin());
 		createCustomerRequest.setKycTier(customer.getKycTier().getCode());
 		postNewLoanApplicationRequest.setCustomer(createCustomerRequest);
+		postNewLoanApplicationRequest.setEmployerSector(loanApplicationRequest.getEmployerSector());
+		postNewLoanApplicationRequest.setEmployerCategory(loanApplicationRequest.getEmployerCategory());
+		postNewLoanApplicationRequest.setEmployerEmail(loanApplicationRequest.getEmployerEmail());
 		LoanApplicationResponse response = this.loanService.processLoanApplication(postNewLoanApplicationRequest);
 		if (response == null || response.getLoanId() == null) {
 			log.error("Loan application failed for customer {}: {}", customerId, response);

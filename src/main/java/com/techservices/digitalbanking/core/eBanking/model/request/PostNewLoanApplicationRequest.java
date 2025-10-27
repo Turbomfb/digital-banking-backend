@@ -20,4 +20,8 @@ public class PostNewLoanApplicationRequest {
 	private String gender;
 	private BigDecimal amount;
 	private Long duration;
+
+	private String employerCategory;
+	private String employerSector;
+	private String employerEmail;
 }
