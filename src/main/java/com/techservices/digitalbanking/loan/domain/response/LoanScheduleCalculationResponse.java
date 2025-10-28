@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LoanScheduleCalculationResponse {
 	private BigDecimal monthlyRepayment;

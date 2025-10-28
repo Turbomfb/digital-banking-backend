@@ -1,6 +1,7 @@
 package com.techservices.digitalbanking.core.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -29,6 +30,7 @@ public class LoanDto {
     private LocalDate disbursementDate;
     private LocalDate lastPaymentDate;
     private LocalDate maturityDate;
+    private LoanScheduleCalculationResponse repaymentSchedule;
 
     public boolean isPending() {
         List<String> pendingStatuses = List.of("Pending", "WaitingForDisbursal", "Submitted and pending approval", "Approved");
