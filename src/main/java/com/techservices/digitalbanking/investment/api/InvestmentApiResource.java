@@ -7,6 +7,7 @@ import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.ProductDto;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
 import com.techservices.digitalbanking.investment.domain.request.InvestmentCalculatorRequest;
@@ -451,5 +452,78 @@ public class InvestmentApiResource {
 	) {
 		ProductDto product = investmentProductService.retrieveCurrentInvestmentProduct(investmentType);
 		return ResponseEntity.ok(product);
+	}
+
+	@Operation(
+			summary = "Retrieve Investment Transaction History",
+			description = "Retrieves the complete transaction history for a specific investment including deposits, withdrawals, interest payments, and fees. Transactions can be filtered by charge status and other parameters."
+	)
+	@ApiResponses(value = {
+			@ApiResponse(
+					responseCode = "200",
+					description = "Investment transaction history retrieved successfully",
+					content = @Content(
+							mediaType = "application/json"
+					)
+			),
+			@ApiResponse(
+					responseCode = "404",
+					description = "Investment not found or no transactions available",
+					content = @Content(mediaType = "application/json")
+			),
+			@ApiResponse(
+					responseCode = "401",
+					description = "Authentication required",
+					content = @Content(mediaType = "application/json")
+			)
+	})
+	@SecurityRequirement(name = "bearerAuth")
+	@GetMapping("{investmentId}/transactions")
+	public ResponseEntity<BasePageResponse<TransactionDto>> retrieveInvestmentTransactionsById(
+
+			@Parameter(
+					name = "investmentId",
+					description = "Unique identifier of the investment account",
+					required = true,
+					schema = @Schema(type = "string")
+			)
+			@PathVariable String investmentId,
+
+			@Parameter(
+					name = "size",
+					description = "Number of transactions per page",
+					schema = @Schema(type = "integer", minimum = "1", maximum = "1000", example = "20")
+			)
+			@RequestParam(required = false) Long size,
+
+			@Parameter(
+					name = "startDate",
+					description = "Start date for filtering transactions (format depends on dateFormat parameter)",
+					schema = @Schema(type = "string", example = "2024-01-01")
+			)
+			@RequestParam(required = false) String startDate,
+
+			@Parameter(
+					name = "endDate",
+					description = "End date for filtering transactions (format depends on dateFormat parameter)",
+					schema = @Schema(type = "string", example = "2024-01-31")
+			)
+			@RequestParam(required = false) String endDate,
+
+			@Parameter(
+					name = "transactionType",
+					description = "Filter by transaction type",
+					schema = @Schema(type = "string", allowableValues = {"CREDIT", "DEBIT", "ALL"})
+			)
+			@RequestParam(value = "transactionType", required = false) TransactionType transactionType,
+			@Parameter(
+					description = "Type of investment for transaction filtering",
+					schema = @Schema(implementation = InvestmentType.class)
+			)
+			@RequestParam(required = false) String investmentType
+	) {
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		BasePageResponse<TransactionDto> investment = investmentService.retrieveInvestmentTransactionsById(investmentId, investmentType, customerId, transactionType, startDate, endDate, size);
+		return ResponseEntity.ok(investment);
 	}
 }

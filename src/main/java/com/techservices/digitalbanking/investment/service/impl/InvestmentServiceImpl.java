@@ -198,13 +198,13 @@ public class InvestmentServiceImpl implements InvestmentService {
     }
 
     @Override
-    public BasePageResponse<TransactionDto> retrieveInvestmentTransactionsById(String id, String investmentType, Long customerId) {
+    public BasePageResponse<TransactionDto> retrieveInvestmentTransactionsById(String id, String investmentType, Long customerId, TransactionType transactionType, String startDate, String endDate, Long size) {
         Customer foundCustomer = customerService.getCustomerById(customerId);
         if ("lock".equalsIgnoreCase(investmentType)) {
-            return investmentTransactionService.retrieveAllInvestmentTransactions(id, null, null, null, TransactionType.ALL);
+            return investmentTransactionService.retrieveAllInvestmentTransactions(id, startDate, endDate, size, transactionType);
         } else if ("flex".equalsIgnoreCase(investmentType)) {
             id = StringUtils.isNotBlank(foundCustomer.getFlexAccountId()) ? foundCustomer.getFlexAccountId() : id;
-            return investmentTransactionService.retrieveAllInvestmentTransactions(id, null, null, null, TransactionType.ALL);
+            return investmentTransactionService.retrieveAllInvestmentTransactions(id, startDate, endDate, size, transactionType);
         } else {
             throw new ValidationException("invalid.investment.type",
                     "Invalid investment type provided. Allowed values are 'flex' for Recurring Deposit and 'lock' for Fixed Deposit.");

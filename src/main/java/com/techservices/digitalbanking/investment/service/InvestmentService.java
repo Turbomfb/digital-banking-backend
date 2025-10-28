@@ -5,6 +5,7 @@ import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.investment.domain.enums.InvestmentType;
 
 import com.techservices.digitalbanking.investment.domain.request.InvestmentApplicationRequest;
@@ -20,7 +21,7 @@ public interface InvestmentService {
 
 	BasePageResponse<AccountDto> retrieveAllCustomerInvestments(Long customerId, String investmentType);
 
-	BasePageResponse<TransactionDto> retrieveInvestmentTransactionsById(String id, String investmentType, Long customerId);
+	BasePageResponse<TransactionDto> retrieveInvestmentTransactionsById(String id, String investmentType, Long customerId, TransactionType transactionType, String startDate, String endDate, Long size);
 
 	InvestmentApplicationResponse submitApplication(Long customerId, InvestmentApplicationRequest request);
 

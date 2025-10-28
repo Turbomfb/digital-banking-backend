@@ -7,6 +7,10 @@ import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import com.techservices.digitalbanking.core.eBanking.service.AccountTransactionService;
 import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
+import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.service.CustomerService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.eBanking.model.response.GetRecurringDepositTransactionResponse;
@@ -21,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class InvestmentTransactionServiceImpl implements InvestmentTransactionService {
 	private final FlexDepositAccountService flexDepositAccountService;
 	private final AccountTransactionService accountTransactionService;
+	private final CustomerService customerService;
 
 	@Override
 	public GetRecurringDepositTransactionResponse retrieveInvestmentTransactionById(String investmentId,
