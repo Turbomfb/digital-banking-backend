@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.walletaccount.service;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
 
 import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccountTransactionRequest;
@@ -18,7 +19,7 @@ import java.time.LocalDate;
 public interface WalletAccountTransactionService {
 
 	BasePageResponse<TransactionDto> retrieveSavingsAccountTransactions(Long customerId,
-																		String startDate, String endDate, @Valid Long limit);
+																		String startDate, String endDate, @Valid Long limit, TransactionType transactionType);
 
 	SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long customerId, Long transactionId);
 

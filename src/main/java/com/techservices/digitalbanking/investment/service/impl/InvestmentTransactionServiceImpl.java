@@ -1,9 +1,9 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.investment.service.impl;
 
-import java.util.List;
-
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.eBanking.model.request.FilterDto;
 import com.techservices.digitalbanking.core.eBanking.service.AccountTransactionService;
 import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
@@ -29,9 +29,9 @@ public class InvestmentTransactionServiceImpl implements InvestmentTransactionSe
 	}
 
 	@Override
-	public List<TransactionDto> retrieveAllInvestmentTransactions(String investmentId) {
-		FilterDto filter = new FilterDto().accountNumber(investmentId);
-		return accountTransactionService.retrieveAllAccountTransactions(filter);
+	public BasePageResponse<TransactionDto> retrieveAllInvestmentTransactions(String investmentId, String startDate, String endDate, Long size, TransactionType transactionType) {
+		FilterDto filter = new FilterDto(investmentId, startDate, endDate, size, transactionType);
+		return BasePageResponse.instance(accountTransactionService.retrieveAllAccountTransactions(filter));
 	}
 
 	@Override

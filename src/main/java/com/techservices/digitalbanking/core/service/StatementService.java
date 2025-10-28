@@ -6,13 +6,12 @@ import com.itextpdf.text.pdf.*;
 import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
-import com.techservices.digitalbanking.core.eBanking.model.response.PaymentDetailData;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
-import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
@@ -148,7 +147,7 @@ public class StatementService {
                             request.getCustomerId(),
                             request.getStartDate().toString(),
                             request.getEndDate().toString(),
-                            request.getLimit());
+                            request.getLimit(), TransactionType.ALL);
 
             List<TransactionDto> transactions = transactionResult.getData();
 

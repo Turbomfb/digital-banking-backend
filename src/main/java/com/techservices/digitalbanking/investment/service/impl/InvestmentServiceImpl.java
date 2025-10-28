@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.investment.service.impl;
 
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
 import com.techservices.digitalbanking.core.domain.dto.*;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.eBanking.configuration.FineractProperty;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutRecurringDepositProductRequest;
@@ -200,10 +201,10 @@ public class InvestmentServiceImpl implements InvestmentService {
     public BasePageResponse<TransactionDto> retrieveInvestmentTransactionsById(String id, String investmentType, Long customerId) {
         Customer foundCustomer = customerService.getCustomerById(customerId);
         if ("lock".equalsIgnoreCase(investmentType)) {
-            return BasePageResponse.instance(investmentTransactionService.retrieveAllInvestmentTransactions(id));
+            return investmentTransactionService.retrieveAllInvestmentTransactions(id, null, null, null, TransactionType.ALL);
         } else if ("flex".equalsIgnoreCase(investmentType)) {
             id = StringUtils.isNotBlank(foundCustomer.getFlexAccountId()) ? foundCustomer.getFlexAccountId() : id;
-            return BasePageResponse.instance(investmentTransactionService.retrieveAllInvestmentTransactions(id));
+            return investmentTransactionService.retrieveAllInvestmentTransactions(id, null, null, null, TransactionType.ALL);
         } else {
             throw new ValidationException("invalid.investment.type",
                     "Invalid investment type provided. Allowed values are 'flex' for Recurring Deposit and 'lock' for Fixed Deposit.");

@@ -1,6 +1,7 @@
 package com.techservices.digitalbanking.core.eBanking.model.request;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,21 @@ public class FilterDto {
     private String emailAddress;
     private String toDate;
     private Long size;
+    private TransactionType transactionType;
 
     public FilterDto(String savingsAccountId, String startDate, String endDate, Long limit) {
         this.accountNumber = savingsAccountId;
         this.fromDate = startDate;
         this.toDate = endDate;
         this.size = limit;
+    }
+
+    public FilterDto(String savingsAccountId, String startDate, String endDate, Long limit, TransactionType transactionType) {
+        this.accountNumber = savingsAccountId;
+        this.fromDate = startDate;
+        this.toDate = endDate;
+        this.size = limit;
+        this.transactionType = transactionType;
     }
 
     public FilterDto accountNumber(String accountNumber) {

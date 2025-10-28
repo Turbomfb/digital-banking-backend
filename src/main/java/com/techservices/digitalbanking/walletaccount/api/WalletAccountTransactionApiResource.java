@@ -6,6 +6,7 @@ import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.core.domain.dto.request.ReceiptRequest;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.exception.ValidationException;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.ReceiptService;
@@ -24,7 +25,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
@@ -46,9 +46,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.InvalidParameterException;
 import java.time.LocalDate;
-import java.util.Comparator;
 
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
@@ -268,18 +266,11 @@ public class WalletAccountTransactionApiResource {
     @GetMapping
     public ResponseEntity<BasePageResponse<TransactionDto>> retrieveSavingsAccountTransactions(
             @Parameter(
-                    name = "page",
-                    description = "Page number for pagination (0-based indexing)",
-                    schema = @Schema(type = "integer", minimum = "0", example = "0")
-            )
-            @RequestParam(required = false) Integer page,
-
-            @Parameter(
                     name = "size",
                     description = "Number of transactions per page",
                     schema = @Schema(type = "integer", minimum = "1", maximum = "1000", example = "20")
             )
-            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) Long size,
 
             @Parameter(
                     name = "startDate",
@@ -296,45 +287,17 @@ public class WalletAccountTransactionApiResource {
             @RequestParam(required = false) String endDate,
 
             @Parameter(
-                    name = "dateFormat",
-                    description = "Date format pattern for startDate and endDate parameters",
-                    schema = @Schema(type = "string", example = "yyyy-MM-dd")
-            )
-            @RequestParam(required = false) String dateFormat,
-
-            @Parameter(
-                    name = "productId",
-                    description = "Filter transactions by specific product ID",
-                    schema = @Schema(type = "integer", format = "int64")
-            )
-            @RequestParam(required = false) Long productId,
-
-            @Parameter(
-                    name = "offset",
-                    description = "Number of records to skip for pagination",
-                    schema = @Schema(type = "integer", format = "int64", minimum = "0", example = "0")
-            )
-            @RequestParam(value = "offset", required = false) @Valid Long offset,
-
-            @Parameter(
-                    name = "limit",
-                    description = "Maximum number of records to return",
-                    schema = @Schema(type = "integer", format = "int64", minimum = "1", maximum = "10000", example = "100")
-            )
-            @RequestParam(value = "limit", required = false) @Valid Long limit,
-
-            @Parameter(
                     name = "transactionType",
                     description = "Filter by transaction type",
                     schema = @Schema(type = "string", allowableValues = {"CREDIT", "DEBIT", "ALL"})
             )
-            @RequestParam(value = "transactionType", required = false) @Valid String transactionType
+            @RequestParam(value = "transactionType", required = false) TransactionType transactionType
     ) {
         try {
             Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 
             BasePageResponse<TransactionDto> savingsAccountTransactions = walletAccountTransactionService.retrieveSavingsAccountTransactions(
-                    customerId, startDate, endDate, limit);
+                    customerId, startDate, endDate, size, transactionType);
             return ResponseEntity.ok(savingsAccountTransactions);
         } catch (Exception e) {
             log.error("Error retrieving transactions for customer {}: {}", springSecurityAuditorAware.getAuthenticatedUser().getUserId(), e.getMessage(), e);

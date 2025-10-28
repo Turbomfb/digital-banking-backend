@@ -1,9 +1,9 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.investment.api;
 
-import java.util.List;
-
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,16 +67,45 @@ public class InvestmentTransactionApiResource {
 			)
 	})
 	@GetMapping
-	public ResponseEntity<List<TransactionDto>> retrieveAllInvestmentTransactions(
+	public ResponseEntity<BasePageResponse<TransactionDto>> retrieveAllInvestmentTransactions(
 			@Parameter(
 					name = "investmentId",
 					description = "Unique identifier of the investment account",
 					required = true,
-					schema = @Schema(type = "string", format = "uuid")
+					schema = @Schema(type = "string")
 			)
-			@PathVariable String investmentId) {
-		List<TransactionDto> investmentTransactions = investmentTransactionService
-				.retrieveAllInvestmentTransactions(investmentId);
+			@PathVariable String investmentId,
+
+			@Parameter(
+					name = "size",
+					description = "Number of transactions per page",
+					schema = @Schema(type = "integer", minimum = "1", maximum = "1000", example = "20")
+			)
+			@RequestParam(required = false) Long size,
+
+			@Parameter(
+					name = "startDate",
+					description = "Start date for filtering transactions (format depends on dateFormat parameter)",
+					schema = @Schema(type = "string", example = "2024-01-01")
+			)
+			@RequestParam(required = false) String startDate,
+
+			@Parameter(
+					name = "endDate",
+					description = "End date for filtering transactions (format depends on dateFormat parameter)",
+					schema = @Schema(type = "string", example = "2024-01-31")
+			)
+			@RequestParam(required = false) String endDate,
+
+			@Parameter(
+					name = "transactionType",
+					description = "Filter by transaction type",
+					schema = @Schema(type = "string", allowableValues = {"CREDIT", "DEBIT", "ALL"})
+			)
+			@RequestParam(value = "transactionType", required = false) TransactionType transactionType
+	) {
+		BasePageResponse<TransactionDto>  investmentTransactions = investmentTransactionService
+				.retrieveAllInvestmentTransactions(investmentId, startDate, endDate, size, transactionType);
 		return ResponseEntity.ok(investmentTransactions);
 	}
 

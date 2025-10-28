@@ -47,8 +47,6 @@ import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransa
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Optional;
@@ -81,9 +79,9 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	@Override
 	public BasePageResponse<TransactionDto> retrieveSavingsAccountTransactions(
 			Long customerId, String startDate, String endDate,
-			Long limit) {
+			Long limit, TransactionType transactionType) {
 		String savingsAccountId = customerService.getCustomerById(customerId).getAccountId();
-		FilterDto filter = new FilterDto(savingsAccountId, startDate, endDate, limit);
+		FilterDto filter = new FilterDto(savingsAccountId, startDate, endDate, limit, transactionType);
 		return BasePageResponse.instance(accountTransactionService.retrieveAllAccountTransactions(filter));
 	}
 
@@ -96,7 +94,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 
 	@Override
 	public BigDecimal getBalanceAsOfDate(Long customerId, LocalDate startDate) {
-		return this.retrieveSavingsAccountTransactions(customerId, startDate.toString(), null, null)
+		return this.retrieveSavingsAccountTransactions(customerId, startDate.toString(), null, null, TransactionType.ALL)
 				.getData()
 				.stream()
 				.filter(transaction -> !transaction.getDate().isAfter(startDate.atStartOfDay()))
