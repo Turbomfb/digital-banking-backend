@@ -12,11 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -75,17 +71,14 @@ public class LoanDocumentApiResource {
             @Parameter(description = "Loan ID", required = true)
             @PathVariable Long loanId,
             @Parameter(description = "Array of document files", required = true)
-            @RequestPart("files") List<MultipartFile> files,
+            @RequestParam("files") List<MultipartFile> files,
             @Parameter(description = "Array of document names (must match files array length)", required = true)
-            @RequestPart("names") List<String> names,
+            @RequestParam("names") List<String> names,
             @Parameter(description = "Array of document descriptions")
-            @RequestPart(value = "descriptions", required = false) List<String> descriptions,
-            @Parameter(description = "Array of document types")
-            @RequestPart(value = "documentTypes", required = false) List<String> documentTypes) {
+            @RequestParam(value = "descriptions", required = false) List<String> descriptions) {
 
         log.info("POST /api/v1/loans/{}/documents/batch - Uploading {} documents", loanId, files.size());
 
-        // Validate arrays length
         if (files.size() != names.size()) {
             return ResponseEntity.badRequest().body(new GenericApiResponse(
                     "Files and names arrays must have the same length",
@@ -94,7 +87,6 @@ public class LoanDocumentApiResource {
             ));
         }
 
-        // Build requests list
         List<LoanDocumentUploadRequest> requests = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             LoanDocumentUploadRequest request = new LoanDocumentUploadRequest();

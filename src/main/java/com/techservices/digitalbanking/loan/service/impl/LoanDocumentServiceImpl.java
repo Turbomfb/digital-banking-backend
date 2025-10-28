@@ -30,8 +30,9 @@ public class LoanDocumentServiceImpl implements LoanDocumentService {
     public LoanDocumentBatchUploadResponse uploadDocuments(Long loanId, List<LoanDocumentUploadRequest> requests, Long customerId) {
         LoanDocumentBatchUploadResponse batchUploadResponse = null;
         loanService.retrieveLoanById(loanId, customerId);
+        batchUploadResponse = new LoanDocumentBatchUploadResponse();
+        batchUploadResponse.setTotalDocuments(requests.size());
         for (LoanDocumentUploadRequest request : requests) {
-            batchUploadResponse = new LoanDocumentBatchUploadResponse();
             try {
                 loanService.uploadDocument(loanId, request);
                 batchUploadResponse.setSuccessfulUploads(batchUploadResponse.getSuccessfulUploads() + 1);
