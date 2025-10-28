@@ -1,8 +1,11 @@
 package com.techservices.digitalbanking.core.domain.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +22,7 @@ public class LoanDto {
     private String accountName;
     private String productCode;
     private String productName;
+    private Long tenure;
     private BigDecimal principalAmount;
     private BigDecimal outstandingBalance;
     private BigDecimal totalRepaid;
