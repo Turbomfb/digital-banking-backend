@@ -24,4 +24,5 @@ public class PostNewLoanApplicationRequest {
 	private String employerCategory;
 	private String employerSector;
 	private String employerEmail;
+	private String employerName;
 }
