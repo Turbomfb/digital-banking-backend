@@ -1,14 +1,12 @@
-# Use official OpenJDK 17 as base image
-FROM openjdk:17-jdk-slim
+FROM  maven:3.9.9-eclipse-temurin-21-alpine
 
 # Set working directory
 WORKDIR /app
 
 # Install Maven
-RUN apt-get update && \
-    apt-get install -y maven curl wget ca-certificates && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk update && \
+    apk add --no-cache maven curl wget ca-certificates && \
+    rm -rf /var/cache/apk/*
 
 # Update certificate store
 RUN update-ca-certificates
