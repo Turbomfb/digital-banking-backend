@@ -1,5 +1,6 @@
 package com.techservices.digitalbanking.core.domain.data.model;
 
+import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
 import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -70,7 +71,7 @@ public class IdentityVerificationData {
     @Column(length = 50)
     private String religion;
 
-    @Column(length = 20)
+    @Column(length = 50)
     private String type;
 
     @Column(length = 50)
@@ -81,6 +82,52 @@ public class IdentityVerificationData {
 
     @Column(columnDefinition = "TEXT")
     private String signature;
+
+    // fields for business data
+    @Column(name = "business_name", length = 255)
+    private String businessName;
+
+    @Column(name = "registration_number", length = 100)
+    private String registrationNumber;
+
+    @Column(name = "registration_date", length = 100)
+    private String registrationDate;
+
+    @Column(length = 50)
+    private String tin;
+
+    @Column(name = "vat_number", length = 50)
+    private String vatNumber;
+
+    @Column(name = "company_status", length = 100)
+    private String companyStatus;
+
+    @Column(name = "business_type", length = 100)
+    private String businessType;
+
+    @Column(length = 255)
+    private String activity;
+
+    @Column(name = "business_email", length = 100)
+    private String businessEmail;
+
+    @Column(name = "business_phone", length = 20)
+    private String businessPhone;
+
+    @Column(name = "head_office_address", length = 255)
+    private String headOfficeAddress;
+
+    @Column(name = "branch_address", length = 255)
+    private String branchAddress;
+
+    @Column(columnDefinition = "TEXT")
+    private String objectives;
+
+    @Column(name = "share_capital", length = 100)
+    private String shareCapital;
+
+    @Column(name = "country_code", length = 10)
+    private String countryCode;
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
@@ -109,6 +156,40 @@ public class IdentityVerificationData {
                 verificationData.setState(data.getAddress().getState());
                 verificationData.setAddressLine(data.getAddress().getAddressLine());
             }
+        }
+        return verificationData;
+    }
+
+    /**
+     * Parse business data response (RC Number/TIN)
+     */
+    public static IdentityVerificationData parse(BusinessDataResponse businessDataResponse) {
+        IdentityVerificationData verificationData = new IdentityVerificationData();
+        BusinessDataResponse.BusinessData data = businessDataResponse.getData();
+        if (data != null) {
+            verificationData.setId(data.getId());
+
+            verificationData.setBusinessName(data.getName());
+            verificationData.setRegistrationNumber(data.getRegistrationNumber());
+            verificationData.setRegistrationDate(data.getRegistrationDate());
+            verificationData.setTin(data.getTin());
+            verificationData.setVatNumber(data.getVatNumber());
+            verificationData.setCompanyStatus(data.getCompanyStatus());
+            verificationData.setBusinessType(data.getTypeOfEntity());
+            verificationData.setActivity(data.getActivity());
+            verificationData.setBusinessEmail(data.getEmail());
+            verificationData.setBusinessPhone(data.getPhone());
+            verificationData.setHeadOfficeAddress(data.getHeadOfficeAddress());
+            verificationData.setBranchAddress(data.getBranchAddress());
+            verificationData.setObjectives(data.getObjectives());
+            verificationData.setShareCapital(data.getPaidShareCapital());
+            verificationData.setCountryCode(data.getCountryCode());
+            verificationData.setStatus(data.getStatus());
+
+            verificationData.setState(data.getState());
+            verificationData.setLga(data.getLga());
+            verificationData.setAddressLine(data.getAddress());
+            verificationData.setTown(data.getCity());
         }
         return verificationData;
     }

@@ -1,12 +1,13 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.walletaccount.service.impl;
 
-import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.PaymentDetailData;
-import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.service.StatementService;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountStatementService;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
@@ -26,6 +27,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.techservices.digitalbanking.core.util.AppUtil.DEFAULT_CURRENCY;
+
 @Service
 @AllArgsConstructor
 public class WalletAccountStatementServiceImpl implements WalletAccountStatementService {
@@ -34,39 +37,30 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
     private final WalletAccountTransactionService walletAccountTransactionService;
 
     @Override
-    public void generateCsvStatement(StatementRequest request, HttpServletResponse response) throws IOException {
+    public void generateCsvStatement(StatementRequest request, HttpServletResponse response, Customer customer) throws IOException {
         // Retrieve account details
-        GetSavingsAccountsAccountIdResponse accountData = accountService.retrieveSavingsAccount(request.getSavingsId(), false);
+        AccountDto accountData = accountService.retrieveSavingsAccount(request.getSavingsId());
 
         // Retrieve transactions
-        FineractPageResponse<SavingsAccountTransactionData> transactionResult =
+        BasePageResponse<TransactionDto> transactionResult =
                 walletAccountTransactionService.retrieveSavingsAccountTransactions(
                         request.getCustomerId(),
                         request.getStartDate().toString(),
                         request.getEndDate().toString(),
-                        "yyyy-MM-dd",
-                        request.getProductId(),
-                        request.getLimit(),
-                        request.getOffset(), null);
+                        request.getLimit(), TransactionType.ALL);
 
-        List<SavingsAccountTransactionData> transactions = transactionResult.getPageItems();
+        List<TransactionDto> transactions = transactionResult.getData();
 
         // Filter transactions if needed
         if (request.getTransactionType() != null && !request.getTransactionType().equals("ALL")) {
             transactions = transactions.stream()
-                    .filter(t -> request.getTransactionType().equals(t.getActualTransactionType()))
-                    .collect(Collectors.toList());
-        }
-
-        if (!request.getIncludeReversals()) {
-            transactions = transactions.stream()
-                    .filter(t -> !t.isReversed())
+                    .filter(t -> request.getTransactionType().equals(t.getTransactionType()))
                     .collect(Collectors.toList());
         }
 
         // Set response headers
         String filename = String.format("statement_%s_%s_%s.csv",
-                accountData.getAccountNo(),
+                accountData.getAccountNumber(),
                 request.getStartDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")),
                 request.getEndDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
 
@@ -79,12 +73,12 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
         try (PrintWriter writer = response.getWriter()) {
             // Write header with account information
             writer.println("# ACCOUNT STATEMENT");
-            writer.println("# Account Number: " + accountData.getAccountNo());
-            writer.println("# Account Holder: " + accountData.getClientName());
+            writer.println("# Account Number: " + accountData.getAccountNumber());
+            writer.println("# Account Holder: " + customer.getFullName());
             writer.println("# Statement Period: " + request.getStartDate() + " to " + request.getEndDate());
             writer.println("# Generated On: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            writer.println("# Currency: " + (accountData.getCurrency() != null ? accountData.getCurrency().getCode() : ""));
-            writer.println("# Opening Balance: " + getOpeningBalance(request.getSavingsId(), request.getStartDate()));
+            writer.println("# Currency: " + DEFAULT_CURRENCY);
+            writer.println("# Opening Balance: " + getOpeningBalance(customer.getId(), request.getStartDate()));
             writer.println("# Closing Balance: " + accountData.getAccountBalance());
             writer.println("#");
 
@@ -92,22 +86,23 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
             writer.println("Transaction Date,Value Date,Transaction ID,Reference Number,Description,Transaction Type,Debit Amount,Credit Amount,Running Balance,Status");
 
             // Write transactions
-            for (SavingsAccountTransactionData transaction : transactions) {
-                String transactionType = transaction.getActualTransactionType();
+            for (TransactionDto transaction : transactions) {
+                String transactionType = transaction.getTransactionType();
                 BigDecimal debitAmount = "DEBIT".equals(transactionType) ? transaction.getAmount() : BigDecimal.ZERO;
                 BigDecimal creditAmount = "CREDIT".equals(transactionType) ? transaction.getAmount() : BigDecimal.ZERO;
 
-                writer.printf("%s,%s,%d,%s,\"%s\",%s,%s,%s,%s,%s%n",
-                        formatDate(transaction.getSubmittedOnDate()),
-                        formatDate(transaction.getDate()),
+                writer.printf("%s,%s,%s,%s,\"%s\",%s,%s,%s,%s,%s%n",
+                        formatDate(LocalDate.from(transaction.getDate())),
+                        formatDate(LocalDate.from(transaction.getDate())),
                         transaction.getId(),
-                        StringUtils.defaultString(transaction.getRefNo(), ""),
+                        StringUtils.defaultString(transaction.getReference(), ""),
                         escapeForCsv(getTransactionDescription(transaction)),
                         transactionType,
                         formatAmount(debitAmount),
                         formatAmount(creditAmount),
                         formatAmount(transaction.getRunningBalance()),
-                        transaction.isReversed() ? "REVERSED" : "PROCESSED");
+                        "PROCESSED"
+                );
             }
 
             // Summary section
@@ -120,7 +115,7 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
     }
 
     @Override
-    public void generatePdfStatement(StatementRequest request, HttpServletResponse response) throws IOException {
+    public void generatePdfStatement(StatementRequest request, HttpServletResponse response, Customer customer) throws IOException {
         // Implementation for PDF generation using iText or similar library
         // This would create a professional PDF statement with bank letterhead, formatting, etc.
         response.setContentType("application/pdf");
@@ -128,41 +123,32 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
                 "attachment; filename=\"statement_" + request.getSavingsId() + ".pdf\"");
 
         // Use StatementService to generate PDF
-        byte[] pdfContent = this.statementService.generatePdfStatement(request);
+        byte[] pdfContent = this.statementService.generatePdfStatement(request, customer);
         response.getOutputStream().write(pdfContent);
     }
 
     @Override
-    public void generateExcelStatement(StatementRequest request, HttpServletResponse response) throws IOException {
+    public void generateExcelStatement(StatementRequest request, HttpServletResponse response, Customer customer) throws IOException {
         // Implementation for Excel generation using Apache POI
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"statement_" + request.getSavingsId() + ".xlsx\"");
 
         // Use StatementService to generate Excel
-        byte[] excelContent = this.statementService.generateExcelStatement(request);
+        byte[] excelContent = this.statementService.generateExcelStatement(request, customer);
         response.getOutputStream().write(excelContent);
     }
 
-    private String getTransactionDescription(SavingsAccountTransactionData transaction) {
+    private String getTransactionDescription(TransactionDto transaction) {
         StringBuilder description = new StringBuilder();
 
         if (StringUtils.isNotBlank(transaction.getNarration())) {
             description.append(transaction.getNarration());
-        } else if (StringUtils.isNotBlank(transaction.getNote())) {
-            description.append(transaction.getNote());
+        } else if (StringUtils.isNotBlank(transaction.getNarration())) {
+            description.append(transaction.getNarration());
         } else if (transaction.getTransactionType() != null) {
-            description.append(transaction.getActualTransactionType());
+            description.append(transaction.getTransactionType());
         }
-
-        // Add payment details if available
-        if (transaction.getPaymentDetailData() != null) {
-            PaymentDetailData paymentData = transaction.getPaymentDetailData();
-            if (StringUtils.isNotBlank(paymentData.getReceiptNumber())) {
-                description.append(" - Receipt: ").append(paymentData.getReceiptNumber());
-            }
-        }
-
         return description.toString();
     }
 
@@ -185,17 +171,17 @@ public class WalletAccountStatementServiceImpl implements WalletAccountStatement
         return walletAccountTransactionService.getBalanceAsOfDate(savingsId, startDate.minusDays(1));
     }
 
-    private BigDecimal calculateTotalDebits(List<SavingsAccountTransactionData> transactions) {
+    private BigDecimal calculateTotalDebits(List<TransactionDto> transactions) {
         return transactions.stream()
-                .filter(t -> "DEBIT".equals(t.getActualTransactionType()))
-                .map(SavingsAccountTransactionData::getAmount)
+                .filter(t -> "DEBIT".equals(t.getTransactionType()))
+                .map(TransactionDto::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private BigDecimal calculateTotalCredits(List<SavingsAccountTransactionData> transactions) {
+    private BigDecimal calculateTotalCredits(List<TransactionDto> transactions) {
         return transactions.stream()
-                .filter(t -> "CREDIT".equals(t.getActualTransactionType()))
-                .map(SavingsAccountTransactionData::getAmount)
+                .filter(t -> "CREDIT".equals(t.getTransactionType()))
+                .map(TransactionDto::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

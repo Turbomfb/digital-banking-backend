@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techservices.digitalbanking.core.configuration.SystemProperty;
 import com.techservices.digitalbanking.core.configuration.resttemplate.ApiService;
+import com.techservices.digitalbanking.core.domain.data.model.TransactionLog;
 import com.techservices.digitalbanking.core.domain.dto.response.ExternalPaymentServiceAuthenticationResponse;
 import com.techservices.digitalbanking.core.exception.PlatformServiceException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -52,12 +52,16 @@ public class ExternalPaymentService {
         return response;
     }
 
-    public ExternalPaymentTransactionOtpVerificationResponse initiateTransfer(SavingsAccountTransactionRequest request) {
+    public ExternalPaymentTransactionOtpVerificationResponse initiateTransfer(SavingsAccountTransactionRequest request, TransactionLog transactionLog) {
         String url = systemProperty.getPayinvertMerchantIntegrationUrl() + PAYMENT_URL + "initiate/external";
         ExternalPaymentTransactionOtpVerificationResponse response = this.processRequest(url, request, ExternalPaymentTransactionOtpVerificationResponse.class, null);
         if (!response.isSuccessful()) {
+            transactionLog.setResponseCode(response.getStatusCode());
+            transactionLog.setResponseMessage(response.getMessage());
             throw new ValidationException("external.payment.service.error", response.getMessage());
         }
+        transactionLog.setResponseCode(response.getStatusCode());
+        transactionLog.setResponseMessage(response.getMessage());
         log.info("External payment transaction verified successfully: {}", response);
         return response;
     }

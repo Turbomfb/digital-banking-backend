@@ -59,5 +59,5 @@ public class CreateCustomerRequest {
 	private Long industryId;
 	private String businessSector;
 	private String rcNumber;
-	private UserType customerType = UserType.RETAIL;
+	private UserType customerType;
 }

@@ -41,7 +41,7 @@ public class PostRecurringDepositAccountsRequest {
 
 	private String locale = DEFAULT_LOCALE;
 
-	private Long productId;
+	private String productId;
 
 	private String accountNo;
 	private String externalId;

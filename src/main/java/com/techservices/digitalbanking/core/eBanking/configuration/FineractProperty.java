@@ -25,6 +25,6 @@ public class FineractProperty {
 	private Long paymentTypeId;
 	private Long savingsAccountNominalAnnualInterestRate;
 	private Long defaultSavingsProductId;
-	private Long defaultRecurringDepositProductId;
-	private Long defaultFixedDepositProductId;
+	private String defaultRecurringDepositProductId;
+	private String defaultFixedDepositProductId;
 }

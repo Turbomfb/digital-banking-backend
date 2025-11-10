@@ -11,7 +11,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostAccountTransfersResponse {
 
-	private Long resourceId;
+	private String reference;
 
-	private Long savingsId;
+	private String message;
 }

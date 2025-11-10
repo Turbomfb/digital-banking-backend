@@ -12,8 +12,4 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthApi {
     private final SystemService systemService;
 
-    @GetMapping("health")
-    public Object health() {
-        return systemService.healthCheck();
-    }
 }

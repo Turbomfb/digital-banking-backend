@@ -3,14 +3,15 @@ package com.techservices.digitalbanking.core.service;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.*;
-import com.techservices.digitalbanking.core.eBanking.model.response.PaymentDetailData;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
+import com.techservices.digitalbanking.core.domain.enums.TransactionType;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
-import com.techservices.digitalbanking.core.eBanking.model.data.FineractPageResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountsAccountIdResponse;
-import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.walletaccount.domain.request.StatementRequest;
 import com.techservices.digitalbanking.walletaccount.service.WalletAccountTransactionService;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.techservices.digitalbanking.core.util.AppUtil.DEFAULT_CURRENCY;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -40,12 +43,12 @@ public class StatementService {
         private final BankConfigurationService bankConfigurationService;
 
 
-        public byte[] generatePdfStatement(StatementRequest request) throws IOException {
+        public byte[] generatePdfStatement(StatementRequest request, Customer customer) throws IOException {
             log.info("Generating PDF statement for account: {}", request.getSavingsId());
 
             try {
-                GetSavingsAccountsAccountIdResponse accountData = accountService.retrieveSavingsAccountById(request.getSavingsId());
-                List<SavingsAccountTransactionData> transactions = getFilteredTransactions(request);
+                AccountDto accountData = accountService.retrieveSavingsAccount(request.getSavingsId());
+                List<TransactionDto> transactions = getFilteredTransactions(request);
 
                 Document document = new Document(PageSize.A4, 36, 36, 54, 36);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -61,7 +64,7 @@ public class StatementService {
                 addBankHeader(document);
 
                 // Add account information
-                addAccountInformation(document, accountData, request);
+                addAccountInformation(document, accountData, request, customer);
 
                 // Add statement summary
                 addStatementSummary(document, accountData, transactions, request);
@@ -83,13 +86,13 @@ public class StatementService {
             }
         }
 
-        public byte[] generateExcelStatement(StatementRequest request) throws IOException {
+        public byte[] generateExcelStatement(StatementRequest request, Customer customer) throws IOException {
             log.info("Generating Excel statement for account: {}", request.getSavingsId());
 
             try (Workbook workbook = new XSSFWorkbook()) {
                 // Retrieve data
-                GetSavingsAccountsAccountIdResponse accountData = accountService.retrieveSavingsAccountById(request.getSavingsId());
-                List<SavingsAccountTransactionData> transactions = getFilteredTransactions(request);
+                AccountDto accountData = accountService.retrieveSavingsAccount(request.getSavingsId());
+                List<TransactionDto> transactions = getFilteredTransactions(request);
 
                 // Create main statement sheet
                 Sheet statementSheet = workbook.createSheet("Account Statement");
@@ -106,7 +109,7 @@ public class StatementService {
                 rowNum = addExcelBankHeader(statementSheet, rowNum, headerStyle);
 
                 // Add account information
-                rowNum = addExcelAccountInfo(statementSheet, accountData, request, rowNum, headerStyle, dataStyle);
+                rowNum = addExcelAccountInfo(statementSheet, accountData, request, rowNum, headerStyle, dataStyle, customer);
 
                 // Add statement summary
                 rowNum = addExcelStatementSummary(statementSheet, accountData, transactions, request, rowNum, headerStyle, currencyStyle);
@@ -123,7 +126,7 @@ public class StatementService {
                 }
 
                 // Create summary sheet
-                createSummarySheet(workbook, accountData, transactions, request);
+                createSummarySheet(workbook, transactions);
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 workbook.write(baos);
@@ -137,30 +140,21 @@ public class StatementService {
             }
         }
 
-        private List<SavingsAccountTransactionData> getFilteredTransactions(StatementRequest request) {
+        private List<TransactionDto> getFilteredTransactions(StatementRequest request) {
             // Retrieve transactions
-            FineractPageResponse<SavingsAccountTransactionData> transactionResult =
+            BasePageResponse<TransactionDto> transactionResult =
                     walletAccountTransactionService.retrieveSavingsAccountTransactions(
                             request.getCustomerId(),
                             request.getStartDate().toString(),
                             request.getEndDate().toString(),
-                            "yyyy-MM-dd",
-                            request.getProductId(),
-                            request.getLimit(),
-                            request.getOffset(), null);
+                            request.getLimit(), TransactionType.ALL);
 
-            List<SavingsAccountTransactionData> transactions = transactionResult.getPageItems();
+            List<TransactionDto> transactions = transactionResult.getData();
 
             // Apply filters
             if (request.getTransactionType() != null && !request.getTransactionType().equals("ALL")) {
                 transactions = transactions.stream()
-                        .filter(t -> request.getTransactionType().equals(t.getActualTransactionType()))
-                        .collect(Collectors.toList());
-            }
-
-            if (!request.getIncludeReversals()) {
-                transactions = transactions.stream()
-                        .filter(t -> !t.isReversed())
+                        .filter(t -> request.getTransactionType().equals(t.getTransactionType()))
                         .collect(Collectors.toList());
             }
 
@@ -202,8 +196,8 @@ public class StatementService {
             }
         }
 
-        private void addAccountInformation(Document document, GetSavingsAccountsAccountIdResponse accountData,
-                                           StatementRequest request) throws DocumentException {
+        private void addAccountInformation(Document document, AccountDto accountData,
+                                           StatementRequest request, Customer customer) throws DocumentException {
             PdfPTable table = new PdfPTable(4);
             table.setWidthPercentage(100);
             table.setSpacingAfter(15);
@@ -213,28 +207,28 @@ public class StatementService {
 
             // Account information
             addTableCell(table, "Account Number:", labelFont);
-            addTableCell(table, accountData.getAccountNo(), valueFont);
+            addTableCell(table, accountData.getAccountNumber(), valueFont);
             addTableCell(table, "Account Type:", labelFont);
-            addTableCell(table, accountData.getSavingsProductName(), valueFont);
+            addTableCell(table, accountData.getProductName(), valueFont);
 
             addTableCell(table, "Account Holder:", labelFont);
-            addTableCell(table, accountData.getClientName(), valueFont);
+            addTableCell(table, customer.getFullName(), valueFont);
             addTableCell(table, "Statement Period:", labelFont);
             addTableCell(table, formatDateRange(request.getStartDate(), request.getEndDate()), valueFont);
 
             addTableCell(table, "Generated On:", labelFont);
             addTableCell(table, LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), valueFont);
             addTableCell(table, "Currency:", labelFont);
-            addTableCell(table, accountData.getCurrency() != null ? accountData.getCurrency().getCode() : "USD", valueFont);
+            addTableCell(table, DEFAULT_CURRENCY, valueFont);
 
             document.add(table);
         }
 
-        private void addStatementSummary(Document document, GetSavingsAccountsAccountIdResponse accountData,
-                                         List<SavingsAccountTransactionData> transactions,
+        private void addStatementSummary(Document document, AccountDto accountData,
+                                         List<TransactionDto> transactions,
                                          StatementRequest request) throws DocumentException {
 
-            BigDecimal openingBalance = getOpeningBalance(request.getSavingsId(), request.getStartDate());
+            BigDecimal openingBalance = getOpeningBalance(request.getCustomerId(), request.getStartDate());
             BigDecimal totalCredits = calculateTotalCredits(transactions);
             BigDecimal totalDebits = calculateTotalDebits(transactions);
             BigDecimal closingBalance = accountData.getAccountBalance();
@@ -255,7 +249,7 @@ public class StatementService {
             document.add(summaryTable);
         }
 
-        private void addTransactionTable(Document document, List<SavingsAccountTransactionData> transactions)
+        private void addTransactionTable(Document document, List<TransactionDto> transactions)
                 throws DocumentException {
 
             PdfPTable table = new PdfPTable(7);
@@ -275,14 +269,14 @@ public class StatementService {
             addTransactionHeader(table, "Balance", headerFont);
 
             // Transaction data
-            for (SavingsAccountTransactionData transaction : transactions) {
-                String transactionType = transaction.getActualTransactionType();
+            for (TransactionDto transaction : transactions) {
+                String transactionType = transaction.getTransactionType();
                 BigDecimal debitAmount = "DEBIT".equals(transactionType) ? transaction.getAmount() : null;
                 BigDecimal creditAmount = "CREDIT".equals(transactionType) ? transaction.getAmount() : null;
 
-                addTransactionCell(table, formatDate(transaction.getSubmittedOnDate()), dataFont);
-                addTransactionCell(table, formatDate(transaction.getDate()), dataFont);
-                addTransactionCell(table, transaction.getRefNo() != null ? transaction.getRefNo() : "", dataFont);
+                addTransactionCell(table, formatDate(LocalDate.from(transaction.getDate())), dataFont);
+                addTransactionCell(table, formatDate(LocalDate.from(transaction.getDate())), dataFont);
+                addTransactionCell(table, transaction.getReference() != null ? transaction.getReference() : "", dataFont);
                 addTransactionCell(table, getTransactionDescription(transaction), dataFont);
                 addTransactionCell(table, debitAmount != null ? formatCurrency(debitAmount) : "", dataFont);
                 addTransactionCell(table, creditAmount != null ? formatCurrency(creditAmount) : "", dataFont);
@@ -318,28 +312,28 @@ public class StatementService {
             return startRow + 1;
         }
 
-        private int addExcelAccountInfo(Sheet sheet, GetSavingsAccountsAccountIdResponse accountData, StatementRequest request,
-                                        int startRow, CellStyle headerStyle, CellStyle dataStyle) {
+        private int addExcelAccountInfo(Sheet sheet, AccountDto accountData, StatementRequest request,
+                                        int startRow, CellStyle headerStyle, CellStyle dataStyle, Customer customer) {
 
             // Account Number
             Row row = sheet.createRow(startRow++);
             row.createCell(0).setCellValue("Account Number:");
             row.getCell(0).setCellStyle(headerStyle);
-            row.createCell(1).setCellValue(accountData.getAccountNo());
+            row.createCell(1).setCellValue(accountData.getAccountNumber());
             row.getCell(1).setCellStyle(dataStyle);
 
             // Account Holder
             row = sheet.createRow(startRow++);
             row.createCell(0).setCellValue("Account Holder:");
             row.getCell(0).setCellStyle(headerStyle);
-            row.createCell(1).setCellValue(accountData.getClientName());
+            row.createCell(1).setCellValue(customer.getFullName());
             row.getCell(1).setCellStyle(dataStyle);
 
             // Account Type
             row = sheet.createRow(startRow++);
             row.createCell(0).setCellValue("Account Type:");
             row.getCell(0).setCellStyle(headerStyle);
-            row.createCell(1).setCellValue(accountData.getSavingsProductName());
+            row.createCell(1).setCellValue(accountData.getProductName());
             row.getCell(1).setCellStyle(dataStyle);
 
             // Statement Period
@@ -353,18 +347,18 @@ public class StatementService {
             row = sheet.createRow(startRow++);
             row.createCell(0).setCellValue("Currency:");
             row.getCell(0).setCellStyle(headerStyle);
-            row.createCell(1).setCellValue(accountData.getCurrency() != null ? accountData.getCurrency().getCode() : "USD");
+            row.createCell(1).setCellValue(DEFAULT_CURRENCY);
             row.getCell(1).setCellStyle(dataStyle);
 
             return startRow + 1;
         }
 
-        private int addExcelStatementSummary(Sheet sheet, GetSavingsAccountsAccountIdResponse accountData,
-                                             List<SavingsAccountTransactionData> transactions,
+        private int addExcelStatementSummary(Sheet sheet, AccountDto accountData,
+                                             List<TransactionDto> transactions,
                                              StatementRequest request, int startRow,
                                              CellStyle headerStyle, CellStyle currencyStyle) {
 
-            BigDecimal openingBalance = getOpeningBalance(request.getSavingsId(), request.getStartDate());
+            BigDecimal openingBalance = getOpeningBalance(request.getCustomerId(), request.getStartDate());
             BigDecimal totalCredits = calculateTotalCredits(transactions);
             BigDecimal totalDebits = calculateTotalDebits(transactions);
             BigDecimal closingBalance = accountData.getAccountBalance();
@@ -433,34 +427,34 @@ public class StatementService {
             return startRow + 1;
         }
 
-        private void addExcelTransactionData(Sheet sheet, List<SavingsAccountTransactionData> transactions,
+        private void addExcelTransactionData(Sheet sheet, List<TransactionDto> transactions,
                                              int startRow, CellStyle dataStyle, CellStyle currencyStyle, CellStyle dateStyle) {
 
             for (int i = 0; i < transactions.size(); i++) {
-                SavingsAccountTransactionData transaction = transactions.get(i);
+                TransactionDto transaction = transactions.get(i);
                 Row row = sheet.createRow(startRow + i);
 
-                String transactionType = transaction.getActualTransactionType();
+                String transactionType = transaction.getTransactionType();
                 BigDecimal debitAmount = "DEBIT".equals(transactionType) ? transaction.getAmount() : BigDecimal.ZERO;
                 BigDecimal creditAmount = "CREDIT".equals(transactionType) ? transaction.getAmount() : BigDecimal.ZERO;
 
                 // Transaction Date
                 Cell cell = row.createCell(0);
-                if (transaction.getSubmittedOnDate() != null) {
-                    cell.setCellValue(java.sql.Date.valueOf(transaction.getSubmittedOnDate()));
+                if (transaction.getDate() != null) {
+                    cell.setCellValue(java.sql.Date.valueOf(String.valueOf(transaction.getDate())));
                     cell.setCellStyle(dateStyle);
                 }
 
                 // Value Date
                 cell = row.createCell(1);
                 if (transaction.getDate() != null) {
-                    cell.setCellValue(java.sql.Date.valueOf(transaction.getDate()));
+                    cell.setCellValue(java.sql.Date.valueOf(String.valueOf(transaction.getDate())));
                     cell.setCellStyle(dateStyle);
                 }
 
                 // Reference
                 cell = row.createCell(2);
-                cell.setCellValue(transaction.getRefNo() != null ? transaction.getRefNo() : "");
+                cell.setCellValue(transaction.getReference() != null ? transaction.getReference() : "");
                 cell.setCellStyle(dataStyle);
 
                 // Description
@@ -494,13 +488,13 @@ public class StatementService {
 
                 // Status
                 cell = row.createCell(8);
-                cell.setCellValue(transaction.isReversed() ? "REVERSED" : "PROCESSED");
+                cell.setCellValue("PROCESSED");
                 cell.setCellStyle(dataStyle);
             }
         }
 
-        private void createSummarySheet(Workbook workbook, GetSavingsAccountsAccountIdResponse accountData,
-                                        List<SavingsAccountTransactionData> transactions, StatementRequest request) {
+        private void createSummarySheet(Workbook workbook,
+                                        List<TransactionDto> transactions) {
             Sheet summarySheet = workbook.createSheet("Summary");
 
             CellStyle headerStyle = createHeaderStyle(workbook);
@@ -523,7 +517,7 @@ public class StatementService {
 
             // Credit transactions count
             long creditCount = transactions.stream()
-                    .filter(t -> "CREDIT".equals(t.getActualTransactionType()))
+                    .filter(t -> "CREDIT".equals(t.getTransactionType()))
                     .count();
             row = summarySheet.createRow(rowNum++);
             row.createCell(0).setCellValue("Credit Transactions:");
@@ -531,7 +525,7 @@ public class StatementService {
 
             // Debit transactions count
             long debitCount = transactions.stream()
-                    .filter(t -> "DEBIT".equals(t.getActualTransactionType()))
+                    .filter(t -> "DEBIT".equals(t.getTransactionType()))
                     .count();
             row = summarySheet.createRow(rowNum++);
             row.createCell(0).setCellValue("Debit Transactions:");
@@ -541,7 +535,7 @@ public class StatementService {
             Optional<BigDecimal> avgAmountOptional = transactions.isEmpty() ?
                     Optional.empty() :
                     Optional.of(transactions.stream()
-                            .map(SavingsAccountTransactionData::getAmount)
+                            .map(TransactionDto::getAmount)
                             .reduce(BigDecimal.ZERO, BigDecimal::add)
                             .divide(BigDecimal.valueOf(transactions.size()), 2, RoundingMode.HALF_UP));
 
@@ -631,25 +625,14 @@ public class StatementService {
             table.addCell(cell);
         }
 
-        private String getTransactionDescription(SavingsAccountTransactionData transaction) {
+        private String getTransactionDescription(TransactionDto transaction) {
             StringBuilder description = new StringBuilder();
 
             if (transaction.getNarration() != null && !transaction.getNarration().trim().isEmpty()) {
                 description.append(transaction.getNarration());
-            } else if (transaction.getNote() != null && !transaction.getNote().trim().isEmpty()) {
-                description.append(transaction.getNote());
             } else if (transaction.getTransactionType() != null) {
-                description.append(transaction.getActualTransactionType());
+                description.append(transaction.getTransactionType());
             }
-
-            // Add payment details if available
-            if (transaction.getPaymentDetailData() != null) {
-                PaymentDetailData paymentData = transaction.getPaymentDetailData();
-                if (paymentData.getReceiptNumber() != null && !paymentData.getReceiptNumber().trim().isEmpty()) {
-                    description.append(" - Receipt: ").append(paymentData.getReceiptNumber());
-                }
-            }
-
             return description.toString();
         }
 
@@ -665,26 +648,26 @@ public class StatementService {
             return amount != null ? String.format("%,.2f", amount) : "0.00";
         }
 
-        private BigDecimal getOpeningBalance(Long savingsId, LocalDate startDate) {
+        private BigDecimal getOpeningBalance(Long customerId, LocalDate startDate) {
             try {
-                return walletAccountTransactionService.getBalanceAsOfDate(savingsId, startDate.minusDays(1));
+                return walletAccountTransactionService.getBalanceAsOfDate(customerId, startDate.minusDays(1));
             } catch (Exception e) {
-                log.warn("Could not retrieve opening balance for account: {}", savingsId);
+                log.warn("Could not retrieve opening balance for customer: {}", customerId);
                 return BigDecimal.ZERO;
             }
         }
 
-        private BigDecimal calculateTotalDebits(List<SavingsAccountTransactionData> transactions) {
+        private BigDecimal calculateTotalDebits(List<TransactionDto> transactions) {
             return transactions.stream()
-                    .filter(t -> "DEBIT".equals(t.getActualTransactionType()) && !t.isReversed())
-                    .map(SavingsAccountTransactionData::getAmount)
+                    .filter(t -> "DEBIT".equals(t.getTransactionType()))
+                    .map(TransactionDto::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
-        private BigDecimal calculateTotalCredits(List<SavingsAccountTransactionData> transactions) {
+        private BigDecimal calculateTotalCredits(List<TransactionDto> transactions) {
             return transactions.stream()
-                    .filter(t -> "CREDIT".equals(t.getActualTransactionType()) && !t.isReversed())
-                    .map(SavingsAccountTransactionData::getAmount)
+                    .filter(t -> "CREDIT".equals(t.getTransactionType()))
+                    .map(TransactionDto::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 

@@ -25,10 +25,10 @@ public class CustomerDashboardResponse {
     @RequiredArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Account {
-        private BigDecimal balance;
-        private BigDecimal totalInterestEarned;
-        private BigDecimal totalDeposit;
-        private BigDecimal totalWithdrawal;
+        private BigDecimal balance = BigDecimal.ZERO;
+        private BigDecimal totalInterestEarned = BigDecimal.ZERO;
+        private BigDecimal totalDeposit = BigDecimal.ZERO;
+        private BigDecimal totalWithdrawal = BigDecimal.ZERO;
         private Long totalActivePlan;
 
         public Account (BigDecimal balance, BigDecimal totalInterestEarned, BigDecimal totalDeposit, BigDecimal totalWithdrawal, Long totalActivePlan) {

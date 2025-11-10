@@ -32,17 +32,16 @@ public class ExternalLoanService {
         try {
             HttpHeaders headers = this.getHeaders();
             return apiService.callExternalApi(url, new TypeReference<>() {}, HttpMethod.GET, null, headers);
-        } catch (PlatformServiceException e) {
-            log.error(e.getMessage());
-            throw new ValidationException("external.payment.service.error", e.getDefaultUserMessage());
-        } catch (JsonProcessingException e) {
-            throw new ValidationException("external.payment.service.error", "Error processing external payment transaction", e.getMessage());
+        } catch (PlatformServiceException | JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+            throw new ValidationException("external.payment.service.error", e.getMessage(), e);
         }
     }
 
     private HttpHeaders getHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-API-KEY", systemProperty.getPayinvertLoanIntegrationApiKey());
+        log.info("Headers: {}", headers);
         return headers;
     }
 

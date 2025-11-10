@@ -10,6 +10,9 @@ import lombok.Data;
 @Getter
 public class BankConfigurationService {
 
+    @Value("${app.bank.code}")
+    private String bankCode;
+
     @Value("${app.bank.name}")
     private String bankName;
 

@@ -24,7 +24,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,12 +61,11 @@ public class IdentityVerificationService {
         IdentityVerificationData identityVerificationData = IdentityVerificationData.parse(verificationResponse);
         identityVerificationData.setType(IdentityVerificationDataType.BVN.name());
         identityVerificationData.setIdentifier(bvn);
+        identityVerificationData.setCreatedAt(LocalDateTime.now());
         identityVerificationDataRepository.save(identityVerificationData);
         verificationResponse.setDataSource("EXTERNAL");
         return verificationResponse;
     }
-
-
 
     public CustomerIdentityVerificationResponse verifyBvn(String bvn, Customer foundCustomer) {
         IdentityVerificationResponse identityVerificationResponse = retrieveBvnData(bvn);
@@ -70,6 +74,8 @@ public class IdentityVerificationService {
 
     @Transactional
     public IdentityVerificationResponse retrieveNinData(String nin) {
+        log.info("Retrieving NIN data for: {}", nin);
+
         String url = buildUrl(NIN_DETAIL);
         Optional<IdentityVerificationData> data = identityVerificationDataRepository.findByIdentifierAndType(nin, IdentityVerificationDataType.NIN.name());
         if (data.isPresent()) {
@@ -83,6 +89,7 @@ public class IdentityVerificationService {
         IdentityVerificationData identityVerificationData = IdentityVerificationData.parse(verificationResponse);
         identityVerificationData.setType(IdentityVerificationDataType.NIN.name());
         identityVerificationData.setIdentifier(nin);
+        identityVerificationData.setCreatedAt(LocalDateTime.now());
         log.info("Saving identity verification data: {}", identityVerificationData);
         identityVerificationDataRepository.save(identityVerificationData);
         verificationResponse.setDataSource("EXTERNAL");
@@ -213,18 +220,39 @@ public class IdentityVerificationService {
         }
     }
 
+    @Transactional
     public BusinessDataResponse retrieveRcNumberData(String rcNumber) {
+        log.info("Retrieving RC Number data for: {}", rcNumber);
+
         try {
+            Optional<IdentityVerificationData> data = identityVerificationDataRepository.findByIdentifierAndType(rcNumber, IdentityVerificationDataType.RC_NUMBER.name());
+            if (data.isPresent()) {
+                log.info("RC Number data found in cache for: {} <==> {}", rcNumber, data.get());
+                return convertToBusinessDataResponse(data.get());
+            }
+
             String url = systemProperty.getYouverifyIntegrationUrl() + "/v2/api/verifications/global/company-advance-check";
             BusinessDataRequest businessDataRequest = new BusinessDataRequest();
             businessDataRequest.setCountryCode("NG");
             businessDataRequest.setRegistrationNumber(rcNumber);
             HttpHeaders headers = getTokenHeader();
+
             BusinessDataResponse response = apiService.callExternalApi(url, BusinessDataResponse.class, HttpMethod.POST, businessDataRequest, headers);
-            if (response == null || !response.isSuccess() || response.getData() == null || StringUtils.equalsIgnoreCase(response.getData().getStatus(), "not_found")) {
+
+            if (response == null || !response.isSuccess() || response.getData() == null ||
+                    StringUtils.equalsIgnoreCase(response.getData().getStatus(), "not_found")) {
                 log.error("Business data retrieval failed for RC number: {}", rcNumber);
                 throw new ValidationException("verification.failed", "Verification failed for RC number.");
             }
+
+            IdentityVerificationData verificationData = IdentityVerificationData.parse(response);
+            verificationData.setType(IdentityVerificationDataType.RC_NUMBER.name());
+            verificationData.setIdentifier(rcNumber);
+            verificationData.setCreatedAt(LocalDateTime.now());
+            log.info("Saving RC Number verification data: {}", verificationData);
+            identityVerificationDataRepository.save(verificationData);
+
+            response.setSuccess(true);
             return response;
         } catch (PlatformServiceException e) {
             log.error(e.getDefaultUserMessage());
@@ -233,32 +261,86 @@ public class IdentityVerificationService {
             log.error(e.getMessage());
             throw new ValidationException("verification.failed","Verification failed", e.getMessage());
         }
+    }
+
+    @Transactional
+    public BusinessDataResponse retrieveTinData(String tin) {
+        log.info("Retrieving TIN data for: {}", tin);
+
+        try {
+            Optional<IdentityVerificationData> data = identityVerificationDataRepository.findByIdentifierAndType(tin, IdentityVerificationDataType.TIN.name());
+            if (data.isPresent()) {
+                log.info("TIN data found in cache for: {} <==> {}", tin, data.get());
+                return convertToBusinessDataResponse(data.get());
+            }
+
+            String url = systemProperty.getYouverifyIntegrationUrl() + "/v2/api/verifications/ng/tin";
+            BusinessDataRequest businessDataRequest = new BusinessDataRequest();
+            businessDataRequest.setTin(tin);
+            HttpHeaders headers = getTokenHeader();
+
+            BusinessDataResponse response = apiService.callExternalApi(url, BusinessDataResponse.class, HttpMethod.POST, businessDataRequest, headers);
+
+            if (response == null || !response.isSuccess() || response.getData() == null ||
+                    StringUtils.equalsIgnoreCase(response.getData().getStatus(), "not_found")) {
+                log.error("Business data retrieval failed for TIN: {}", tin);
+                throw new ValidationException("verification.failed", "Verification failed for TIN.");
+            }
+
+            IdentityVerificationData verificationData = IdentityVerificationData.parse(response);
+            verificationData.setType(IdentityVerificationDataType.TIN.name());
+            verificationData.setIdentifier(tin);
+            verificationData.setCreatedAt(LocalDateTime.now());
+            log.info("Saving TIN verification data: {}", verificationData);
+            identityVerificationDataRepository.save(verificationData);
+
+            response.setSuccess(true);
+            return response;
+        } catch (PlatformServiceException e) {
+            log.error(e.getDefaultUserMessage());
+            throw new ValidationException("verification.failed","Verification failed", e.getDefaultUserMessage());
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            throw new ValidationException("verification.failed","Verification failed", e.getMessage());
+        }
+    }
+
+    private BusinessDataResponse convertToBusinessDataResponse(IdentityVerificationData data) {
+        BusinessDataResponse response = new BusinessDataResponse();
+        response.setSuccess(true);
+        response.setStatusCode(200);
+        response.setMessage("Data retrieved from cache");
+
+        BusinessDataResponse.BusinessData businessData = response.new BusinessData();
+        businessData.setId(data.getId());
+        businessData.setName(data.getBusinessName());
+        businessData.setRegistrationNumber(data.getRegistrationNumber());
+        businessData.setRegistrationDate(data.getRegistrationDate());
+        businessData.setTin(data.getTin());
+        businessData.setVatNumber(data.getVatNumber());
+        businessData.setCompanyStatus(data.getCompanyStatus());
+        businessData.setTypeOfEntity(data.getBusinessType());
+        businessData.setActivity(data.getActivity());
+        businessData.setEmail(data.getBusinessEmail());
+        businessData.setPhone(data.getBusinessPhone());
+        businessData.setHeadOfficeAddress(data.getHeadOfficeAddress());
+        businessData.setBranchAddress(data.getBranchAddress());
+        businessData.setObjectives(data.getObjectives());
+        businessData.setPaidShareCapital(data.getShareCapital());
+        businessData.setCountryCode(data.getCountryCode());
+        businessData.setStatus(data.getStatus());
+        businessData.setState(data.getState());
+        businessData.setLga(data.getLga());
+        businessData.setAddress(data.getAddressLine());
+        businessData.setCity(data.getTown());
+
+        response.setData(businessData);
+        return response;
     }
 
     private HttpHeaders getTokenHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("token", systemProperty.getYouverifyIntegrationApiKey());
         return headers;
-    }
-
-    public BusinessDataResponse retrieveTinData(String tin) {
-        try {
-            String url = systemProperty.getYouverifyIntegrationUrl() + "/v2/api/verifications/ng/tin";
-            BusinessDataRequest businessDataRequest = new BusinessDataRequest();
-            businessDataRequest.setTin(tin);
-            HttpHeaders headers = getTokenHeader();
-            BusinessDataResponse response = apiService.callExternalApi(url, BusinessDataResponse.class, HttpMethod.POST, businessDataRequest, headers);
-            if (response == null || !response.isSuccess() || response.getData() == null || StringUtils.equalsIgnoreCase(response.getData().getStatus(), "not_found")) {
-                log.error("Business data retrieval failed for TIN: {}", tin);
-                throw new ValidationException("verification.failed", "Verification failed for TIN.");
-            }
-            return response;
-        } catch (PlatformServiceException e) {
-            log.error(e.getDefaultUserMessage());
-            throw new ValidationException("verification.failed","Verification failed", e.getDefaultUserMessage());
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-            throw new ValidationException("verification.failed","Verification failed", e.getMessage());
-        }
     }
 }

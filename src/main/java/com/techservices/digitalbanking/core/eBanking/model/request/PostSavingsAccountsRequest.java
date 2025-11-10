@@ -16,7 +16,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostSavingsAccountsRequest {
 
-	private String clientId;
+	private String externalId;
 
 	private String dateFormat;
 
@@ -25,8 +25,6 @@ public class PostSavingsAccountsRequest {
 	private Long kycTier;
 
 	private String accountName;
-
-	private String externalId;
 
 	private String accountNo;
 

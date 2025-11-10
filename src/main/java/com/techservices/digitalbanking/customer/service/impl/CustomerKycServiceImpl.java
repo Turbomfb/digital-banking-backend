@@ -3,15 +3,17 @@ package com.techservices.digitalbanking.customer.service.impl;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
-import com.techservices.digitalbanking.core.domain.CustomerDto;
 import com.techservices.digitalbanking.core.domain.data.model.Address;
 import com.techservices.digitalbanking.core.domain.data.model.IndustrySector;
 import com.techservices.digitalbanking.core.domain.data.repository.AddressRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.IndustrySectorRepository;
 import com.techservices.digitalbanking.core.domain.data.repository.KycTierRepository;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.domain.dto.CustomerDto;
 import com.techservices.digitalbanking.core.domain.dto.CustomerFilterDto;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.core.domain.dto.KycTierDto;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.response.BusinessDataResponse;
@@ -20,15 +22,21 @@ import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerifica
 import com.techservices.digitalbanking.core.domain.enums.AddressType;
 import com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.eBanking.model.request.FlexInvestmentCreationRequest;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.FlexInvestmentCreationResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetClientsClientIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostClientsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountsResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PutClientsClientIdResponse;
+import com.techservices.digitalbanking.core.eBanking.service.FlexDepositAccountService;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.domain.dto.KycTierDto;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutDataTableRequest;
-import com.techservices.digitalbanking.core.eBanking.model.response.*;
 import com.techservices.digitalbanking.core.eBanking.service.AccountService;
 import com.techservices.digitalbanking.core.eBanking.service.ClientService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
 import com.techservices.digitalbanking.core.service.IdentityVerificationService;
+import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
@@ -47,12 +55,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.techservices.digitalbanking.common.domain.enums.UserType.CORPORATE;
-import static com.techservices.digitalbanking.common.domain.enums.UserType.INDIVIDUAL;
-import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.*;
-import static com.techservices.digitalbanking.core.util.AppUtil.DIRECTORS_DATATABLE_NAME;
+import static com.techservices.digitalbanking.common.domain.enums.UserType.RETAIL;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.BVN;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.NIN;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.RC_NUMBER;
+import static com.techservices.digitalbanking.core.domain.enums.IdentityVerificationDataType.TIN;
 import static com.techservices.digitalbanking.core.util.AppUtil.EXTERNAL;
 import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
@@ -72,6 +81,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     private final AddressRepository addressRepository;
     private final IndustrySectorRepository industrySectorRepository;
     private final KycTierRepository kycTierRepository;
+    private final FlexDepositAccountService flexDepositAccountService;
 
     @Override
     @Transactional(rollbackOn = Exception.class)
@@ -363,11 +373,14 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         CustomerFilterDto customerFilterDto = new CustomerFilterDto().bvn(customerKycRequest.getBvn());
         customer = clientService.searchCustomer(customerFilterDto).stream().findAny().orElse(null);
         log.info("Client found: {}", customer);
-        String clientId = createOrUpgradeClient(foundCustomer, customerKycRequest, customerKycTier, customer, verificationResponse);
+        String externalId = createOrUpgradeClient(foundCustomer, customerKycRequest, customerKycTier, customer, verificationResponse);
 
-        if (StringUtils.isNotBlank(clientId)) {
-            String savingsAccountNo = createOrRetrieveSavingsAccount(clientId, verificationResponse, customerKycTier);
-            updateCustomerWithAccountDetails(foundCustomer, clientId, savingsAccountNo);
+        if (StringUtils.isNotBlank(externalId)) {
+            AccountDto savingsAccount = createOrRetrieveSavingsAccount(externalId, verificationResponse, customerKycTier);
+            log.info("Savings account found: {}", savingsAccount);
+            String flexAccountNo = createOrRetrieveFlexInvestmentAccount(externalId, verificationResponse);
+            log.info("Flex account found: {}", flexAccountNo);
+            updateCustomerWithAccountDetails(foundCustomer, externalId, savingsAccount.getAccountNumber(), flexAccountNo, savingsAccount.getNuban());
         }
     }
 
@@ -392,30 +405,48 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         return customer.getId();
     }
 
-    private String createOrRetrieveSavingsAccount(String clientId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse,
+    private AccountDto createOrRetrieveSavingsAccount(String externalId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse,
                                                   CustomerKycTier customerKycTier) {
-        log.info("Client ID found: {}", clientId);
-        @Valid Set<@Valid GetClientsSavingsAccounts> clientAccounts = clientService.getClientSavingsAccountsByClientId(clientId);
-        Optional<@Valid GetClientsSavingsAccounts> savingsAccount = clientAccounts.stream().findAny();
+        log.info("Client ID found: {}", externalId);
+        List<@Valid AccountDto> clientAccounts = clientService.getAllWalletAccountByExternalId(externalId);
+        Optional<@Valid AccountDto> savingsAccount = clientAccounts.stream().findAny();
+        log.info("Savings account found: {}", savingsAccount);
+
+        if (savingsAccount.isPresent()) {
+            return savingsAccount.get();
+        } else {
+            String gender = verificationResponse.getGender();
+            PostSavingsAccountsResponse savingsAccountsResponse = accountService.createSavingsAccount(
+                    externalId, gender, customerKycTier.getCode()
+            );
+            return clientService.getCustomerWalletAccount(externalId, savingsAccountsResponse.getAccountNumber());
+        }
+    }
+
+    private String createOrRetrieveFlexInvestmentAccount(String externalId, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse) {
+        log.info("Client ID found: {}", externalId);
+        List<@Valid AccountDto> clientAccounts = clientService.getAllFlexAccountByExternalId(externalId);
+        Optional<@Valid AccountDto> savingsAccount = clientAccounts.stream().findAny();
         log.info("Savings account found: {}", savingsAccount);
 
         if (savingsAccount.isPresent()) {
             return savingsAccount.get().getAccountNumber();
         } else {
+            FlexInvestmentCreationRequest flexInvestmentCreationRequest = new FlexInvestmentCreationRequest();
+            flexInvestmentCreationRequest.setExternalId(externalId);
             String gender = verificationResponse.getGender();
-            PostSavingsAccountsResponse savingsAccountsResponse = accountService.createSavingsAccount(
-                    clientId, null, null, null, null,
-                    null, true, null, gender, customerKycTier.getCode()
-            );
-            return savingsAccountsResponse != null ? savingsAccountsResponse.getAccountNumber() : null;
+            flexInvestmentCreationRequest.setGender(gender);
+            FlexInvestmentCreationResponse response = flexDepositAccountService.submitApplication(flexInvestmentCreationRequest);
+            return response != null ? response.getAccountNumber() : null;
         }
     }
 
-    private void updateCustomerWithAccountDetails(Customer foundCustomer, String clientId, String savingsAccountNo) {
+    private void updateCustomerWithAccountDetails(Customer foundCustomer, String clientId, String savingsAccountNo, String flexAccountNo, String nuban) {
         foundCustomer.setExternalId(clientId);
         foundCustomer.setAccountId(savingsAccountNo);
         foundCustomer.setActive(true);
-
+        foundCustomer.setFlexAccountId(flexAccountNo);
+        foundCustomer.setNuban(nuban);
     }
 
     private void updateCustomerDetails(Customer foundCustomer, CustomerKycRequest customerKycRequest,
@@ -493,7 +524,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
     }
 
     private void setupIndividualCustomerRequest(CreateCustomerRequest createCustomerRequest) {
-        createCustomerRequest.setCustomerType(INDIVIDUAL);
+        createCustomerRequest.setCustomerType(RETAIL);
     }
 
     private void setupCommonCustomerFields(CreateCustomerRequest createCustomerRequest, Customer foundCustomer, CustomerKycTier customerKycTier, IdentityVerificationResponse.IdentityVerificationResponseData verificationResponse, CustomerKycRequest customerKycRequest) {
@@ -507,11 +538,7 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         createCustomerRequest.setNin(customerKycRequest.getNin());
         if (verificationResponse.getAddress() != null) {
             IdentityVerificationResponse.IdentityVerificationResponseData.Address address = verificationResponse.getAddress();
-            PostClientsAddressRequest postClientsAddressRequest = new PostClientsAddressRequest();
-            postClientsAddressRequest.setAddressLine1(address.getAddressLine());
-            postClientsAddressRequest.setCity(address.getTown());
-            postClientsAddressRequest.setLga(address.getLga());
-            postClientsAddressRequest.setState(address.getState());
+            PostClientsAddressRequest postClientsAddressRequest = PostClientsAddressRequest.parse(address);
             createCustomerRequest.setAddress(List.of(postClientsAddressRequest));
         }
 
@@ -547,48 +574,6 @@ public class CustomerKycServiceImpl implements CustomerKycService {
         updateRequest.setNin(customerKycRequest.getNin());
         updateRequest.setTin(customerKycRequest.getTin());
         return clientService.updateCustomer(updateRequest, clientId, foundCustomer.getUserType());
-    }
-
-    private void updateDirectorDataTable(Customer foundCustomer, Long externalId) {
-        List<GetDataTablesResponse> datatableResponse = clientService.retrieveClientDataTables(DIRECTORS_DATATABLE_NAME, externalId);
-
-        if (datatableResponse != null && !datatableResponse.isEmpty()) {
-            handleExistingDirectorsTable(foundCustomer, externalId, datatableResponse);
-        } else {
-            postDirectorDataTable(foundCustomer, externalId);
-        }
-    }
-
-    private void handleExistingDirectorsTable(Customer foundCustomer, Long externalId, List<GetDataTablesResponse> datatableResponse) {
-        log.info("Directors datatable already exists for client ID {}", externalId);
-        GetDataTablesResponse directorsTable = datatableResponse.stream()
-                .filter(data -> foundCustomer.getFirstname().equalsIgnoreCase(data.getFirstName()))
-                .findFirst()
-                .orElse(null);
-
-        if (directorsTable != null) {
-            updateExistingDirectorEntry(foundCustomer, externalId, directorsTable);
-        } else {
-            postDirectorDataTable(foundCustomer, externalId);
-        }
-    }
-
-    private void updateExistingDirectorEntry(Customer foundCustomer, Long externalId, GetDataTablesResponse directorsTable) {
-        PutDataTableRequest request = buildDataTableRequest(foundCustomer);
-        try {
-            clientService.updateAClientDataTable(DIRECTORS_DATATABLE_NAME, externalId, directorsTable.getId(), request);
-        } catch (Exception e) {
-            log.error("Error updating director to datatable for client ID {}: {}", externalId, e.getMessage());
-        }
-    }
-
-    private void postDirectorDataTable(Customer foundCustomer, Long clientId) {
-        PutDataTableRequest request = buildDataTableRequest(foundCustomer);
-        try {
-            clientService.postAClientDataTable(DIRECTORS_DATATABLE_NAME, clientId, request);
-        } catch (Exception e) {
-            log.error("Error adding director to datatable for client ID {}: {}", clientId, e.getMessage());
-        }
     }
 
     private PutDataTableRequest buildDataTableRequest(Customer foundCustomer) {

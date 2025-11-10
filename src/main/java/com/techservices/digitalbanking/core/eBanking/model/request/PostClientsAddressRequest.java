@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.eBanking.model.request;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
 import lombok.Data;
 
 @Data
@@ -23,4 +24,13 @@ public class PostClientsAddressRequest {
 	private Integer stateProvinceId;
 	private String state;
 	private String lga;
+
+	public static PostClientsAddressRequest parse(IdentityVerificationResponse.IdentityVerificationResponseData.Address address) {
+		PostClientsAddressRequest postClientsAddressRequest = new PostClientsAddressRequest();
+		postClientsAddressRequest.setAddressLine1(address.getAddressLine());
+		postClientsAddressRequest.setCity(address.getTown());
+		postClientsAddressRequest.setLga(address.getLga());
+		postClientsAddressRequest.setState(address.getState());
+		return postClientsAddressRequest;
+	}
 }

@@ -1,15 +1,32 @@
 /* Developed by MKAN Engineering (C)2024 */
 package com.techservices.digitalbanking.core.util;
 
+import com.techservices.digitalbanking.core.domain.data.model.IndustrySector;
+import com.techservices.digitalbanking.core.domain.data.repository.IndustrySectorRepository;
+import com.techservices.digitalbanking.core.domain.dto.response.IdentityVerificationResponse;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
 import com.techservices.digitalbanking.core.exception.ValidationException;
+import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
+import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRequest;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.List;
 import java.util.StringJoiner;
+
+import static com.techservices.digitalbanking.common.domain.enums.UserType.CORPORATE;
+import static com.techservices.digitalbanking.common.domain.enums.UserType.RETAIL;
 
 public class AppUtil {
 	public static final String ROLES = "roles";
 	public static final String EXTERNAL = "External";
 	public static final String INTERNAL = "Internal";
+	public static final String DEFAULT_CURRENCY = "NGN";
+	public static final String SUCCESS = "Success";
 
 	public static final String[] PUBLIC_ENDPOINTS = {
 			"/api-docs/**",
@@ -24,6 +41,7 @@ public class AppUtil {
 			"/api/v1/customers",
 			"/api/v1/loan-products/loan-schedule-calculation",
 			"/api/v1/customers/{customerId}/transaction-pin",
+			"/api/v1/customers/me/activate-account",
 			"/api/v1/auth",
 			"/api/v1/wallet-accounts/me/transactions/webhooks",
 			"/api/v1/auth/create-password",
@@ -38,6 +56,18 @@ public class AppUtil {
 			"api/v1/loan-products",
 			"api/v1/system/codes/**",
 			"api/v1/privacy-policy",
+			"api/v1/docs",
+			"api/v3/api-docs/customers",
+			"api/v3/api-docs",
+			"api/v3/api-docs/swagger-config",
+			"api/v1/swagger-ui/favicon-16x16.png",
+			"api/v1/swagger-ui/favicon-32x32.png",
+			"api/v1/swagger-ui/swagger-initializer.js",
+			"api/v1/swagger-ui/index.css",
+			"api/v1/swagger-ui/swagger-ui-bundle.js",
+			"api/v1/swagger-ui/swagger-ui-standalone-preset.js",
+			"api/v1/swagger-ui/swagger-ui.css",
+			"api/v1/swagger-ui/index.html",
 			"api/v1/customers/me/addresses/states",
 			"api/v1/customers/me/addresses/states/**"
 	};
@@ -81,5 +111,16 @@ public class AppUtil {
 
 	public static boolean isStaticVirtualAccountDynamic(String accountNumber) {
 		return accountNumber.startsWith("1");
+	}
+
+	public static BigDecimal safeAdd(BigDecimal a, BigDecimal b) {
+		return (a == null ? BigDecimal.ZERO : a)
+				.add(b == null ? BigDecimal.ZERO : b);
+	}
+
+	public static String formatAmount(BigDecimal balance) {
+		balance = balance.setScale(2, RoundingMode.DOWN);
+		DecimalFormat df = new DecimalFormat("#,##0.00");
+		return df.format(balance);
 	}
 }

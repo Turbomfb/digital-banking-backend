@@ -3,18 +3,21 @@ package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
 
 /** GetLoanProductsRepaymentFrequencyType */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
 public class GetLoanProductsRepaymentFrequencyType {
 
 	private String code;
 
 	private String description;
+	private String value;
 
 	private Integer id;
 

@@ -4,13 +4,14 @@ package com.techservices.digitalbanking.core.eBanking.model.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
 import com.techservices.digitalbanking.investment.domain.response.InvestmentApplicationResponse;
 import lombok.Data;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PostSavingsAccountsResponse extends InvestmentApplicationResponse {
+public class PostSavingsAccountsResponse {
 
 	private Long customerId;
 
@@ -21,4 +22,5 @@ public class PostSavingsAccountsResponse extends InvestmentApplicationResponse {
 	private Long savingsId;
 
 	private String accountNumber;
+	private String nuban;
 }

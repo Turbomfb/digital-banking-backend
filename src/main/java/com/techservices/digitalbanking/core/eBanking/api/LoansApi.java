@@ -3,8 +3,14 @@ package com.techservices.digitalbanking.core.eBanking.api; /* Developed by MKAN 
 
 import java.util.List;
 
+import com.techservices.digitalbanking.core.domain.dto.LoanDto;
+import com.techservices.digitalbanking.core.eBanking.model.request.*;
 import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.loan.domain.request.LoanScheduleCalculationRequest;
+import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,10 +25,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.techservices.digitalbanking.core.eBanking.model.data.DeletePostDatedCheck;
-import com.techservices.digitalbanking.core.eBanking.model.request.LoanRescheduleRequest;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostLoanApplicationRequest;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostLoanProductsRequest;
-import com.techservices.digitalbanking.core.eBanking.model.request.PostLoansLoanIdTransactionsTransactionIdRequest;
 
 import jakarta.validation.Valid;
 
@@ -106,6 +108,15 @@ public interface LoansApi {
 			@Valid @RequestBody PostLoanApplicationRequest postLoansRequest,
 			@Valid @RequestParam(value = "command", required = false) String command);
 
+
+	@PostMapping(value = "/loans/calculate-schedule", produces = {"application/json"}, consumes = "application/json")
+	LoanScheduleCalculationResponse calculateLoanSchedule(
+			@Valid @RequestBody LoanScheduleCalculationRequest loanScheduleCalculationRequest);
+
+	@PostMapping(value = "/loans/new", produces = {"application/json"}, consumes = "application/json")
+	LoanApplicationResponse submitLoanApplication(
+			@RequestBody PostNewLoanApplicationRequest loanScheduleCalculationRequest);
+
 	/**
 	 * POST /loans/{loanId}/schedule : Calculate loan repayment schedule based on
 	 * Loan term variations | Updates loan repayment schedule based on Loan term
@@ -129,6 +140,18 @@ public interface LoansApi {
 	@PostMapping(value = "/loans/{loanId}/schedule", produces = {"application/json"}, consumes = "application/json")
 	PostLoansLoanIdScheduleResponse calculateLoanScheduleOrSubmitVariableSchedule(@PathVariable("loanId") Long loanId,
 			@Valid @RequestBody Object body, @Valid @RequestParam(value = "command", required = false) String command);
+
+	@PostMapping(value = "/loans/{loanId}/documents", produces = {"application/json"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	Object uploadDocument(
+			@Parameter(description = "Loan ID", required = true)
+			@PathVariable Long loanId,
+			@Parameter(description = "Document file", required = true)
+			@RequestPart("file") MultipartFile file,
+			@Parameter(description = "Document name", required = true)
+			@RequestPart("name") String name,
+			@Parameter(description = "Document description")
+			@RequestPart(value = "description", required = false) String description
+	);
 
 	/**
 	 * POST /loans/{loanId}/collaterals : Create a Collateral Note: Currently,
@@ -262,36 +285,14 @@ public interface LoansApi {
 			@Valid @RequestBody PostLoansLoanIdChargesChargeIdRequest postLoansLoanIdChargesChargeIdRequest,
 			@Valid @RequestParam(value = "command", required = false) String command);
 
-	/**
-	 * POST /loans/{loanId}/transactions : Significant Loan Transactions This API
-	 * covers the major loan transaction functionality Example Requests:
-	 * loans/1/transactions?command&#x3D;repayment | Make a Repayment |
-	 * loans/1/transactions?command&#x3D;merchantIssuedRefund | Merchant Issued
-	 * Refund | loans/1/transactions?command&#x3D;payoutRefund | Payout Refund |
-	 * loans/1/transactions?command&#x3D;goodwillCredit | Goodwil Credit |
-	 * loans/1/transactions?command&#x3D;waiveinterest | Waive Interest |
-	 * loans/1/transactions?command&#x3D;writeoff | Write-off Loan |
-	 * loans/1/transactions?command&#x3D;close-rescheduled | Close Rescheduled Loan
-	 * | loans/1/transactions?command&#x3D;close | Close Loan |
-	 * loans/1/transactions?command&#x3D;undowriteoff | Undo Loan Write-off |
-	 * loans/1/transactions?command&#x3D;recoverypayment | Make Recovery Payment |
-	 * loans/1/transactions?command&#x3D;refundByCash | Make a Refund of an Active
-	 * Loan by Cash | loans/1/transactions?command&#x3D;foreclosure | Foreclosure of
-	 * an Active Loan | loans/1/transactions?command&#x3D;creditBalanceRefund |
-	 * Credit Balance Refund |
-	 *
-	 * @param loanId
-	 *            loanId (required)
-	 * @param postLoansLoanIdTransactionsRequest
-	 *            (required)
-	 * @param command
-	 *            command (optional)
-	 * @return OK (status code 200)
-	 */
-	@PostMapping(value = "/loans/{loanId}/transactions", produces = {"application/json"}, consumes = "application/json")
-	PostLoansLoanIdTransactionsResponse executeLoanTransaction(@PathVariable("loanId") Long loanId,
-			@Valid @RequestBody PostLoansLoanIdTransactionsRequest postLoansLoanIdTransactionsRequest,
-			@Valid @RequestParam(value = "command", required = false) String command);
+
+	@PostMapping(value = "/loans/{loanId}/repayment", produces = {
+			"application/json"}, consumes = "application/json")
+	PostLoanRepaymentResponse repayLoan(@PathVariable("loanId") Long loanId,
+			@Valid @RequestBody PostLoanRepaymentRequest postLoanRepaymentRequest
+	);
+
+
 
 	/**
 	 * GET /loans/glimAccount/{glimId}
@@ -497,29 +498,11 @@ public interface LoansApi {
 	 * loans?offset&#x3D;10&amp;limit&#x3D;50
 	 * loans?orderBy&#x3D;accountNo&amp;sortOrder&#x3D;DESC
 	 *
-	 * @param sqlSearch  sqlSearch (optional)
-	 * @param externalId externalId (optional)
-	 * @param offset     offset (optional)
-	 * @param limit      limit (optional)
-	 * @param orderBy    orderBy (optional)
-	 * @param sortOrder  sortOrder (optional)
-	 * @param accountNo  accountNo (optional)
-	 * @param clientId
-	 * @param status
 	 * @return OK (status code 200)
 	 */
-	@RequestMapping(method = RequestMethod.GET, value = "/loans", produces = {"application/json"})
+	@RequestMapping(method = RequestMethod.POST, value = "/loans/search", produces = {"application/json"})
 	@ResponseStatus(HttpStatus.OK)
-	GetLoansResponse retrieveAll36(@Valid @RequestParam(value = "sqlSearch", required = false) String sqlSearch,
-								   @Valid @RequestParam(value = "externalId", required = false) String externalId,
-								   @Valid @RequestParam(value = "offset", required = false) Integer offset,
-								   @Valid @RequestParam(value = "limit", required = false) Integer limit,
-								   @Valid @RequestParam(value = "orderBy", required = false) String orderBy,
-								   @Valid @RequestParam(value = "sortOrder", required = false) String sortOrder,
-								   @Valid @RequestParam(value = "accountNo", required = false) String accountNo,
-								   @Valid @RequestParam(value = "clientId", required = false) String clientId,
-								   @Valid @RequestParam(value = "status", required = false) String status
-	);
+	List<LoanDto> retrieveAllCustomerLoans(@RequestBody FilterDto filterDto);
 
 	/**
 	 * GET /loans/{loanId}/charges : List Loan Charges It lists all the Loan Charges
@@ -673,6 +656,10 @@ public interface LoansApi {
 	GetLoansLoanIdTransactionsTransactionIdResponse retrieveTransaction(@PathVariable("loanId") Long loanId,
 			@PathVariable("transactionId") Long transactionId,
 			@Valid @RequestParam(value = "fields", required = false) String fields);
+
+
+	@GetMapping(value = "/loans/{loanId}/transactions", produces = {"application/json"})
+	List<LoanTransactionResponse> retrieveAllLoanTransactions(@PathVariable("loanId") Long loanId);
 
 	/**
 	 * GET /loans/{loanId}/transactions/template : Retrieve Loan Transaction
@@ -879,8 +866,8 @@ public interface LoansApi {
 	@PostMapping(value = "/loanproducts")
 	PostLoanProductsResponse createALoanProduct(@RequestBody PostLoanProductsRequest postLoanProductsRequest);
 
-	@GetMapping(value = "/loanproducts")
-	List<GetLoanProductsProductIdResponse> getLoanProducts(
+	@GetMapping(value = "/loans/products")
+	List<LoanProductListResponse> getLoanProducts(
 			@RequestParam(value = "fields", required = false) Long fields);
 
 	@GetMapping(value = "/loanproducts/{productId}")
