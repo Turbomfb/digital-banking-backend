@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Beneficiaries", description = "Beneficiary management endpoints")
-@SecurityRequirement(name = "bearerAuth")
 public class BeneficiaryApiResource {
 
   private final BeneficiaryService beneficiaryService;
