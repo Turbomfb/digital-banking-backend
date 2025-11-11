@@ -104,6 +104,7 @@ public class IdentityVerificationResponse {
         identityVerificationResponseData.setFirstName(identityVerificationData.getFirstName());
         identityVerificationResponseData.setMiddleName(identityVerificationData.getMiddleName());
         identityVerificationResponseData.setLastName(identityVerificationData.getLastName());
+        identityVerificationResponseData.setImage(identityVerificationData.getImage());
         identityVerificationResponseData.setMobile(identityVerificationData.getMobile());
         identityVerificationResponseData.setReligion(identityVerificationData.getReligion());
         identityVerificationResponseData.setEmail(identityVerificationData.getEmail());
