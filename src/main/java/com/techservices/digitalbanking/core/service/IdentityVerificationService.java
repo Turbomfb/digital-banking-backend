@@ -214,7 +214,7 @@ public class IdentityVerificationService {
                         !compareResponse.getData().getImageComparison().getMatch()) {
                     log.info("Provided image does not match ID image");
                     throw new ValidationException("validation.error.imageMismatch", "Provided image does not match ID image");
-                }
+                } else return;
             }
             throw new ValidationException("validation.error.imageMismatch", "Provided image does not match ID");
         }
