@@ -16,8 +16,8 @@ public class UpdateBeneficiaryRequest {
   private String nickname;
 
   public void validate() {
-    if (StringUtils.isNotBlank(this.nickname) && this.nickname.length() > 100) {
-      throw new ValidationException("nickname.too.long", "Nickname cannot exceed 100 characters");
+    if (StringUtils.isNotBlank(this.nickname) && this.nickname.length() > 25) {
+      throw new ValidationException("nickname.too.long", "Nickname cannot exceed 25 characters");
     }
   }
 }

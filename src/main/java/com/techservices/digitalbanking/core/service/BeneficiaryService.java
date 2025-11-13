@@ -2,6 +2,7 @@ package com.techservices.digitalbanking.core.service;
 
 import com.techservices.digitalbanking.core.domain.data.model.Beneficiary;
 import com.techservices.digitalbanking.core.domain.data.repository.BeneficiaryRepository;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.AddBeneficiaryRequest;
 import com.techservices.digitalbanking.core.domain.dto.request.UpdateBeneficiaryRequest;
 import com.techservices.digitalbanking.core.domain.dto.response.BeneficiaryListResponse;
@@ -11,11 +12,13 @@ import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +43,12 @@ public class BeneficiaryService {
         customerId, request.getAccountNumber(), request.getBankCode())) {
       throw new ValidationException("beneficiary.already.exists",
           "This beneficiary already exists in your list");
+    }
+
+    if (StringUtils.isNotBlank(request.getNickname()) &&
+        beneficiaryRepository.existsByCustomerIdAndNickname(customerId, request.getNickname())) {
+      throw new ValidationException("nickname.already.exists",
+          "This nickname is already used for another beneficiary");
     }
 
     Beneficiary beneficiary = new Beneficiary();
@@ -82,6 +91,33 @@ public class BeneficiaryService {
         beneficiaryResponses,
         beneficiaryResponses.size(),
         (int) activeCount
+    );
+  }
+
+  @Transactional(readOnly = true)
+  public BeneficiaryListResponse searchBeneficiaries(Long customerId, String searchTerm) {
+    log.info("Searching beneficiaries for customer: {}, searchTerm: {}", customerId, searchTerm);
+
+    if (!customerRepository.existsById(customerId)) {
+      throw new ValidationException("customer.not.found", "Customer not found");
+    }
+
+    if (StringUtils.isBlank(searchTerm)) {
+      return getAllBeneficiaries(customerId);
+    }
+
+    List<Beneficiary> beneficiaries = beneficiaryRepository.searchBeneficiaries(customerId, searchTerm);
+
+    List<BeneficiaryResponse> beneficiaryResponses = beneficiaries.stream()
+        .map(BeneficiaryResponse::from)
+        .collect(Collectors.toList());
+
+    log.info("Found {} beneficiaries matching search term for customer: {}", beneficiaryResponses.size(), customerId);
+
+    return new BeneficiaryListResponse(
+        beneficiaryResponses,
+        beneficiaryResponses.size(),
+        beneficiaryResponses.stream().filter(BeneficiaryResponse::getIsActive).count()
     );
   }
 
@@ -131,6 +167,13 @@ public class BeneficiaryService {
             "Beneficiary not found"));
 
     if (request.getNickname() != null) {
+      if (beneficiaryRepository.existsByCustomerIdAndNickname(customerId, request.getNickname())) {
+        Optional<Beneficiary> existing = beneficiaryRepository.findByCustomerIdAndNickname(customerId, request.getNickname());
+        if (existing.isPresent() && !existing.get().getId().equals(beneficiaryId)) {
+          throw new ValidationException("nickname.already.exists",
+              "This nickname is already used for another beneficiary");
+        }
+      }
       beneficiary.setNickname(request.getNickname());
     }
 

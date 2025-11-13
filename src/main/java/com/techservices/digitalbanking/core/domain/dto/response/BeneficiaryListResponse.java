@@ -13,10 +13,10 @@ import java.util.List;
 public class BeneficiaryListResponse {
 
   private List<BeneficiaryResponse> beneficiaries;
-  private Integer totalCount;
-  private Integer activeCount;
+  private long totalCount;
+  private long activeCount;
 
-  public BeneficiaryListResponse(List<BeneficiaryResponse> beneficiaries, Integer totalCount, Integer activeCount) {
+  public BeneficiaryListResponse(List<BeneficiaryResponse> beneficiaries, long totalCount, long activeCount) {
     this.beneficiaries = beneficiaries;
     this.totalCount = totalCount;
     this.activeCount = activeCount;

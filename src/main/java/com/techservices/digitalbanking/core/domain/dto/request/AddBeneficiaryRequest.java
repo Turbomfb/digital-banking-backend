@@ -38,5 +38,8 @@ public class AddBeneficiaryRequest {
     if (StringUtils.isBlank(this.bankCode)) {
       throw new ValidationException("bankCode.field.cannot.be.blank", "Bank code cannot be empty");
     }
+    if (StringUtils.isNotBlank(this.nickname) && this.nickname.length() > 25) {
+      throw new ValidationException("nickname.too.long", "Nickname cannot exceed 25 characters");
+    }
   }
 }

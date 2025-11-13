@@ -7,7 +7,7 @@ import com.techservices.digitalbanking.core.domain.dto.response.BeneficiaryListR
 import com.techservices.digitalbanking.core.domain.dto.response.BeneficiaryResponse;
 import com.techservices.digitalbanking.core.service.BeneficiaryService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -79,5 +80,15 @@ public class BeneficiaryApiResource {
     Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
     beneficiaryService.deleteBeneficiary(beneficiaryId, customerId);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/search")
+  @Operation(summary = "Search beneficiaries", description = "Search beneficiaries by account number, nickname, or account name")
+  public ResponseEntity<BeneficiaryListResponse> searchBeneficiaries(
+      @Parameter(description = "Search term (account number, nickname, or account name)")
+      @RequestParam String searchTerm) {
+    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+    log.info("GET /api/v1/customers/me/beneficiaries/search?searchTerm={} - customerId: {}", searchTerm, customerId);
+    return ResponseEntity.ok(beneficiaryService.searchBeneficiaries(customerId, searchTerm));
   }
 }
