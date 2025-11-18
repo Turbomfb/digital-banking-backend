@@ -1,6 +1,7 @@
 package com.techservices.digitalbanking.core.api;
 
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.AddBeneficiaryRequest;
 import com.techservices.digitalbanking.core.domain.dto.request.UpdateBeneficiaryRequest;
 import com.techservices.digitalbanking.core.domain.dto.response.BeneficiaryListResponse;
@@ -9,6 +10,7 @@ import com.techservices.digitalbanking.core.service.BeneficiaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
 
 @RestController
 @RequestMapping("/api/v1/customers/me/beneficiaries")
@@ -57,11 +61,13 @@ public class BeneficiaryApiResource {
 
   @PostMapping
   @Operation(summary = "Add beneficiary", description = "Add a new beneficiary to the customer's list")
-  public ResponseEntity<BeneficiaryResponse> addBeneficiary(
-      @RequestBody AddBeneficiaryRequest request) {
+  public ResponseEntity<GenericApiResponse> addBeneficiary(
+      @RequestBody AddBeneficiaryRequest request,
+      @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command
+  ) {
     Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    BeneficiaryResponse response = beneficiaryService.addBeneficiary(request, customerId);
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    GenericApiResponse response = beneficiaryService.addBeneficiary(request, customerId, command);
+    return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
   @PutMapping("/{beneficiaryId}")
@@ -76,9 +82,13 @@ public class BeneficiaryApiResource {
   @DeleteMapping("/{beneficiaryId}")
   @Operation(summary = "Delete beneficiary", description = "Remove a beneficiary from the customer's list")
   public ResponseEntity<Void> deleteBeneficiary(
-      @PathVariable Long beneficiaryId) {
+      @PathVariable Long beneficiaryId,
+      @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command,
+      @RequestParam(value = "uniqueId") @Valid String uniqueId,
+      @RequestParam(value = "otp") @Valid String otp
+  ) {
     Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    beneficiaryService.deleteBeneficiary(beneficiaryId, customerId);
+    beneficiaryService.deleteBeneficiary(beneficiaryId, customerId, command, uniqueId, otp);
     return ResponseEntity.noContent().build();
   }
 

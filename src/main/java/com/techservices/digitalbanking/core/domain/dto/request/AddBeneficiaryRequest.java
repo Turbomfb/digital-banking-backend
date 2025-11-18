@@ -19,6 +19,9 @@ public class AddBeneficiaryRequest {
   private String bankCode;
   private String nickname;
 
+  private String uniqueId;
+  private String otp;
+
   public void validate() {
     if (StringUtils.isBlank(this.accountName)) {
       throw new ValidationException("accountName.field.cannot.be.blank", "Account name cannot be empty");

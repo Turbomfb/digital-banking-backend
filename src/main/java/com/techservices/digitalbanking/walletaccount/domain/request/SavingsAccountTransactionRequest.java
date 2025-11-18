@@ -25,6 +25,7 @@ public class SavingsAccountTransactionRequest {
 	private String transactionPin;
 	private String accountName;
 	private String bankName;
+	private boolean addToBeneficiary;
 
 	public void validateForOtpGeneration() {
 		this.validateAmount();

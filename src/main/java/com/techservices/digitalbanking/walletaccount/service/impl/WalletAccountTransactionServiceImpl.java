@@ -220,6 +220,9 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
         beneficiaryService.markBeneficiaryAsUsed(
             request.getAccountNumber(),
             request.getBankNipCode(),
+            request.getAccountName(),
+            request.getBankName(),
+            request.isAddToBeneficiary(),
             customerId
         );
       } catch (Exception e) {
