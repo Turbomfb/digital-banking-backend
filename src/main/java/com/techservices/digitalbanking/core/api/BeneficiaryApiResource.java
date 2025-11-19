@@ -130,14 +130,14 @@ public class BeneficiaryApiResource {
 			@ApiResponse(responseCode = "400", description = "Invalid request, validation failed, or OTP verification failed", content = @Content),
 			@ApiResponse(responseCode = "401", description = "Authentication required - invalid or missing token", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Beneficiary not found or does not belong to the authenticated customer", content = @Content)})
-	public ResponseEntity<Void> deleteBeneficiary(@Parameter(description = "Deletion request details. "
+	public ResponseEntity<GenericApiResponse> deleteBeneficiary(@Parameter(description = "Deletion request details. "
 			+ "For OTP generation: provide beneficiaryId. "
-			+ "For OTP verification: provide uniqueId and otp received from generation step", required = true) @RequestParam DeleteBeneficiaryRequest deleteBeneficiaryRequest,
+			+ "For OTP verification: provide uniqueId and otp received from generation step", required = true) @RequestBody DeleteBeneficiaryRequest deleteBeneficiaryRequest,
 			@Parameter(description = "Command to execute: 'generate-otp' to initiate OTP generation, 'verify-otp' to complete beneficiary deletion with OTP", example = "generate-otp") @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command) {
 
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		beneficiaryService.deleteBeneficiary(customerId, command, deleteBeneficiaryRequest);
-		return ResponseEntity.noContent().build();
+		GenericApiResponse apiResponse = beneficiaryService.deleteBeneficiary(customerId, command, deleteBeneficiaryRequest);
+		return ResponseEntity.ok(apiResponse);
 	}
 
 	@GetMapping("/search")

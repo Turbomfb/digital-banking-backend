@@ -235,11 +235,11 @@ public class BeneficiaryService {
 	public GenericApiResponse deleteBeneficiary(Long customerId, @Valid String command,
 			DeleteBeneficiaryRequest deleteBeneficiaryRequest) {
 
-		Long beneficiaryId = deleteBeneficiaryRequest.getBeneficiaryId();
-		log.info("Deleting beneficiary: {} for customer: {}", beneficiaryId, customerId);
-		Beneficiary beneficiary = findBeneficiaryById(beneficiaryId, customerId);
 		if (GENERATE_OTP_COMMAND.equals(command)) {
-			deleteBeneficiaryRequest.validateGenerate();
+      Long beneficiaryId = deleteBeneficiaryRequest.getBeneficiaryId();
+      log.info("Deleting beneficiary: {} for customer: {}", beneficiaryId, customerId);
+      findBeneficiaryById(beneficiaryId, customerId);
+      deleteBeneficiaryRequest.validateGenerate();
 			Customer customer = customerService.getCustomerById(customerId);
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(customer.getPhoneNumber(),
 					customer.getEmailAddress());
@@ -309,7 +309,7 @@ public class BeneficiaryService {
 		request.setAccountName(accountName);
 		request.setBankName(bankName);
 		request.setBankCode(bankNipCode);
-		request.setNickname(StringUtils.isBlank(nickname) ? accountName + " " + bankName : nickname);
+		request.setNickname(nickname);
 		validateAddBeneficiary(request, customerId);
 		this.addBeneficiary(request, customerId);
 	}
@@ -318,6 +318,7 @@ public class BeneficiaryService {
 
 		if (GENERATE_OTP_COMMAND.equals(command)) {
 			Customer customer = validateAddBeneficiary(request, customerId);
+      request.validate();
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(customer.getPhoneNumber(),
 					customer.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.ADD_BENEFICIARY,

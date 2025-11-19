@@ -129,7 +129,6 @@ public class Customer extends BaseEntity {
 	}
 
 	public String getFullName() {
-
 		return this.firstname + " " + this.lastname;
 	}
 }
