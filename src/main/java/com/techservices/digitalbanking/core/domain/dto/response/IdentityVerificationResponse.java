@@ -58,6 +58,11 @@ public class IdentityVerificationResponse {
 			private String state;
 			private String addressLine;
 		}
+
+
+    public String getFullName() {
+      return this.firstName + " " + this.lastName;
+    }
 	}
 
 	public static IdentityVerificationResponse parse(BusinessDataResponse.BusinessData businessData) {

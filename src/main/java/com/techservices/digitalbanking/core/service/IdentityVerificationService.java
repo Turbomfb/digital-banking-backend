@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -189,29 +190,72 @@ public class IdentityVerificationService {
 		return customerIdentityVerificationResponse;
 	}
 
-	private List<String> findMismatchedFields(IdentityVerificationResponse verificationResponse, Customer customerData,
-			IdentityVerificationDataType dataType) {
+  private List<String> findMismatchedFields(IdentityVerificationResponse verificationResponse, Customer customerData,
+      IdentityVerificationDataType dataType) {
 
-		IdentityVerificationResponse.IdentityVerificationResponseData responseData = verificationResponse.getData();
-		List<String> mismatchedFields = new ArrayList<>();
-		if (dataType.isIndividual()) {
-			if (StringUtils.getLevenshteinDistance(customerData.getFirstname().toLowerCase(),
-					responseData.getFirstName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
-				mismatchedFields.add("First Name");
-			}
-			if (StringUtils.getLevenshteinDistance(customerData.getLastname().toLowerCase(),
-					responseData.getLastName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
-				mismatchedFields.add("Last Name");
-			}
-		} else if (dataType.isCorporate()) {
-			if (StringUtils.getLevenshteinDistance(customerData.getBusinessName().toLowerCase(),
-					responseData.getName().toLowerCase()) > systemProperty.getIdentityVerificationThreshold()) {
-				mismatchedFields.add("Business Name");
-			}
-		}
-		log.info("Mismatched fields for {} are {}", customerData.getPhoneNumber(), mismatchedFields);
-		return mismatchedFields;
-	}
+    IdentityVerificationResponse.IdentityVerificationResponseData responseData = verificationResponse.getData();
+    List<String> mismatchedFields = new ArrayList<>();
+
+    if (dataType.isIndividual()) {
+      double matchPercentage = calculateSimilarityPercentage(
+          customerData.getFullName(), responseData.getFullName()
+      );
+
+      if (matchPercentage < systemProperty.getIdentityVerificationThreshold()) {
+        mismatchedFields.add("Name (Match: " + String.format("%.0f%%", matchPercentage) + ")");
+        log.warn("Name match {}% for customer {} - below threshold {}%",
+            matchPercentage, customerData.getPhoneNumber(), systemProperty.getIdentityVerificationThreshold());
+      }
+
+    } else if (dataType.isCorporate()) {
+      double matchPercentage = calculateSimilarityPercentage(
+          customerData.getBusinessName(),
+          responseData.getName()
+      );
+
+      if (matchPercentage < systemProperty.getIdentityVerificationThreshold()) {
+        mismatchedFields.add("Business Name (Match: " + String.format("%.0f%%", matchPercentage) + ")");
+      }
+    }
+
+    log.info("Mismatched fields for {} are {}", customerData.getPhoneNumber(), mismatchedFields);
+    return mismatchedFields;
+  }
+
+  private static double calculateNameMatchPercentage(String firstName1, String lastName1,
+      String firstName2, String lastName2) {
+    double firstNameMatch = calculateSimilarityPercentage(firstName1, firstName2);
+    double lastNameMatch = calculateSimilarityPercentage(lastName1, lastName2);
+
+    double firstNameSwapMatch = calculateSimilarityPercentage(firstName1, lastName2);
+    double lastNameSwapMatch = calculateSimilarityPercentage(lastName1, firstName2);
+
+    double normalOrderScore = (firstNameMatch + lastNameMatch) / 2;
+    double swappedOrderScore = (firstNameSwapMatch + lastNameSwapMatch) / 2;
+
+    return Math.max(normalOrderScore, swappedOrderScore);
+  }
+
+  private static double calculateSimilarityPercentage(String str1, String str2) {
+    if (str1 == null || str2 == null) {
+      return 0.0;
+    }
+
+    String s1 = str1.toLowerCase().trim();
+    String s2 = str2.toLowerCase().trim();
+
+    if (s1.isEmpty() && s2.isEmpty()) {
+      return 100.0;
+    }
+
+    if (s1.isEmpty() || s2.isEmpty()) {
+      return 0.0;
+    }
+
+    // Jaro-Winkler returns 0.0 to 1.0, convert to percentage
+    JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
+    return similarity.apply(s1, s2) * 100;
+  }
 
 	@Transactional
 	public void validateImageMismatch(String base64Image, String bvn, String nin) {
