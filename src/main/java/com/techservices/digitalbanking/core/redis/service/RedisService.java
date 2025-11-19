@@ -128,6 +128,9 @@ public class RedisService {
         case DELETE_BENEFICIARY -> String.format(
             "You are about to delete a beneficiary. Your OTP to confirm this action is: %s",
             otpDto.getOtp());
+        case UPDATE_BENEFICIARY -> String.format(
+            "You are about to update a beneficiary. Your OTP to confirm this action is: %s",
+            otpDto.getOtp());
       };
       if (notificationRequestDto.getChannel() != null) {
         log.info("Sending OTP notification for channel: {}", notificationRequestDto.getChannel());

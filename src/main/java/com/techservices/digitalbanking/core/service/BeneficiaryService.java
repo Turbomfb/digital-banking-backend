@@ -4,6 +4,7 @@ import com.techservices.digitalbanking.core.domain.data.model.Beneficiary;
 import com.techservices.digitalbanking.core.domain.data.repository.BeneficiaryRepository;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.AddBeneficiaryRequest;
+import com.techservices.digitalbanking.core.domain.dto.request.DeleteBeneficiaryRequest;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
 import com.techservices.digitalbanking.core.domain.dto.request.UpdateBeneficiaryRequest;
@@ -162,9 +163,7 @@ public class BeneficiaryService {
   public BeneficiaryResponse getBeneficiaryById(Long beneficiaryId, Long customerId) {
     log.info("Fetching beneficiary: {} for customer: {}", beneficiaryId, customerId);
 
-    Beneficiary beneficiary = beneficiaryRepository.findByIdAndCustomerId(beneficiaryId, customerId)
-        .orElseThrow(() -> new ValidationException("beneficiary.not.found",
-            "Beneficiary not found"));
+    Beneficiary beneficiary = findBeneficiaryById(beneficiaryId, customerId);
 
     return BeneficiaryResponse.from(beneficiary);
   }
@@ -173,20 +172,11 @@ public class BeneficiaryService {
   public BeneficiaryResponse updateBeneficiary(Long beneficiaryId, UpdateBeneficiaryRequest request, Long customerId) {
     log.info("Updating beneficiary: {} for customer: {}", beneficiaryId, customerId);
 
-    request.validate();
+    request.validateGenerate();
 
-    Beneficiary beneficiary = beneficiaryRepository.findByIdAndCustomerId(beneficiaryId, customerId)
-        .orElseThrow(() -> new ValidationException("beneficiary.not.found",
-            "Beneficiary not found"));
-
+    Beneficiary beneficiary = findBeneficiaryById(beneficiaryId, customerId);
     if (request.getNickname() != null) {
-      if (beneficiaryRepository.existsByCustomerIdAndNickname(customerId, request.getNickname())) {
-        Optional<Beneficiary> existing = beneficiaryRepository.findByCustomerIdAndNickname(customerId, request.getNickname());
-        if (existing.isPresent() && !existing.get().getId().equals(beneficiaryId)) {
-          throw new ValidationException("nickname.already.exists",
-              "This nickname is already used for another beneficiary");
-        }
-      }
+      validateNickname(request, customerId, beneficiaryId);
       beneficiary.setNickname(request.getNickname());
     }
 
@@ -199,23 +189,68 @@ public class BeneficiaryService {
   }
 
   @Transactional
-  public GenericApiResponse deleteBeneficiary(Long beneficiaryId, Long customerId, @Valid String command,
-      @Valid String uniqueId, @Valid String otp) {
-    log.info("Deleting beneficiary: {} for customer: {}", beneficiaryId, customerId);
-
-    Beneficiary beneficiary = beneficiaryRepository.findByIdAndCustomerId(beneficiaryId, customerId)
-        .orElseThrow(() -> new ValidationException("beneficiary.not.found",
-            "Beneficiary not found"));
+  public GenericApiResponse updateBeneficiary(UpdateBeneficiaryRequest request, Long customerId, String command) {
+    Long beneficiaryId = request.getBeneficiaryId();
+    log.info("Updating beneficiary: {} for customer: {}", beneficiaryId, customerId);
     if (GENERATE_OTP_COMMAND.equals(command)) {
       Customer customer = customerService.getCustomerById(customerId);
+
+      request.validateGenerate();
+
+      findBeneficiaryById(beneficiaryId, customerId);
+
+      if (request.getNickname() != null) {
+        validateNickname(request, customerId, beneficiaryId);
+      }
       NotificationRequestDto notificationRequestDto = new NotificationRequestDto(
           customer.getPhoneNumber(), customer.getEmailAddress());
-      OtpDto otpDto = this.redisService.generateOtpRequest(beneficiaryId, OtpType.DELETE_BENEFICIARY,
+      OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.DELETE_BENEFICIARY,
           notificationRequestDto, null);
       return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
     } else if (VERIFY_OTP_COMMAND.equals(command)) {
-      Long savedBeneficiaryId = (Long) this.redisService.validateOtpWithoutDeletingRecord(
+      request.validateVerification();
+      String uniqueId = request.getUniqueId();
+      String otp = request.getOtp();
+      UpdateBeneficiaryRequest savedRequest = (UpdateBeneficiaryRequest) this.redisService.validateOtpWithoutDeletingRecord(
+          uniqueId, otp, OtpType.UPDATE_BENEFICIARY).getData();
+      Long savedBeneficiaryId = savedRequest.getBeneficiaryId();
+      this.updateBeneficiary(savedBeneficiaryId, savedRequest, customerId);
+      return new GenericApiResponse("Beneficiary has been updated successfully", "success");
+    } else {
+      throw new ValidationException("Invalid command");
+    }
+  }
+
+  private void validateNickname(UpdateBeneficiaryRequest request, Long customerId, Long beneficiaryId) {
+    if (beneficiaryRepository.existsByCustomerIdAndNickname(customerId, request.getNickname())) {
+      Optional<Beneficiary> existing = beneficiaryRepository.findByCustomerIdAndNickname(customerId, request.getNickname());
+      if (existing.isPresent() && !existing.get().getId().equals(beneficiaryId)) {
+        throw new ValidationException("nickname.already.exists",
+            "This nickname is already used for another beneficiary");
+      }
+    }
+  }
+
+  @Transactional
+  public GenericApiResponse deleteBeneficiary(Long customerId, @Valid String command, DeleteBeneficiaryRequest deleteBeneficiaryRequest) {
+    Long beneficiaryId = deleteBeneficiaryRequest.getBeneficiaryId();
+    log.info("Deleting beneficiary: {} for customer: {}", beneficiaryId, customerId);
+    Beneficiary beneficiary = findBeneficiaryById(beneficiaryId, customerId);
+    if (GENERATE_OTP_COMMAND.equals(command)) {
+      deleteBeneficiaryRequest.validateGenerate();
+      Customer customer = customerService.getCustomerById(customerId);
+      NotificationRequestDto notificationRequestDto = new NotificationRequestDto(
+          customer.getPhoneNumber(), customer.getEmailAddress());
+      OtpDto otpDto = this.redisService.generateOtpRequest(deleteBeneficiaryRequest, OtpType.DELETE_BENEFICIARY,
+          notificationRequestDto, null);
+      return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
+    } else if (VERIFY_OTP_COMMAND.equals(command)) {
+      deleteBeneficiaryRequest.validateVerification();
+      String uniqueId = deleteBeneficiaryRequest.getUniqueId();
+      String otp = deleteBeneficiaryRequest.getOtp();
+      DeleteBeneficiaryRequest savedRequest = (DeleteBeneficiaryRequest) this.redisService.validateOtpWithoutDeletingRecord(
           uniqueId, otp, OtpType.DELETE_BENEFICIARY).getData();
+      Long savedBeneficiaryId = savedRequest.getBeneficiaryId();
       this.hardDeleteBeneficiary(savedBeneficiaryId, customerId);
       return new GenericApiResponse("Beneficiary has been deleted successfully", "success");
     } else {
@@ -223,13 +258,17 @@ public class BeneficiaryService {
     }
   }
 
+  private Beneficiary findBeneficiaryById(Long beneficiaryId, Long customerId) {
+    return beneficiaryRepository.findByIdAndCustomerId(beneficiaryId, customerId)
+        .orElseThrow(() -> new ValidationException("beneficiary.not.found",
+            "Beneficiary not found"));
+  }
+
   @Transactional
   public void hardDeleteBeneficiary(Long beneficiaryId, Long customerId) {
     log.info("Hard deleting beneficiary: {} for customer: {}", beneficiaryId, customerId);
 
-    Beneficiary beneficiary = beneficiaryRepository.findByIdAndCustomerId(beneficiaryId, customerId)
-        .orElseThrow(() -> new ValidationException("beneficiary.not.found",
-            "Beneficiary not found"));
+    Beneficiary beneficiary = findBeneficiaryById(beneficiaryId, customerId);
 
     beneficiaryRepository.delete(beneficiary);
 

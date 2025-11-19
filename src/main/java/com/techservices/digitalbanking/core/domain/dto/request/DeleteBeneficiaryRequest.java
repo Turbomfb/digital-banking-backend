@@ -11,20 +11,15 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UpdateBeneficiaryRequest {
-
+public class DeleteBeneficiaryRequest {
   //Generate otp
-  private String nickname;
   private Long beneficiaryId;
 
-  //  Verification
+//  Verification
   private String uniqueId;
   private String otp;
 
   public void validateGenerate() {
-    if (StringUtils.isNotBlank(this.nickname) && this.nickname.length() > 25) {
-      throw new ValidationException("nickname.too.long", "Nickname cannot exceed 25 characters");
-    }
     if (this.beneficiaryId == null ||  this.beneficiaryId <= 1) {
       throw new ValidationException("beneficiaryId.is.blank", "beneficiaryId is mandatory");
     }

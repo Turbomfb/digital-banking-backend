@@ -13,12 +13,14 @@ import org.apache.commons.lang3.StringUtils;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AddBeneficiaryRequest {
 
+  // generate
   private String accountName;
   private String accountNumber;
   private String bankName;
   private String bankCode;
   private String nickname;
 
+  //verify
   private String uniqueId;
   private String otp;
 
