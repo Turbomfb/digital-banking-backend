@@ -77,7 +77,7 @@ public class BusinessCategoryAdminApiResource {
       summary = "Deactivate a category item",
       description = "Deactivate a business category item")
   public ResponseEntity<GenericApiResponse> deactivateCategoryItem(@PathVariable Long itemId) {
-  log.info("PUT /api/v1/admin/business-categories/items/{}/deactivate", itemId);
+    log.info("PUT /api/v1/admin/business-categories/items/{}/deactivate", itemId);
     BusinessCategoryItem item =
         businessCategoryItemRepository
             .findById(itemId)
