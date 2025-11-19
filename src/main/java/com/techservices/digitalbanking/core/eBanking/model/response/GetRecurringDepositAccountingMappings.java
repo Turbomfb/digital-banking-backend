@@ -7,10 +7,10 @@ import lombok.Setter;
 @Setter
 @Getter
 public class GetRecurringDepositAccountingMappings {
-  private RecurringDepositAccountingMappingsAccount savingsReferenceAccount;
-  private RecurringDepositAccountingMappingsAccount incomeFromFeeAccount;
-  private RecurringDepositAccountingMappingsAccount incomeFromPenaltyAccount;
-  private RecurringDepositAccountingMappingsAccount interestOnSavingsAccount;
-  private RecurringDepositAccountingMappingsAccount savingsControlAccount;
-  private RecurringDepositAccountingMappingsAccount transfersInSuspenseAccount;
+	private RecurringDepositAccountingMappingsAccount savingsReferenceAccount;
+	private RecurringDepositAccountingMappingsAccount incomeFromFeeAccount;
+	private RecurringDepositAccountingMappingsAccount incomeFromPenaltyAccount;
+	private RecurringDepositAccountingMappingsAccount interestOnSavingsAccount;
+	private RecurringDepositAccountingMappingsAccount savingsControlAccount;
+	private RecurringDepositAccountingMappingsAccount transfersInSuspenseAccount;
 }

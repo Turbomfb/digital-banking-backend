@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class PostLoansLoanIdScheduleResponse {
 
-  private Object changes;
+	private Object changes;
 
-  private Integer loanId;
+	private Integer loanId;
 }

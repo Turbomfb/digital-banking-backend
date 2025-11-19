@@ -9,21 +9,21 @@ import lombok.Setter;
 @Setter
 public class GetLoanChargeTemplateChargeOptions {
 
-  private Boolean active;
+	private Boolean active;
 
-  private Double amount;
+	private Double amount;
 
-  private GetLoanChargeTemplateChargeAppliesTo chargeAppliesTo;
+	private GetLoanChargeTemplateChargeAppliesTo chargeAppliesTo;
 
-  private GetLoanChargeCalculationType chargeCalculationType;
+	private GetLoanChargeCalculationType chargeCalculationType;
 
-  private GetLoanChargeTemplateChargeTimeType chargeTimeType;
+	private GetLoanChargeTemplateChargeTimeType chargeTimeType;
 
-  private GetLoanChargeCurrency currency;
+	private GetLoanChargeCurrency currency;
 
-  private Integer id;
+	private Integer id;
 
-  private String name;
+	private String name;
 
-  private Boolean penalty;
+	private Boolean penalty;
 }

@@ -7,10 +7,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateSavingsAccountRequest {
-  private String clientId;
-  private String accountNumber;
-  private String accountName;
-  private String externalId;
-  private Long productId;
-  private boolean isActive;
+	private String clientId;
+	private String accountNumber;
+	private String accountName;
+	private String externalId;
+	private Long productId;
+	private boolean isActive;
 }

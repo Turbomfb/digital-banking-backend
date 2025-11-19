@@ -9,21 +9,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class BeanUtil implements ApplicationContextAware {
 
-  private static ApplicationContext context;
+	private static ApplicationContext context;
 
-  @Override
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
-    context = applicationContext;
-  }
+		context = applicationContext;
+	}
 
-  public static <T> T getBean(Class<T> beanClass) {
+	public static <T> T getBean(Class<T> beanClass) {
 
-    return context.getBean(beanClass);
-  }
+		return context.getBean(beanClass);
+	}
 
-  public static <T> T getBean(String beanName, Class<T> beanClass) {
+	public static <T> T getBean(String beanName, Class<T> beanClass) {
 
-    return context.getBean(beanName, beanClass);
-  }
+		return context.getBean(beanName, beanClass);
+	}
 }

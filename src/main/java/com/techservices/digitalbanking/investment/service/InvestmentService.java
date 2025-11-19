@@ -15,37 +15,22 @@ import com.techservices.digitalbanking.investment.domain.response.InvestmentCalc
 
 public interface InvestmentService {
 
-  AccountDto retrieveInvestmentById(String id, InvestmentType investmentType, Long customerId);
+	AccountDto retrieveInvestmentById(String id, InvestmentType investmentType, Long customerId);
 
-  BasePageResponse<AccountDto> retrieveAllCustomerInvestments(
-      Long customerId, String investmentType);
+	BasePageResponse<AccountDto> retrieveAllCustomerInvestments(Long customerId, String investmentType);
 
-  BasePageResponse<TransactionDto> retrieveInvestmentTransactionsById(
-      String id,
-      String investmentType,
-      Long customerId,
-      TransactionType transactionType,
-      String startDate,
-      String endDate,
-      Long size);
+	BasePageResponse<TransactionDto> retrieveInvestmentTransactionsById(String id, String investmentType,
+			Long customerId, TransactionType transactionType, String startDate, String endDate, Long size);
 
-  InvestmentApplicationResponse submitApplication(
-      Long customerId, InvestmentApplicationRequest request);
+	InvestmentApplicationResponse submitApplication(Long customerId, InvestmentApplicationRequest request);
 
-  BaseAppResponse updateAnInvestment(
-      Long customerId,
-      InvestmentType investmentType,
-      InvestmentUpdateRequest request,
-      String investmentId);
+	BaseAppResponse updateAnInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request,
+			String investmentId);
 
-  BaseAppResponse fundInvestment(
-      Long customerId,
-      InvestmentType investmentType,
-      InvestmentUpdateRequest request,
-      String investmentId);
+	BaseAppResponse fundInvestment(Long customerId, InvestmentType investmentType, InvestmentUpdateRequest request,
+			String investmentId);
 
-  InvestmentCalculatorResponse calculateInvestment(
-      Long customerId, InvestmentCalculatorRequest request);
+	InvestmentCalculatorResponse calculateInvestment(Long customerId, InvestmentCalculatorRequest request);
 
-  BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request);
+	BaseAppResponse withdrawFlexInvestment(Long customerId, InvestmentUpdateRequest request);
 }

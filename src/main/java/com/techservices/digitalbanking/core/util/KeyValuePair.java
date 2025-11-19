@@ -8,12 +8,12 @@ import lombok.Setter;
 @Setter
 public class KeyValuePair<K, V> {
 
-  private K key;
-  private V value;
+	private K key;
+	private V value;
 
-  public KeyValuePair(K key, V value) {
+	public KeyValuePair(K key, V value) {
 
-    this.key = key;
-    this.value = value;
-  }
+		this.key = key;
+		this.value = value;
+	}
 }

@@ -1,6 +1,11 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
 import com.techservices.digitalbanking.core.domain.enums.TransactionType;
 import com.techservices.digitalbanking.core.eBanking.api.TransactionApiClient;
@@ -11,88 +16,73 @@ import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAc
 import com.techservices.digitalbanking.core.eBanking.model.response.PostAccountTransfersResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountTransactionsResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.SavingsAccountTransactionData;
-import java.math.BigDecimal;
-import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AccountTransactionService {
-  private final WalletAccountApiClient walletAccountApiClient;
-  private final TransactionApiClient transactionApiClient;
+	private final WalletAccountApiClient walletAccountApiClient;
+	private final TransactionApiClient transactionApiClient;
 
-  private PostSavingsAccountTransactionsResponse getPostSavingsAccountTransactionsResponse(
-      TransactionType command,
-      String savingsAccountId,
-      PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest) {
+	private PostSavingsAccountTransactionsResponse getPostSavingsAccountTransactionsResponse(TransactionType command,
+			String savingsAccountId, PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest) {
 
-    return walletAccountApiClient.handleTransactionCommand(
-        savingsAccountId, postSavingsAccountTransactionsRequest, command);
-  }
+		return walletAccountApiClient.handleTransactionCommand(savingsAccountId, postSavingsAccountTransactionsRequest,
+				command);
+	}
 
-  public PostSavingsAccountTransactionsResponse handleDeposit(
-      String savingsAccountId,
-      BigDecimal transactionAmount,
-      String transactionReference,
-      String narration) {
+	public PostSavingsAccountTransactionsResponse handleDeposit(String savingsAccountId, BigDecimal transactionAmount,
+			String transactionReference, String narration) {
 
-    PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest =
-        getSavingsAccountTransactionRequest(transactionAmount, narration, transactionReference);
+		PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest = getSavingsAccountTransactionRequest(
+				transactionAmount, narration, transactionReference);
 
-    return getPostSavingsAccountTransactionsResponse(
-        TransactionType.CREDIT, savingsAccountId, postSavingsAccountTransactionsRequest);
-  }
+		return getPostSavingsAccountTransactionsResponse(TransactionType.CREDIT, savingsAccountId,
+				postSavingsAccountTransactionsRequest);
+	}
 
-  public PostSavingsAccountTransactionsResponse handleWithdrawal(
-      String savingsAccountId,
-      BigDecimal transactionAmount,
-      String transactionReference,
-      String narration) {
+	public PostSavingsAccountTransactionsResponse handleWithdrawal(String savingsAccountId,
+			BigDecimal transactionAmount, String transactionReference, String narration) {
 
-    PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest =
-        getSavingsAccountTransactionRequest(transactionAmount, narration, transactionReference);
+		PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest = getSavingsAccountTransactionRequest(
+				transactionAmount, narration, transactionReference);
 
-    return getPostSavingsAccountTransactionsResponse(
-        TransactionType.DEBIT, savingsAccountId, postSavingsAccountTransactionsRequest);
-  }
+		return getPostSavingsAccountTransactionsResponse(TransactionType.DEBIT, savingsAccountId,
+				postSavingsAccountTransactionsRequest);
+	}
 
-  private PostSavingsAccountTransactionsRequest getSavingsAccountTransactionRequest(
-      BigDecimal transactionAmount, String narration, String transactionReference) {
+	private PostSavingsAccountTransactionsRequest getSavingsAccountTransactionRequest(BigDecimal transactionAmount,
+			String narration, String transactionReference) {
 
-    PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest =
-        new PostSavingsAccountTransactionsRequest();
-    postSavingsAccountTransactionsRequest.setTransactionAmount(transactionAmount);
-    postSavingsAccountTransactionsRequest.setNarration(narration);
-    postSavingsAccountTransactionsRequest.setTransactionReference(transactionReference);
-    return postSavingsAccountTransactionsRequest;
-  }
+		PostSavingsAccountTransactionsRequest postSavingsAccountTransactionsRequest = new PostSavingsAccountTransactionsRequest();
+		postSavingsAccountTransactionsRequest.setTransactionAmount(transactionAmount);
+		postSavingsAccountTransactionsRequest.setNarration(narration);
+		postSavingsAccountTransactionsRequest.setTransactionReference(transactionReference);
+		return postSavingsAccountTransactionsRequest;
+	}
 
-  public PostAccountTransfersResponse processIntraTransafer(
-      String senderAccountNumber,
-      String recipientAccountNumber,
-      BigDecimal transactionAmount,
-      String narration) {
+	public PostAccountTransfersResponse processIntraTransafer(String senderAccountNumber, String recipientAccountNumber,
+			BigDecimal transactionAmount, String narration) {
 
-    PostAccountTransfersRequest postAccountTransfersRequest = new PostAccountTransfersRequest();
-    postAccountTransfersRequest.setFromAccountId(senderAccountNumber);
-    postAccountTransfersRequest.setToAccountId(recipientAccountNumber);
-    postAccountTransfersRequest.setTransferAmount(transactionAmount);
-    postAccountTransfersRequest.setTransferDescription(narration);
-    return transactionApiClient.makeTransfer(
-        TransactionType.INTRA_BANK_TRANSFER, postAccountTransfersRequest);
-  }
+		PostAccountTransfersRequest postAccountTransfersRequest = new PostAccountTransfersRequest();
+		postAccountTransfersRequest.setFromAccountId(senderAccountNumber);
+		postAccountTransfersRequest.setToAccountId(recipientAccountNumber);
+		postAccountTransfersRequest.setTransferAmount(transactionAmount);
+		postAccountTransfersRequest.setTransferDescription(narration);
+		return transactionApiClient.makeTransfer(TransactionType.INTRA_BANK_TRANSFER, postAccountTransfersRequest);
+	}
 
-  public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(
-      String savingsAccountId, Long transactionId) {
+	public SavingsAccountTransactionData retrieveSavingsAccountTransactionById(String savingsAccountId,
+			Long transactionId) {
 
-    return walletAccountApiClient.retrieveOneTransaction(savingsAccountId, transactionId);
-  }
+		return walletAccountApiClient.retrieveOneTransaction(savingsAccountId, transactionId);
+	}
 
-  public List<TransactionDto> retrieveAllAccountTransactions(FilterDto filter) {
+	public List<TransactionDto> retrieveAllAccountTransactions(FilterDto filter) {
 
-    return transactionApiClient.retrieveAllTransactionsByAccountNo(filter);
-  }
+		return transactionApiClient.retrieveAllTransactionsByAccountNo(filter);
+	}
 }

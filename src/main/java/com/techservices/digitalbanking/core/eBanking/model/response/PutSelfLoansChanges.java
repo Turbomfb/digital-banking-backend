@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class PutSelfLoansChanges {
 
-  private String locale;
+	private String locale;
 
-  private Long principal;
+	private Long principal;
 }

@@ -2,19 +2,17 @@
 package com.techservices.digitalbanking.core.domain.enums;
 
 public enum ProductType {
-  ALL("All"),
-  INDIVIDUAL("Individual"),
-  BUSINESS_BANKING("Business Banking");
+	ALL("All"), INDIVIDUAL("Individual"), BUSINESS_BANKING("Business Banking");
 
-  private final String displayName;
+	private final String displayName;
 
-  ProductType(String displayName) {
+	ProductType(String displayName) {
 
-    this.displayName = displayName;
-  }
+		this.displayName = displayName;
+	}
 
-  public String getDisplayName() {
+	public String getDisplayName() {
 
-    return displayName;
-  }
+		return displayName;
+	}
 }

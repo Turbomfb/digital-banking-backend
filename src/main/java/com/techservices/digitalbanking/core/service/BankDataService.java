@@ -1,6 +1,17 @@
 /* (C)2025 */
 package com.techservices.digitalbanking.core.service;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.JaroWinklerDistance;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
 import com.techservices.digitalbanking.core.configuration.SystemProperty;
@@ -17,359 +28,297 @@ import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.walletaccount.domain.request.NameEnquiryRequest;
 import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse;
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Pattern;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.similarity.JaroWinklerDistance;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class BankDataService {
 
-  private final YouverifyBankCache youverifyBankCache;
-  private final ApiService apiService;
-  private final SystemProperty systemProperty;
-  private final BankDataRepository bankDataRepository;
-  private final NameEnquiryCacheRepository nameEnquiryCacheRepository;
+	private final YouverifyBankCache youverifyBankCache;
+	private final ApiService apiService;
+	private final SystemProperty systemProperty;
+	private final BankDataRepository bankDataRepository;
+	private final NameEnquiryCacheRepository nameEnquiryCacheRepository;
 
-  private static final double SCORE_THRESHOLD = 0.85;
+	private static final double SCORE_THRESHOLD = 0.85;
 
-  public static final String ACCOUNT_VERIFICATION_FAILED_ERROR =
-      "Account verification failed. Please check the details or try again later.";
+	public static final String ACCOUNT_VERIFICATION_FAILED_ERROR = "Account verification failed. Please check the details or try again later.";
 
-  private static final Pattern STOP_WORDS =
-      Pattern.compile("\\b(bank|plc|ltd|limited|mfb|microfinance|merchant|nigeria|ng)\\b");
+	private static final Pattern STOP_WORDS = Pattern
+			.compile("\\b(bank|plc|ltd|limited|mfb|microfinance|merchant|nigeria|ng)\\b");
 
-  private static final Map<String, String> ACRONYMS =
-      Map.ofEntries(
-          Map.entry("gtbank", "guaranty trust bank"),
-          Map.entry("gt", "guaranty trust bank"),
-          Map.entry("gtb", "guaranty trust bank"),
-          Map.entry("uba", "united bank for africa"),
-          Map.entry("fcmb", "first city monument bank"),
-          Map.entry("kuda", "kuda microfinance bank"),
-          Map.entry("stanbic", "stanbic ibtc bank"),
-          Map.entry("wema", "wema bank"),
-          Map.entry("sterling", "sterling bank"),
-          Map.entry("fidelity", "fidelity bank"),
-          Map.entry("opay", "opay digital services limited"));
+	private static final Map<String, String> ACRONYMS = Map.ofEntries(Map.entry("gtbank", "guaranty trust bank"),
+			Map.entry("gt", "guaranty trust bank"), Map.entry("gtb", "guaranty trust bank"),
+			Map.entry("uba", "united bank for africa"), Map.entry("fcmb", "first city monument bank"),
+			Map.entry("kuda", "kuda microfinance bank"), Map.entry("stanbic", "stanbic ibtc bank"),
+			Map.entry("wema", "wema bank"), Map.entry("sterling", "sterling bank"),
+			Map.entry("fidelity", "fidelity bank"), Map.entry("opay", "opay digital services limited"));
 
-  private static final Map<String, String> DIRECT_MAPPINGS =
-      Map.of(
-          "gtbank plc",
-          "guaranty trust bank",
-          "gtbank",
-          "guaranty trust bank",
-          "opay",
-          "opay digital services limited",
-          "kuda mfb",
-          "kuda microfinance bank",
-          "sterling bank plc",
-          "sterling bank");
+	private static final Map<String, String> DIRECT_MAPPINGS = Map.of("gtbank plc", "guaranty trust bank", "gtbank",
+			"guaranty trust bank", "opay", "opay digital services limited", "kuda mfb", "kuda microfinance bank",
+			"sterling bank plc", "sterling bank");
 
-  private final JaroWinklerDistance distance = new JaroWinklerDistance();
-  private final String pathUrl = "/v2/api/identity/ng/bank-account-number/";
-  private final BankConfigurationService bankConfigurationService;
-  private final CustomerRepository customerRepository;
+	private final JaroWinklerDistance distance = new JaroWinklerDistance();
+	private final String pathUrl = "/v2/api/identity/ng/bank-account-number/";
+	private final BankConfigurationService bankConfigurationService;
+	private final CustomerRepository customerRepository;
 
-  public BankDataResponse retrieveAllBanks() {
+	public BankDataResponse retrieveAllBanks() {
 
-    BankDataResponse bankDataResponse = new BankDataResponse();
-    bankDataResponse.setSuccess(true);
-    bankDataResponse.setStatusCode(200);
-    bankDataResponse.setMessage("Bank data retrieved successfully");
-    bankDataResponse.setData(bankDataRepository.findAll());
-    return bankDataResponse;
-  }
+		BankDataResponse bankDataResponse = new BankDataResponse();
+		bankDataResponse.setSuccess(true);
+		bankDataResponse.setStatusCode(200);
+		bankDataResponse.setMessage("Bank data retrieved successfully");
+		bankDataResponse.setData(bankDataRepository.findAll());
+		return bankDataResponse;
+	}
 
-  public YouverifyBankDataResponse retrieveAllYouverifyBankList() {
+	public YouverifyBankDataResponse retrieveAllYouverifyBankList() {
 
-    return this.youverifyBankCache.getBankList();
-  }
+		return this.youverifyBankCache.getBankList();
+	}
 
-  public NameEnquiryResponse processNameEnquiry(NameEnquiryRequest request) {
+	public NameEnquiryResponse processNameEnquiry(NameEnquiryRequest request) {
 
-    log.info(
-        "Processing name enquiry for bank code: {}, account: {}",
-        request.getBankCode(),
-        request.getAccountNumber());
+		log.info("Processing name enquiry for bank code: {}, account: {}", request.getBankCode(),
+				request.getAccountNumber());
 
-    validateRequest(request);
+		validateRequest(request);
 
-    Optional<NameEnquiryCache> cachedData =
-        nameEnquiryCacheRepository.findByAccountNumberAndBankCode(
-            request.getAccountNumber(), request.getBankCode());
+		Optional<NameEnquiryCache> cachedData = nameEnquiryCacheRepository
+				.findByAccountNumberAndBankCode(request.getAccountNumber(), request.getBankCode());
 
-    if (cachedData.isPresent()) {
-      log.info(
-          "Name enquiry data found in cache for: accountNumber={}, bankCode={}",
-          request.getAccountNumber(),
-          request.getBankCode());
-      return cachedData.get().toResponse();
-    }
+		if (cachedData.isPresent()) {
+			log.info("Name enquiry data found in cache for: accountNumber={}, bankCode={}", request.getAccountNumber(),
+					request.getBankCode());
+			return cachedData.get().toResponse();
+		}
 
-    boolean isIntraBankTransfer =
-        StringUtils.equalsIgnoreCase(request.getBankCode(), bankConfigurationService.getBankCode());
-    if (isIntraBankTransfer) {
-      Optional<Customer> customer = customerRepository.findByNuban(request.getAccountNumber());
-      log.info(
-          "Customer lookup for intra-bank transfer: accountNumber={}, found={}",
-          request.getAccountNumber(),
-          customer.isPresent());
-      if (customer.orElseThrow(() -> new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR))
-          != null) {
-        return NameEnquiryResponse.from(customer.get(), bankConfigurationService);
-      }
-    }
+		boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankCode(),
+				bankConfigurationService.getBankCode());
+		if (isIntraBankTransfer) {
+			Optional<Customer> customer = customerRepository.findByNuban(request.getAccountNumber());
+			log.info("Customer lookup for intra-bank transfer: accountNumber={}, found={}", request.getAccountNumber(),
+					customer.isPresent());
+			if (customer.orElseThrow(() -> new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR)) != null) {
+				return NameEnquiryResponse.from(customer.get(), bankConfigurationService);
+			}
+		}
 
-    log.info(
-        "Fetching name enquiry data from external API for: accountNumber={}, bankCode={}",
-        request.getAccountNumber(),
-        request.getBankCode());
-    NameEnquiryResponse resp;
-    try {
-      request.setSubjectConsent(true);
-      resp = this.callYouverifyResolve(request);
-    } catch (Exception directFailure) {
-      log.info(
-          "Direct enquiry failed ({}). Falling back to fuzzy match.", directFailure.getMessage());
-      resp = this.processWithFuzzyMatching(request);
-    }
-    try {
-      NameEnquiryCache cache =
-          NameEnquiryCache.parse(resp, request.getAccountNumber(), request.getBankCode());
-      log.info("Saving name enquiry data to cache: {}", cache);
-      nameEnquiryCacheRepository.save(cache);
-    } catch (Exception e) {
-      log.error("Failed to save name enquiry data to cache: {}", e.getMessage(), e);
-    }
-    return resp;
-  }
+		log.info("Fetching name enquiry data from external API for: accountNumber={}, bankCode={}",
+				request.getAccountNumber(), request.getBankCode());
+		NameEnquiryResponse resp;
+		try {
+			request.setSubjectConsent(true);
+			resp = this.callYouverifyResolve(request);
+		} catch (Exception directFailure) {
+			log.info("Direct enquiry failed ({}). Falling back to fuzzy match.", directFailure.getMessage());
+			resp = this.processWithFuzzyMatching(request);
+		}
+		try {
+			NameEnquiryCache cache = NameEnquiryCache.parse(resp, request.getAccountNumber(), request.getBankCode());
+			log.info("Saving name enquiry data to cache: {}", cache);
+			nameEnquiryCacheRepository.save(cache);
+		} catch (Exception e) {
+			log.error("Failed to save name enquiry data to cache: {}", e.getMessage(), e);
+		}
+		return resp;
+	}
 
-  private NameEnquiryResponse processWithFuzzyMatching(NameEnquiryRequest originalRequest) {
+	private NameEnquiryResponse processWithFuzzyMatching(NameEnquiryRequest originalRequest) {
 
-    BankData localBankData =
-        bankDataRepository
-            .findByCode(originalRequest.getBankCode())
-            .orElseThrow(() -> new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR));
+		BankData localBankData = bankDataRepository.findByCode(originalRequest.getBankCode())
+				.orElseThrow(() -> new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR));
 
-    String mappedCode = findBestMatchingBankCode(localBankData.getName());
-    if (mappedCode == null) {
-      throw new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR);
-    }
+		String mappedCode = findBestMatchingBankCode(localBankData.getName());
+		if (mappedCode == null) {
+			throw new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR);
+		}
 
-    log.info(
-        "Mapped bank code {} to {} for fuzzy matching", originalRequest.getBankCode(), mappedCode);
+		log.info("Mapped bank code {} to {} for fuzzy matching", originalRequest.getBankCode(), mappedCode);
 
-    NameEnquiryRequest mappedRequest = new NameEnquiryRequest();
-    mappedRequest.setBankCode(mappedCode);
-    mappedRequest.setAccountNumber(originalRequest.getAccountNumber());
-    mappedRequest.setSubjectConsent(true);
+		NameEnquiryRequest mappedRequest = new NameEnquiryRequest();
+		mappedRequest.setBankCode(mappedCode);
+		mappedRequest.setAccountNumber(originalRequest.getAccountNumber());
+		mappedRequest.setSubjectConsent(true);
 
-    try {
-      return callYouverifyResolve(mappedRequest);
-    } catch (Exception mappedFailure) {
-      log.error("Fuzzy matching also failed for mapped code: {}", mappedCode, mappedFailure);
-      throw new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR);
-    }
-  }
+		try {
+			return callYouverifyResolve(mappedRequest);
+		} catch (Exception mappedFailure) {
+			log.error("Fuzzy matching also failed for mapped code: {}", mappedCode, mappedFailure);
+			throw new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR);
+		}
+	}
 
-  private HttpHeaders getHeaders() {
+	private HttpHeaders getHeaders() {
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("token", systemProperty.getYouverifyIntegrationApiKey());
-    return headers;
-  }
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("token", systemProperty.getYouverifyIntegrationApiKey());
+		return headers;
+	}
 
-  @Transactional
-  public NameEnquiryResponse callYouverifyResolve(NameEnquiryRequest req)
-      throws JsonProcessingException, PlatformServiceException {
+	@Transactional
+	public NameEnquiryResponse callYouverifyResolve(NameEnquiryRequest req)
+			throws JsonProcessingException, PlatformServiceException {
 
-    log.info(
-        "Resolving account name for: accountNumber={}, bankCode={}",
-        req.getAccountNumber(),
-        req.getBankCode());
+		log.info("Resolving account name for: accountNumber={}, bankCode={}", req.getAccountNumber(),
+				req.getBankCode());
 
-    String url = systemProperty.getYouverifyIntegrationUrl() + pathUrl + "resolve";
-    NameEnquiryResponse resp =
-        apiService.callExternalApi(
-            url, NameEnquiryResponse.class, HttpMethod.POST, req, getHeaders());
+		String url = systemProperty.getYouverifyIntegrationUrl() + pathUrl + "resolve";
+		NameEnquiryResponse resp = apiService.callExternalApi(url, NameEnquiryResponse.class, HttpMethod.POST, req,
+				getHeaders());
 
-    if (resp.getData() == null
-        || resp.getData().getBankDetails() == null
-        || StringUtils.isBlank(resp.getData().getBankDetails().getAccountName())) {
-      log.error(
-          "Account verification failed for: accountNumber={}, bankCode={}",
-          req.getAccountNumber(),
-          req.getBankCode());
-      throw new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR);
-    }
+		if (resp.getData() == null || resp.getData().getBankDetails() == null
+				|| StringUtils.isBlank(resp.getData().getBankDetails().getAccountName())) {
+			log.error("Account verification failed for: accountNumber={}, bankCode={}", req.getAccountNumber(),
+					req.getBankCode());
+			throw new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR);
+		}
 
-    return resp;
-  }
+		return resp;
+	}
 
-  private void validateRequest(NameEnquiryRequest request) {
+	private void validateRequest(NameEnquiryRequest request) {
 
-    if (request == null
-        || StringUtils.isBlank(request.getBankCode())
-        || StringUtils.isBlank(request.getAccountNumber())) {
-      throw new ValidationException("request.invalid", "Bank code and account number are required");
-    }
-  }
+		if (request == null || StringUtils.isBlank(request.getBankCode())
+				|| StringUtils.isBlank(request.getAccountNumber())) {
+			throw new ValidationException("request.invalid", "Bank code and account number are required");
+		}
+	}
 
-  private String findBestMatchingBankCode(String localBankName) {
+	private String findBestMatchingBankCode(String localBankName) {
 
-    YouverifyBankDataResponse yResp = retrieveAllYouverifyBankList();
-    if (yResp == null || yResp.getData() == null || yResp.getData().isEmpty()) {
-      log.warn("No Youverify banks available for matching");
-      return null;
-    }
+		YouverifyBankDataResponse yResp = retrieveAllYouverifyBankList();
+		if (yResp == null || yResp.getData() == null || yResp.getData().isEmpty()) {
+			log.warn("No Youverify banks available for matching");
+			return null;
+		}
 
-    log.info("Looking for match for local bank: \"{}\"", localBankName);
+		log.info("Looking for match for local bank: \"{}\"", localBankName);
 
-    // First, try direct mappings
-    String directMapping = DIRECT_MAPPINGS.get(localBankName.toLowerCase());
-    if (directMapping != null) {
-      log.info("Found direct mapping for \"{}\": \"{}\"", localBankName, directMapping);
-      String resp = findYouverifyBankByName(yResp, directMapping);
-      if (resp != null) {
-        return resp;
-      }
-    }
+		// First, try direct mappings
+		String directMapping = DIRECT_MAPPINGS.get(localBankName.toLowerCase());
+		if (directMapping != null) {
+			log.info("Found direct mapping for \"{}\": \"{}\"", localBankName, directMapping);
+			String resp = findYouverifyBankByName(yResp, directMapping);
+			if (resp != null) {
+				return resp;
+			}
+		}
 
-    String expandedLocal = expandAcronym(localBankName);
-    String normalizedLocal = normalize(expandedLocal);
+		String expandedLocal = expandAcronym(localBankName);
+		String normalizedLocal = normalize(expandedLocal);
 
-    log.info("Expanded \"{}\" to \"{}\"", localBankName, expandedLocal);
-    log.info("Normalized \"{}\" to \"{}\"", expandedLocal, normalizedLocal);
+		log.info("Expanded \"{}\" to \"{}\"", localBankName, expandedLocal);
+		log.info("Normalized \"{}\" to \"{}\"", expandedLocal, normalizedLocal);
 
-    // Try exact match after expansion and normalization
-    for (YouverifyBankDataResponse.BankData bank : yResp.getData()) {
-      String expandedYouverify = expandAcronym(bank.getName());
-      String normalizedYouverify = normalize(expandedYouverify);
+		// Try exact match after expansion and normalization
+		for (YouverifyBankDataResponse.BankData bank : yResp.getData()) {
+			String expandedYouverify = expandAcronym(bank.getName());
+			String normalizedYouverify = normalize(expandedYouverify);
 
-      if (normalizedLocal.equals(normalizedYouverify)) {
-        log.info(
-            "Found exact match for \"{}\": \"{}\" (code: {})",
-            localBankName,
-            bank.getName(),
-            bank.getCode());
-        return bank.getCode();
-      }
-    }
+			if (normalizedLocal.equals(normalizedYouverify)) {
+				log.info("Found exact match for \"{}\": \"{}\" (code: {})", localBankName, bank.getName(),
+						bank.getCode());
+				return bank.getCode();
+			}
+		}
 
-    // Try substring matching with expanded names
-    for (YouverifyBankDataResponse.BankData bank : yResp.getData()) {
-      String expandedYouverify = expandAcronym(bank.getName());
-      String normalizedYouverify = normalize(expandedYouverify);
+		// Try substring matching with expanded names
+		for (YouverifyBankDataResponse.BankData bank : yResp.getData()) {
+			String expandedYouverify = expandAcronym(bank.getName());
+			String normalizedYouverify = normalize(expandedYouverify);
 
-      if (normalizedLocal.contains(normalizedYouverify)
-          || normalizedYouverify.contains(normalizedLocal)) {
-        log.info(
-            "Found substring match for \"{}\": \"{}\" (code: {})",
-            localBankName,
-            bank.getName(),
-            bank.getCode());
-        return bank.getCode();
-      }
-    }
+			if (normalizedLocal.contains(normalizedYouverify) || normalizedYouverify.contains(normalizedLocal)) {
+				log.info("Found substring match for \"{}\": \"{}\" (code: {})", localBankName, bank.getName(),
+						bank.getCode());
+				return bank.getCode();
+			}
+		}
 
-    // Finally, fall back to fuzzy matching
-    double bestScore = 0.0;
-    String bestCode = null;
-    String bestName = null;
+		// Finally, fall back to fuzzy matching
+		double bestScore = 0.0;
+		String bestCode = null;
+		String bestName = null;
 
-    for (YouverifyBankDataResponse.BankData bank : yResp.getData()) {
-      double score = similarity(localBankName, bank.getName());
-      if (score > bestScore) {
-        bestScore = score;
-        bestCode = bank.getCode();
-        bestName = bank.getName();
-      }
-    }
+		for (YouverifyBankDataResponse.BankData bank : yResp.getData()) {
+			double score = similarity(localBankName, bank.getName());
+			if (score > bestScore) {
+				bestScore = score;
+				bestCode = bank.getCode();
+				bestName = bank.getName();
+			}
+		}
 
-    if (bestScore >= SCORE_THRESHOLD) {
-      log.info(
-          "Found fuzzy match for \"{}\": \"{}\" (score: {:.3f}, code: {})",
-          localBankName,
-          bestName,
-          bestScore,
-          bestCode);
-      return bestCode;
-    } else {
-      log.warn(
-          "No suitable match found for \"{}\". Best score: {:.3f} (threshold: {})",
-          localBankName,
-          bestScore,
-          SCORE_THRESHOLD);
-      return null;
-    }
-  }
+		if (bestScore >= SCORE_THRESHOLD) {
+			log.info("Found fuzzy match for \"{}\": \"{}\" (score: {:.3f}, code: {})", localBankName, bestName,
+					bestScore, bestCode);
+			return bestCode;
+		} else {
+			log.warn("No suitable match found for \"{}\". Best score: {:.3f} (threshold: {})", localBankName, bestScore,
+					SCORE_THRESHOLD);
+			return null;
+		}
+	}
 
-  private String findYouverifyBankByName(YouverifyBankDataResponse yResp, String targetName) {
+	private String findYouverifyBankByName(YouverifyBankDataResponse yResp, String targetName) {
 
-    String normalizedTarget = normalize(targetName);
+		String normalizedTarget = normalize(targetName);
 
-    for (YouverifyBankDataResponse.BankData bank : yResp.getData()) {
-      String normalizedBank = normalize(bank.getName());
-      if (normalizedTarget.equals(normalizedBank)) {
-        log.info(
-            "Found YouVerify bank for \"{}\": \"{}\" (code: {})",
-            targetName,
-            bank.getName(),
-            bank.getCode());
-        return bank.getCode();
-      }
-    }
+		for (YouverifyBankDataResponse.BankData bank : yResp.getData()) {
+			String normalizedBank = normalize(bank.getName());
+			if (normalizedTarget.equals(normalizedBank)) {
+				log.info("Found YouVerify bank for \"{}\": \"{}\" (code: {})", targetName, bank.getName(),
+						bank.getCode());
+				return bank.getCode();
+			}
+		}
 
-    log.warn("No YouVerify bank found for direct mapping: \"{}\"", targetName);
-    return null;
-  }
+		log.warn("No YouVerify bank found for direct mapping: \"{}\"", targetName);
+		return null;
+	}
 
-  private double similarity(String name1, String name2) {
+	private double similarity(String name1, String name2) {
 
-    return distance.apply(normalize(expandAcronym(name1)), normalize(expandAcronym(name2)));
-  }
+		return distance.apply(normalize(expandAcronym(name1)), normalize(expandAcronym(name2)));
+	}
 
-  private String expandAcronym(String input) {
+	private String expandAcronym(String input) {
 
-    if (input == null) return "";
+		if (input == null)
+			return "";
 
-    String key = input.toLowerCase().replaceAll("\\s+", "");
-    String expanded = ACRONYMS.get(key);
+		String key = input.toLowerCase().replaceAll("\\s+", "");
+		String expanded = ACRONYMS.get(key);
 
-    if (expanded != null) {
-      log.debug("Expanded acronym: \"{}\" -> \"{}\"", input, expanded);
-      return expanded;
-    }
+		if (expanded != null) {
+			log.debug("Expanded acronym: \"{}\" -> \"{}\"", input, expanded);
+			return expanded;
+		}
 
-    for (Map.Entry<String, String> entry : ACRONYMS.entrySet()) {
-      if (key.contains(entry.getKey())) {
-        log.debug("Partially expanded acronym: \"{}\" -> \"{}\"", input, entry.getValue());
-        return entry.getValue();
-      }
-    }
+		for (Map.Entry<String, String> entry : ACRONYMS.entrySet()) {
+			if (key.contains(entry.getKey())) {
+				log.debug("Partially expanded acronym: \"{}\" -> \"{}\"", input, entry.getValue());
+				return entry.getValue();
+			}
+		}
 
-    return input;
-  }
+		return input;
+	}
 
-  private String normalize(String name) {
+	private String normalize(String name) {
 
-    if (name == null) return "";
+		if (name == null)
+			return "";
 
-    String cleaned = name.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
-    cleaned = STOP_WORDS.matcher(cleaned).replaceAll(" ");
-    String result = cleaned.replaceAll("\\s+", " ").trim();
+		String cleaned = name.toLowerCase().replaceAll("[^a-z0-9 ]", " ");
+		cleaned = STOP_WORDS.matcher(cleaned).replaceAll(" ");
+		String result = cleaned.replaceAll("\\s+", " ").trim();
 
-    log.debug("Normalized \"{}\" -> \"{}\"", name, result);
-    return result;
-  }
+		log.debug("Normalized \"{}\" -> \"{}\"", name, result);
+		return result;
+	}
 }

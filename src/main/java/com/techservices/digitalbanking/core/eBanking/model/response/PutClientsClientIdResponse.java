@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.eBanking.model.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutClientsClientIdRequest;
+
 import lombok.Data;
 
 @Data
@@ -11,11 +12,11 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PutClientsClientIdResponse {
 
-  private PutClientsClientIdRequest changes = new PutClientsClientIdRequest();
+	private PutClientsClientIdRequest changes = new PutClientsClientIdRequest();
 
-  private Long clientId;
+	private Long clientId;
 
-  private Long officeId;
+	private Long officeId;
 
-  private Long resourceId;
+	private Long resourceId;
 }

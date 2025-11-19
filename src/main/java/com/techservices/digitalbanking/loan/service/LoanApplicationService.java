@@ -13,33 +13,32 @@ import com.techservices.digitalbanking.loan.domain.request.NewLoanApplicationReq
 import com.techservices.digitalbanking.loan.domain.response.LoanDashboardResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
+
 import jakarta.validation.Valid;
 
 public interface LoanApplicationService {
 
-  LoanDto retrieveLoanById(Long loanId, Long customerId);
+	LoanDto retrieveLoanById(Long loanId, Long customerId);
 
-  BasePageResponse<LoanDto> retrieveAllLoans(Long limit, String accountNo, Long customerId);
+	BasePageResponse<LoanDto> retrieveAllLoans(Long limit, String accountNo, Long customerId);
 
-  GenericApiResponse repayLoan(
-      Long loanId, @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest, Long customerId);
+	GenericApiResponse repayLoan(Long loanId, @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest,
+			Long customerId);
 
-  BasePageResponse<LoanTransactionResponse> retrieveLoanTransactions(
-      @Valid Long loanId, Long customerId);
+	BasePageResponse<LoanTransactionResponse> retrieveLoanTransactions(@Valid Long loanId, Long customerId);
 
-  LoanTransactionResponse retrieveLoanTransactionDetails(
-      @Valid Long loanId, @Valid Long transactionId, Long customerId);
+	LoanTransactionResponse retrieveLoanTransactionDetails(@Valid Long loanId, @Valid Long transactionId,
+			Long customerId);
 
-  BasePageResponse<LoanOfferResponse> retrieveCustomerLoanOffers(Long customerId);
+	BasePageResponse<LoanOfferResponse> retrieveCustomerLoanOffers(Long customerId);
 
-  GenericApiResponse processLoanApplication(
-      Long customerId, @Valid LoanApplicationRequest loanApplicationRequest);
+	GenericApiResponse processLoanApplication(Long customerId, @Valid LoanApplicationRequest loanApplicationRequest);
 
-  LoanApplicationResponse processNewLoanApplication(
-      Long customerId, NewLoanApplicationRequest loanApplicationRequest);
+	LoanApplicationResponse processNewLoanApplication(Long customerId,
+			NewLoanApplicationRequest loanApplicationRequest);
 
-  LoanDashboardResponse retrieveCustomerLoanDashboard(Long customerId);
+	LoanDashboardResponse retrieveCustomerLoanDashboard(Long customerId);
 
-  LoanScheduleCalculationResponse calculateLoanSchedule(
-      @Valid LoanScheduleCalculationRequest loanScheduleCalculationRequest);
+	LoanScheduleCalculationResponse calculateLoanSchedule(
+			@Valid LoanScheduleCalculationRequest loanScheduleCalculationRequest);
 }

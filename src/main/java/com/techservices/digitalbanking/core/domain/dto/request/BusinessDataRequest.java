@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.domain.dto.request;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,10 +14,10 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BusinessDataRequest {
 
-  private String registrationNumber;
-  private String countryCode;
-  private String tin;
+	private String registrationNumber;
+	private String countryCode;
+	private String tin;
 
-  @JsonProperty("isConsent")
-  private boolean isConsent = true;
+	@JsonProperty("isConsent")
+	private boolean isConsent = true;
 }

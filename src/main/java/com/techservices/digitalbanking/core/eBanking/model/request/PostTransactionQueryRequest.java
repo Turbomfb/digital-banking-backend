@@ -2,14 +2,15 @@
 package com.techservices.digitalbanking.core.eBanking.model.request;
 
 import java.math.BigDecimal;
+
 import lombok.Data;
 
 @Data
 public class PostTransactionQueryRequest {
-  private String transactionDate;
-  private Long transactionType;
-  private BigDecimal amount;
-  private String transactionReference;
-  private String dateFormat;
-  private String locale;
+	private String transactionDate;
+	private Long transactionType;
+	private BigDecimal amount;
+	private String transactionReference;
+	private String dateFormat;
+	private String locale;
 }

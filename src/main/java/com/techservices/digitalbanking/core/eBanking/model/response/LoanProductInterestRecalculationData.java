@@ -9,29 +9,29 @@ import lombok.Setter;
 @Setter
 public class LoanProductInterestRecalculationData {
 
-  private Boolean compoundingToBePostedAsTransaction;
+	private Boolean compoundingToBePostedAsTransaction;
 
-  private EnumOptionData interestRecalculationCompoundingType;
+	private EnumOptionData interestRecalculationCompoundingType;
 
-  private Integer recalculationCompoundingFrequencyInterval;
+	private Integer recalculationCompoundingFrequencyInterval;
 
-  private EnumOptionData recalculationCompoundingFrequencyNthDay;
+	private EnumOptionData recalculationCompoundingFrequencyNthDay;
 
-  private Integer recalculationCompoundingFrequencyOnDay;
+	private Integer recalculationCompoundingFrequencyOnDay;
 
-  private EnumOptionData recalculationCompoundingFrequencyType;
+	private EnumOptionData recalculationCompoundingFrequencyType;
 
-  private EnumOptionData recalculationCompoundingFrequencyWeekday;
+	private EnumOptionData recalculationCompoundingFrequencyWeekday;
 
-  private Integer recalculationRestFrequencyInterval;
+	private Integer recalculationRestFrequencyInterval;
 
-  private EnumOptionData recalculationRestFrequencyNthDay;
+	private EnumOptionData recalculationRestFrequencyNthDay;
 
-  private Integer recalculationRestFrequencyOnDay;
+	private Integer recalculationRestFrequencyOnDay;
 
-  private EnumOptionData recalculationRestFrequencyType;
+	private EnumOptionData recalculationRestFrequencyType;
 
-  private EnumOptionData recalculationRestFrequencyWeekday;
+	private EnumOptionData recalculationRestFrequencyWeekday;
 
-  private EnumOptionData rescheduleStrategyType;
+	private EnumOptionData rescheduleStrategyType;
 }

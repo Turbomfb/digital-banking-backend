@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class CustomerTransactionPinRequest {
-  private String pin;
-  private String newPin;
-  private Long customerId;
+	private String pin;
+	private String newPin;
+	private Long customerId;
 }

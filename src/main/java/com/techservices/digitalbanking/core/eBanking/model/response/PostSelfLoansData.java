@@ -9,9 +9,9 @@ import lombok.Setter;
 @Setter
 public class PostSelfLoansData {
 
-  private String activationDate;
+	private String activationDate;
 
-  private String dateFormat;
+	private String dateFormat;
 
-  private String locale;
+	private String locale;
 }

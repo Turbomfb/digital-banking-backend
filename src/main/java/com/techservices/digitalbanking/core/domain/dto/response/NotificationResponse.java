@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class NotificationResponse {
-  private String code;
-  private String message;
-  private String status;
+	private String code;
+	private String message;
+	private String status;
 }

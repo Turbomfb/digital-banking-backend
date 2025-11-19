@@ -1,10 +1,12 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,73 +17,73 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetLoansLoanIdResponse {
 
-  private Long id;
-  private Long accountNo;
-  private String externalId;
+	private Long id;
+	private Long accountNo;
+	private String externalId;
 
-  private GetLoansLoanIdAmortizationType amortizationType;
+	private GetLoansLoanIdAmortizationType amortizationType;
 
-  private Integer annualInterestRate;
+	private Integer annualInterestRate;
 
-  private Double approvedPrincipal;
+	private Double approvedPrincipal;
 
-  private String clientId;
+	private String clientId;
 
-  private String clientName;
+	private String clientName;
 
-  private Integer clientOfficeId;
+	private Integer clientOfficeId;
 
-  private GetLoansLoanIdCurrency currency;
+	private GetLoansLoanIdCurrency currency;
 
-  private BigDecimal fixedPrincipalPercentagePerInstallment;
+	private BigDecimal fixedPrincipalPercentagePerInstallment;
 
-  private GetLoansLoanIdInterestCalculationPeriodType interestCalculationPeriodType;
+	private GetLoansLoanIdInterestCalculationPeriodType interestCalculationPeriodType;
 
-  private GetLoansLoanIdInterestRateFrequencyType interestRateFrequencyType;
+	private GetLoansLoanIdInterestRateFrequencyType interestRateFrequencyType;
 
-  private Integer interestRatePerPeriod;
+	private Integer interestRatePerPeriod;
 
-  private GetLoansLoanIdInterestType interestType;
+	private GetLoansLoanIdInterestType interestType;
 
-  private Integer loanOfficerId;
+	private Integer loanOfficerId;
 
-  private String loanOfficerName;
+	private String loanOfficerName;
 
-  private String loanProductDescription;
+	private String loanProductDescription;
 
-  private Integer loanProductId;
+	private Integer loanProductId;
 
-  private String loanProductName;
+	private String loanProductName;
 
-  private Integer loanPurposeId;
+	private Integer loanPurposeId;
 
-  private String loanPurposeName;
+	private String loanPurposeName;
 
-  private GetLoansLoanIdLoanType loanType;
+	private GetLoansLoanIdLoanType loanType;
 
-  private Double netDisbursalAmount;
+	private Double netDisbursalAmount;
 
-  private Integer numberOfRepayments;
+	private Integer numberOfRepayments;
 
-  private BigDecimal principal;
+	private BigDecimal principal;
 
-  private Integer repaymentEvery;
+	private Integer repaymentEvery;
 
-  private GetLoansLoanIdRepaymentFrequencyType repaymentFrequencyType;
+	private GetLoansLoanIdRepaymentFrequencyType repaymentFrequencyType;
 
-  private GetLoansLoanIdRepaymentSchedule repaymentSchedule;
+	private GetLoansLoanIdRepaymentSchedule repaymentSchedule;
 
-  private GetLoansLoanIdStatus status;
+	private GetLoansLoanIdStatus status;
 
-  private GetLoansLoanIdSummary summary;
+	private GetLoansLoanIdSummary summary;
 
-  private Integer termFrequency;
+	private Integer termFrequency;
 
-  private GetLoansLoanIdTermPeriodFrequencyType termPeriodFrequencyType;
+	private GetLoansLoanIdTermPeriodFrequencyType termPeriodFrequencyType;
 
-  private GetLoansLoanIdTimeline timeline;
+	private GetLoansLoanIdTimeline timeline;
 
-  private Integer transactionProcessingStrategyId;
+	private Integer transactionProcessingStrategyId;
 
-  private List<LoanTransactionResponse> transactions;
+	private List<LoanTransactionResponse> transactions;
 }

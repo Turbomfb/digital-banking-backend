@@ -1,150 +1,155 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 /** LoanProductData */
 @Getter
 @Setter
 public class LoanProductData {
 
-  private Boolean allowPartialPeriodInterestCalcualtion;
+	private Boolean allowPartialPeriodInterestCalcualtion;
 
-  private EnumOptionData amortizationType;
+	private EnumOptionData amortizationType;
 
-  @Valid private List<@Valid EnumOptionData> amortizationTypeOptions = new ArrayList<>();
+	@Valid
+	private List<@Valid EnumOptionData> amortizationTypeOptions = new ArrayList<>();
 
-  private BigDecimal annualInterestRate;
+	private BigDecimal annualInterestRate;
 
-  @Valid private List<@Valid Object> chargeOptions = new ArrayList<>();
+	@Valid
+	private List<@Valid Object> chargeOptions = new ArrayList<>();
 
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  private LocalDate closeDate;
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+	private LocalDate closeDate;
 
-  private Boolean compoundingToBePostedAsTransaction;
+	private Boolean compoundingToBePostedAsTransaction;
 
-  private Object currency;
+	private Object currency;
 
-  private EnumOptionData daysInMonthType;
+	private EnumOptionData daysInMonthType;
 
-  private EnumOptionData daysInYearType;
+	private EnumOptionData daysInYearType;
 
-  private BigDecimal defaultDifferentialLendingRate;
+	private BigDecimal defaultDifferentialLendingRate;
 
-  private String description;
+	private String description;
 
-  private Boolean equalAmortization;
+	private Boolean equalAmortization;
 
-  private BigDecimal fixedPrincipalPercentagePerInstallment;
+	private BigDecimal fixedPrincipalPercentagePerInstallment;
 
-  private Boolean floatingInterestRateCalculationAllowed;
+	private Boolean floatingInterestRateCalculationAllowed;
 
-  private Long fundId;
+	private Long fundId;
 
-  private String fundName;
+	private String fundName;
 
-  @Valid private List<@Valid Object> fundOptions = new ArrayList<>();
+	@Valid
+	private List<@Valid Object> fundOptions = new ArrayList<>();
 
-  private LoanProductConfigurableAttributes getloanProductConfigurableAttributes;
+	private LoanProductConfigurableAttributes getloanProductConfigurableAttributes;
 
-  private Integer graceOnArrearsAgeing;
+	private Integer graceOnArrearsAgeing;
 
-  private Integer graceOnInterestCharged;
+	private Integer graceOnInterestCharged;
 
-  private Integer graceOnInterestPayment;
+	private Integer graceOnInterestPayment;
 
-  private Integer graceOnPrincipalPayment;
+	private Integer graceOnPrincipalPayment;
 
-  private Long id;
+	private Long id;
 
-  private BigDecimal inArrearsTolerance;
+	private BigDecimal inArrearsTolerance;
 
-  private EnumOptionData interestCalculationPeriodType;
+	private EnumOptionData interestCalculationPeriodType;
 
-  @Valid
-  private List<@Valid EnumOptionData> interestCalculationPeriodTypeOptions = new ArrayList<>();
+	@Valid
+	private List<@Valid EnumOptionData> interestCalculationPeriodTypeOptions = new ArrayList<>();
 
-  private BigDecimal interestRateDifferential;
+	private BigDecimal interestRateDifferential;
 
-  private EnumOptionData interestRateFrequencyType;
+	private EnumOptionData interestRateFrequencyType;
 
-  @Valid private List<@Valid EnumOptionData> interestRateFrequencyTypeOptions = new ArrayList<>();
+	@Valid
+	private List<@Valid EnumOptionData> interestRateFrequencyTypeOptions = new ArrayList<>();
 
-  private BigDecimal interestRatePerPeriod;
+	private BigDecimal interestRatePerPeriod;
 
-  @Valid
-  private List<@Valid LoanProductBorrowerCycleVariationData>
-      interestRateVariationsForBorrowerCycle = new ArrayList<>();
+	@Valid
+	private List<@Valid LoanProductBorrowerCycleVariationData> interestRateVariationsForBorrowerCycle = new ArrayList<>();
 
-  private LoanProductInterestRecalculationData interestRecalculationData;
+	private LoanProductInterestRecalculationData interestRecalculationData;
 
-  private Boolean interestRecalculationEnabled;
+	private Boolean interestRecalculationEnabled;
 
-  private EnumOptionData interestType;
+	private EnumOptionData interestType;
 
-  @Valid private List<@Valid EnumOptionData> interestTypeOptions = new ArrayList<>();
+	@Valid
+	private List<@Valid EnumOptionData> interestTypeOptions = new ArrayList<>();
 
-  private Boolean linkedToFloatingInterestRates;
+	private Boolean linkedToFloatingInterestRates;
 
-  private BigDecimal maxDifferentialLendingRate;
+	private BigDecimal maxDifferentialLendingRate;
 
-  private BigDecimal maxInterestRatePerPeriod;
+	private BigDecimal maxInterestRatePerPeriod;
 
-  private Integer maxNumberOfRepayments;
+	private Integer maxNumberOfRepayments;
 
-  private BigDecimal maxPrincipal;
+	private BigDecimal maxPrincipal;
 
-  private Integer maximumGapBetweenInstallments;
+	private Integer maximumGapBetweenInstallments;
 
-  private BigDecimal minDifferentialLendingRate;
+	private BigDecimal minDifferentialLendingRate;
 
-  private BigDecimal minInterestRatePerPeriod;
+	private BigDecimal minInterestRatePerPeriod;
 
-  private Integer minNumberOfRepayments;
+	private Integer minNumberOfRepayments;
 
-  private BigDecimal minPrincipal;
+	private BigDecimal minPrincipal;
 
-  private Integer minimumGapBetweenInstallments;
+	private Integer minimumGapBetweenInstallments;
 
-  private Boolean multiDisburseLoan;
+	private Boolean multiDisburseLoan;
 
-  private String name;
+	private String name;
 
-  @Valid
-  private List<@Valid LoanProductBorrowerCycleVariationData>
-      numberOfRepaymentVariationsForBorrowerCycle = new ArrayList<>();
+	@Valid
+	private List<@Valid LoanProductBorrowerCycleVariationData> numberOfRepaymentVariationsForBorrowerCycle = new ArrayList<>();
 
-  private Integer numberOfRepayments;
+	private Integer numberOfRepayments;
 
-  private BigDecimal outstandingLoanBalance;
+	private BigDecimal outstandingLoanBalance;
 
-  private BigDecimal principal;
+	private BigDecimal principal;
 
-  @Valid
-  private List<@Valid LoanProductBorrowerCycleVariationData> principalVariationsForBorrowerCycle =
-      new ArrayList<>();
+	@Valid
+	private List<@Valid LoanProductBorrowerCycleVariationData> principalVariationsForBorrowerCycle = new ArrayList<>();
 
-  private Integer recurringMoratoriumOnPrincipalPeriods;
+	private Integer recurringMoratoriumOnPrincipalPeriods;
 
-  private Integer repaymentEvery;
+	private Integer repaymentEvery;
 
-  private EnumOptionData repaymentFrequencyType;
+	private EnumOptionData repaymentFrequencyType;
 
-  @Valid private List<@Valid EnumOptionData> repaymentFrequencyTypeOptions = new ArrayList<>();
+	@Valid
+	private List<@Valid EnumOptionData> repaymentFrequencyTypeOptions = new ArrayList<>();
 
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  private LocalDate startDate;
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+	private LocalDate startDate;
 
-  private Long transactionProcessingStrategyId;
+	private Long transactionProcessingStrategyId;
 
-  private String transactionProcessingStrategyName;
+	private String transactionProcessingStrategyName;
 
-  private Boolean variableInstallmentsAllowed;
+	private Boolean variableInstallmentsAllowed;
 }

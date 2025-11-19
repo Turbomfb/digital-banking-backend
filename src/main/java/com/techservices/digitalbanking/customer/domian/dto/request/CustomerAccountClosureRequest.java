@@ -7,5 +7,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CustomerAccountClosureRequest {
-  private String reasonForClosure;
+	private String reasonForClosure;
 }

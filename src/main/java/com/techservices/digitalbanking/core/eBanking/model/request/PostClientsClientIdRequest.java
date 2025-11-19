@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.eBanking.model.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Data;
 
 @Data
@@ -10,11 +11,11 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostClientsClientIdRequest {
 
-  private String activationDate;
-  private String closureDate;
-  private Long closureReasonId;
+	private String activationDate;
+	private String closureDate;
+	private Long closureReasonId;
 
-  private String dateFormat;
+	private String dateFormat;
 
-  private String locale;
+	private String locale;
 }

@@ -9,11 +9,11 @@ import lombok.Setter;
 @Setter
 public class DeleteLoansLoanIdChargesChargeIdResponse {
 
-  private Long clientId;
+	private Long clientId;
 
-  private Long loanId;
+	private Long loanId;
 
-  private Long officeId;
+	private Long officeId;
 
-  private Integer resourceId;
+	private Integer resourceId;
 }

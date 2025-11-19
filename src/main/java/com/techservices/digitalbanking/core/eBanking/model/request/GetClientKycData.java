@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.core.eBanking.model.request;
 
 import com.techservices.digitalbanking.core.domain.dto.KycTierDto;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +10,7 @@ import lombok.Setter;
 @Getter
 public class GetClientKycData {
 
-  private KycTierDto kycTierDto;
+	private KycTierDto kycTierDto;
 
-  private ClientTransactionLimit clientTransactionLimit;
+	private ClientTransactionLimit clientTransactionLimit;
 }

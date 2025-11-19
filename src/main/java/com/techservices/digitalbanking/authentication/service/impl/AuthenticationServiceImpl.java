@@ -1,10 +1,15 @@
 /* (C)2025 */
 package com.techservices.digitalbanking.authentication.service.impl;
 
-import static com.techservices.digitalbanking.core.util.CommandUtil.CHANGE_PASSWORD_COMMAND;
-import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
-import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
-import static com.techservices.digitalbanking.core.util.DateUtil.getFormattedCurrentDateTime;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.authentication.domain.data.model.UserLoginActivity;
 import com.techservices.digitalbanking.authentication.domain.data.repository.UserLoginActivityRepository;
@@ -35,280 +40,239 @@ import com.techservices.digitalbanking.customer.domian.data.repository.CustomerR
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
 import com.techservices.digitalbanking.customer.service.CustomerService;
+
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+
+import static com.techservices.digitalbanking.core.util.CommandUtil.CHANGE_PASSWORD_COMMAND;
+import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
+import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
+import static com.techservices.digitalbanking.core.util.DateUtil.getFormattedCurrentDateTime;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-  private static final long DEFAULT_INVITATION_TOKEN_EXPIRATION_MS = 3600000; // 1 hour
+	private static final long DEFAULT_INVITATION_TOKEN_EXPIRATION_MS = 3600000; // 1 hour
 
-  private final JwtUtil jwtUtil;
-  private final PasswordEncoder passwordEncoder;
-  private final CustomerService customerService;
-  private final RedisService redisService;
-  private final UserLoginActivityRepository userLoginActivityRepository;
-  private final CustomerRepository customerRepository;
-  private final NotificationService notificationService;
-  private final NotificationUtil notificationUtil;
-  private final CustomerStatusAuditRepository customerStatusAuditRepository;
+	private final JwtUtil jwtUtil;
+	private final PasswordEncoder passwordEncoder;
+	private final CustomerService customerService;
+	private final RedisService redisService;
+	private final UserLoginActivityRepository userLoginActivityRepository;
+	private final CustomerRepository customerRepository;
+	private final NotificationService notificationService;
+	private final NotificationUtil notificationUtil;
+	private final CustomerStatusAuditRepository customerStatusAuditRepository;
 
-  @Override
-  public AuthenticationResponse authenticate(
-      AuthenticationRequest postAuthenticationRequest,
-      UserType customerType,
-      String userAgent,
-      HttpServletRequest request) {
+	@Override
+	public AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType,
+			String userAgent, HttpServletRequest request) {
 
-    Map<String, Object> claims = new HashMap<>();
-    Customer foundCustomer =
-        customerService.getCustomerByEmailOrPhoneNumber(
-            postAuthenticationRequest.getEmailAddress(),
-            postAuthenticationRequest.getPhoneNumber(),
-            customerType);
+		Map<String, Object> claims = new HashMap<>();
+		Customer foundCustomer = customerService.getCustomerByEmailOrPhoneNumber(
+				postAuthenticationRequest.getEmailAddress(), postAuthenticationRequest.getPhoneNumber(), customerType);
 
-    assert foundCustomer != null;
-    log.info("Found customer with email address {}", foundCustomer.getEmailAddress());
-    if (!passwordEncoder.matches(
-        postAuthenticationRequest.getPassword(), foundCustomer.getPassword())) {
-      throw new UnAuthenticatedUserException(
-          "Invalid.credentials.provided", "Invalid username or password");
-    }
+		assert foundCustomer != null;
+		log.info("Found customer with email address {}", foundCustomer.getEmailAddress());
+		if (!passwordEncoder.matches(postAuthenticationRequest.getPassword(), foundCustomer.getPassword())) {
+			throw new UnAuthenticatedUserException("Invalid.credentials.provided", "Invalid username or password");
+		}
 
-    Optional<CustomerStatusAudit> customerStatusAudit =
-        customerStatusAuditRepository.findByCustomerIdAndTypeAndIsActive(
-            foundCustomer.getId(), CustomerStatusAuditType.ACCOUNT_CLOSURE, true);
-    if (customerStatusAudit.isPresent()) {
-      throw new UnAuthenticatedUserException(
-          "account.is.closed",
-          "Your account has been closed and access is no longer available. please contact our support team.");
-    }
+		Optional<CustomerStatusAudit> customerStatusAudit = customerStatusAuditRepository
+				.findByCustomerIdAndTypeAndIsActive(foundCustomer.getId(), CustomerStatusAuditType.ACCOUNT_CLOSURE,
+						true);
+		if (customerStatusAudit.isPresent()) {
+			throw new UnAuthenticatedUserException("account.is.closed",
+					"Your account has been closed and access is no longer available. please contact our support team.");
+		}
 
-    claims.put("customerId", foundCustomer.getId());
-    claims.put("email", foundCustomer.getEmailAddress());
-    claims.put("userType", foundCustomer.getUserType());
-    claims.put("isActive", foundCustomer.isActive());
+		claims.put("customerId", foundCustomer.getId());
+		claims.put("email", foundCustomer.getEmailAddress());
+		claims.put("userType", foundCustomer.getUserType());
+		claims.put("isActive", foundCustomer.isActive());
 
-    String accessToken = generateToken(foundCustomer.getEmailAddress(), claims);
-    AuthenticationResponse authenticationResponse = new AuthenticationResponse();
-    authenticationResponse.setAccessToken(accessToken);
-    authenticationResponse.setId(foundCustomer.getId());
-    authenticationResponse.setFirstname(foundCustomer.getFirstname());
-    authenticationResponse.setLastname(foundCustomer.getLastname());
-    authenticationResponse.setEmailAddress(foundCustomer.getEmailAddress());
-    authenticationResponse.setUserType(foundCustomer.getUserType());
+		String accessToken = generateToken(foundCustomer.getEmailAddress(), claims);
+		AuthenticationResponse authenticationResponse = new AuthenticationResponse();
+		authenticationResponse.setAccessToken(accessToken);
+		authenticationResponse.setId(foundCustomer.getId());
+		authenticationResponse.setFirstname(foundCustomer.getFirstname());
+		authenticationResponse.setLastname(foundCustomer.getLastname());
+		authenticationResponse.setEmailAddress(foundCustomer.getEmailAddress());
+		authenticationResponse.setUserType(foundCustomer.getUserType());
 
-    AppUser appUser =
-        new AppUser(
-            foundCustomer.getId(),
-            foundCustomer.getEmailAddress(),
-            accessToken,
-            true,
-            foundCustomer.isActive(),
-            foundCustomer.getUserType(),
-            null);
-    SecurityContextHolder.getContext().setAuthentication(appUser);
-    foundCustomer.setAuthenticated(true);
+		AppUser appUser = new AppUser(foundCustomer.getId(), foundCustomer.getEmailAddress(), accessToken, true,
+				foundCustomer.isActive(), foundCustomer.getUserType(), null);
+		SecurityContextHolder.getContext().setAuthentication(appUser);
+		foundCustomer.setAuthenticated(true);
 
-    try {
-      this.processUserLoginActivity(userAgent, request, foundCustomer, authenticationResponse);
-      String loginMessage =
-          notificationUtil.getLoginNotificationTemplate(
-              foundCustomer.getFirstname() + " " + foundCustomer.getLastname(),
-              getFormattedCurrentDateTime());
-      notificationService.notifyUser(foundCustomer, loginMessage, AlertType.LOGIN);
-    } catch (Exception e) {
-      log.error("Error processing user login activity: {}", e.getMessage());
-    }
-    customerRepository.save(foundCustomer);
-    return authenticationResponse;
-  }
+		try {
+			this.processUserLoginActivity(userAgent, request, foundCustomer, authenticationResponse);
+			String loginMessage = notificationUtil.getLoginNotificationTemplate(
+					foundCustomer.getFirstname() + " " + foundCustomer.getLastname(), getFormattedCurrentDateTime());
+			notificationService.notifyUser(foundCustomer, loginMessage, AlertType.LOGIN);
+		} catch (Exception e) {
+			log.error("Error processing user login activity: {}", e.getMessage());
+		}
+		customerRepository.save(foundCustomer);
+		return authenticationResponse;
+	}
 
-  public boolean isTokenValid(String token) {
+	public boolean isTokenValid(String token) {
 
-    return jwtUtil.isTokenValid(token);
-  }
+		return jwtUtil.isTokenValid(token);
+	}
 
-  private void processUserLoginActivity(
-      String userAgent,
-      HttpServletRequest request,
-      Customer foundCustomer,
-      AuthenticationResponse authenticationResponse) {
+	private void processUserLoginActivity(String userAgent, HttpServletRequest request, Customer foundCustomer,
+			AuthenticationResponse authenticationResponse) {
 
-    log.info("userAgent: {}", userAgent);
-    log.info(
-        "Processing headers: sec-ch-ua={}, sec-ch-ua-mobile={}, sec-ch-ua-platform={}",
-        request.getHeader("sec-ch-ua"),
-        request.getHeader("sec-ch-ua-mobile"),
-        request.getHeader("sec-ch-ua-platform"));
+		log.info("userAgent: {}", userAgent);
+		log.info("Processing headers: sec-ch-ua={}, sec-ch-ua-mobile={}, sec-ch-ua-platform={}",
+				request.getHeader("sec-ch-ua"), request.getHeader("sec-ch-ua-mobile"),
+				request.getHeader("sec-ch-ua-platform"));
 
-    String deviceName = UserLoginActivityUtil.extractDeviceNameFromHeaders(request, userAgent);
-    String source = UserLoginActivityUtil.extractSourceFromHeaders(request, userAgent);
+		String deviceName = UserLoginActivityUtil.extractDeviceNameFromHeaders(request, userAgent);
+		String source = UserLoginActivityUtil.extractSourceFromHeaders(request, userAgent);
 
-    String ip = UserLoginActivityUtil.extractClientIp(request);
-    String location = UserLoginActivityUtil.getLocationFromRequest(ip, request);
+		String ip = UserLoginActivityUtil.extractClientIp(request);
+		String location = UserLoginActivityUtil.getLocationFromRequest(ip, request);
 
-    UserLoginActivity activity;
-    Optional<UserLoginActivity> foundActivity =
-        userLoginActivityRepository.findByCustomerIdAndDeviceNameAndSource(
-            foundCustomer.getId(), deviceName, source);
+		UserLoginActivity activity;
+		Optional<UserLoginActivity> foundActivity = userLoginActivityRepository
+				.findByCustomerIdAndDeviceNameAndSource(foundCustomer.getId(), deviceName, source);
 
-    if (foundActivity.isPresent()) {
-      activity = foundActivity.get();
-      activity.setUpdatedAt(LocalDateTime.now());
-    } else {
-      activity = new UserLoginActivity();
-      activity.setCustomerId(foundCustomer.getId());
-      activity.setDeviceName(deviceName);
-      activity.setSource(source);
-      activity.setCreatedAt(LocalDateTime.now());
-      activity.setUpdatedAt(LocalDateTime.now());
-    }
+		if (foundActivity.isPresent()) {
+			activity = foundActivity.get();
+			activity.setUpdatedAt(LocalDateTime.now());
+		} else {
+			activity = new UserLoginActivity();
+			activity.setCustomerId(foundCustomer.getId());
+			activity.setDeviceName(deviceName);
+			activity.setSource(source);
+			activity.setCreatedAt(LocalDateTime.now());
+			activity.setUpdatedAt(LocalDateTime.now());
+		}
 
-    activity.setLocation(location);
+		activity.setLocation(location);
 
-    log.info("user activity: {}", activity);
-    userLoginActivityRepository.save(activity);
-  }
+		log.info("user activity: {}", activity);
+		userLoginActivityRepository.save(activity);
+	}
 
-  @Override
-  public GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest) {
+	@Override
+	public GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest) {
 
-    Customer foundCustomer = customerService.getCustomerById(passwordMgtRequest.getCustomerId());
-    if (StringUtils.isBlank(foundCustomer.getPassword())) {
-      if (StringUtils.isNotBlank(passwordMgtRequest.getPassword())) {
-        foundCustomer.setPassword(passwordEncoder.encode(passwordMgtRequest.getPassword()));
-        customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer, true);
-        return new GenericApiResponse(
-            "Password created successfully", "success", CustomerDtoResponse.parse(foundCustomer));
-      } else {
-        throw new ValidationException("Invalid.credentials.provided", "password cannot be blank");
-      }
-    }
-    throw new ValidationException(
-        "password.already.exists",
-        "Password has already been set for this customer. Please use the update password endpoint.");
-  }
+		Customer foundCustomer = customerService.getCustomerById(passwordMgtRequest.getCustomerId());
+		if (StringUtils.isBlank(foundCustomer.getPassword())) {
+			if (StringUtils.isNotBlank(passwordMgtRequest.getPassword())) {
+				foundCustomer.setPassword(passwordEncoder.encode(passwordMgtRequest.getPassword()));
+				customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer, true);
+				return new GenericApiResponse("Password created successfully", "success",
+						CustomerDtoResponse.parse(foundCustomer));
+			} else {
+				throw new ValidationException("Invalid.credentials.provided", "password cannot be blank");
+			}
+		}
+		throw new ValidationException("password.already.exists",
+				"Password has already been set for this customer. Please use the update password endpoint.");
+	}
 
-  @Override
-  public GenericApiResponse forgotPassword(
-      PasswordMgtRequest passwordMgtRequest, String command, UserType customerType) {
+	@Override
+	public GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command,
+			UserType customerType) {
 
-    if (StringUtils.equals(GENERATE_OTP_COMMAND, command)) {
-      Customer foundCustomer =
-          customerService.getCustomerByEmailOrPhoneNumber(
-              passwordMgtRequest.getEmailAddress(),
-              passwordMgtRequest.getPhoneNumber(),
-              customerType);
-      NotificationRequestDto notificationRequestDto =
-          new NotificationRequestDto(
-              passwordMgtRequest.getPhoneNumber(), passwordMgtRequest.getEmailAddress());
-      passwordMgtRequest.setCustomerId(foundCustomer.getId());
-      OtpDto otpDto =
-          this.redisService.generateOtpRequest(
-              passwordMgtRequest, OtpType.FORGOT_PASSWORD, notificationRequestDto, null);
-      return new GenericApiResponse(
-          otpDto.getUniqueId(),
-          passwordMgtRequest.getPhoneNumber(),
-          passwordMgtRequest.getEmailAddress(),
-          true);
-    } else if (StringUtils.equals(VERIFY_OTP_COMMAND, command)) {
-      if (StringUtils.isBlank(passwordMgtRequest.getOtp())) {
-        throw new ValidationException("Invalid.data.provided", "otp must be provided");
-      }
-      if (StringUtils.isBlank(passwordMgtRequest.getUniqueId())) {
-        throw new ValidationException("Invalid.data.provided", "uniqueId must be provided");
-      }
+		if (StringUtils.equals(GENERATE_OTP_COMMAND, command)) {
+			Customer foundCustomer = customerService.getCustomerByEmailOrPhoneNumber(
+					passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber(), customerType);
+			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(
+					passwordMgtRequest.getPhoneNumber(), passwordMgtRequest.getEmailAddress());
+			passwordMgtRequest.setCustomerId(foundCustomer.getId());
+			OtpDto otpDto = this.redisService.generateOtpRequest(passwordMgtRequest, OtpType.FORGOT_PASSWORD,
+					notificationRequestDto, null);
+			return new GenericApiResponse(otpDto.getUniqueId(), passwordMgtRequest.getPhoneNumber(),
+					passwordMgtRequest.getEmailAddress(), true);
+		} else if (StringUtils.equals(VERIFY_OTP_COMMAND, command)) {
+			if (StringUtils.isBlank(passwordMgtRequest.getOtp())) {
+				throw new ValidationException("Invalid.data.provided", "otp must be provided");
+			}
+			if (StringUtils.isBlank(passwordMgtRequest.getUniqueId())) {
+				throw new ValidationException("Invalid.data.provided", "uniqueId must be provided");
+			}
 
-      OtpDto otpDto =
-          redisService.validateOtpWithoutDeletingRecord(
-              passwordMgtRequest.getUniqueId(),
-              passwordMgtRequest.getOtp(),
-              OtpType.FORGOT_PASSWORD);
-      if (otpDto == null) {
-        throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
-      }
-      return new GenericApiResponse(
-          "OTP validated successfully. Kindly proceed to change password", "success", null);
-    } else if (StringUtils.equals(CHANGE_PASSWORD_COMMAND, command)) {
-      if (StringUtils.isBlank(passwordMgtRequest.getUniqueId())) {
-        throw new ValidationException("Invalid.data.provided", "uniqueId must be provided");
-      }
-      if (StringUtils.isBlank(passwordMgtRequest.getPassword())) {
-        throw new ValidationException("Invalid.data.provided", "password must be provided");
-      }
-      OtpDto otpDto = redisService.validateOtpWithoutOtp(passwordMgtRequest.getUniqueId());
-      String password = passwordEncoder.encode(passwordMgtRequest.getPassword());
-      PasswordMgtRequest passwordRequest = (PasswordMgtRequest) otpDto.getData();
-      Customer foundCustomer = customerService.getCustomerById(passwordRequest.getCustomerId());
-      foundCustomer.setPassword(password);
-      customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer, true);
-      return new GenericApiResponse("Password has been changed successfully", "success", null);
-    } else {
-      throw new ValidationException("Invalid.command", "Invalid command: " + command);
-    }
-  }
+			OtpDto otpDto = redisService.validateOtpWithoutDeletingRecord(passwordMgtRequest.getUniqueId(),
+					passwordMgtRequest.getOtp(), OtpType.FORGOT_PASSWORD);
+			if (otpDto == null) {
+				throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
+			}
+			return new GenericApiResponse("OTP validated successfully. Kindly proceed to change password", "success",
+					null);
+		} else if (StringUtils.equals(CHANGE_PASSWORD_COMMAND, command)) {
+			if (StringUtils.isBlank(passwordMgtRequest.getUniqueId())) {
+				throw new ValidationException("Invalid.data.provided", "uniqueId must be provided");
+			}
+			if (StringUtils.isBlank(passwordMgtRequest.getPassword())) {
+				throw new ValidationException("Invalid.data.provided", "password must be provided");
+			}
+			OtpDto otpDto = redisService.validateOtpWithoutOtp(passwordMgtRequest.getUniqueId());
+			String password = passwordEncoder.encode(passwordMgtRequest.getPassword());
+			PasswordMgtRequest passwordRequest = (PasswordMgtRequest) otpDto.getData();
+			Customer foundCustomer = customerService.getCustomerById(passwordRequest.getCustomerId());
+			foundCustomer.setPassword(password);
+			customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer, true);
+			return new GenericApiResponse("Password has been changed successfully", "success", null);
+		} else {
+			throw new ValidationException("Invalid.command", "Invalid command: " + command);
+		}
+	}
 
-  @Override
-  public BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId) {
+	@Override
+	public BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId) {
 
-    return BasePageResponse.instance(
-        this.userLoginActivityRepository.findAllByCustomerId(customerId));
-  }
+		return BasePageResponse.instance(this.userLoginActivityRepository.findAllByCustomerId(customerId));
+	}
 
-  @Override
-  public GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest) {
+	@Override
+	public GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest) {
 
-    Customer foundCustomer = customerService.getCustomerById(passwordMgtRequest.getCustomerId());
-    if (passwordEncoder.matches(passwordMgtRequest.getPassword(), foundCustomer.getPassword())) {
-      if (StringUtils.isBlank(passwordMgtRequest.getNewPassword())) {
-        throw new ValidationException("Invalid.data.provided", "new password cannot be blank");
-      }
-      foundCustomer.setPassword(passwordEncoder.encode(passwordMgtRequest.getNewPassword()));
-      customerRepository.save(foundCustomer);
-      return new GenericApiResponse("Password changed successfully", "success", null);
-    }
-    throw new ValidationException(
-        "incorrect.password", "Incorrect password provided. Please try again.");
-  }
+		Customer foundCustomer = customerService.getCustomerById(passwordMgtRequest.getCustomerId());
+		if (passwordEncoder.matches(passwordMgtRequest.getPassword(), foundCustomer.getPassword())) {
+			if (StringUtils.isBlank(passwordMgtRequest.getNewPassword())) {
+				throw new ValidationException("Invalid.data.provided", "new password cannot be blank");
+			}
+			foundCustomer.setPassword(passwordEncoder.encode(passwordMgtRequest.getNewPassword()));
+			customerRepository.save(foundCustomer);
+			return new GenericApiResponse("Password changed successfully", "success", null);
+		}
+		throw new ValidationException("incorrect.password", "Incorrect password provided. Please try again.");
+	}
 
-  @Override
-  public GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest) {
+	@Override
+	public GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest) {
 
-    Customer foundCustomer = customerService.getCustomerById(pinRequest.getCustomerId());
-    if (passwordEncoder.matches(pinRequest.getPin(), foundCustomer.getTransactionPin())) {
-      if (StringUtils.isBlank(pinRequest.getNewPin())) {
-        throw new ValidationException("Invalid.data.provided", "new pin cannot be blank");
-      }
-      foundCustomer.setTransactionPin(passwordEncoder.encode(pinRequest.getNewPin()));
-      customerRepository.save(foundCustomer);
-      return new GenericApiResponse("Transaction pin changed successfully", "success", null);
-    }
-    throw new ValidationException(
-        "incorrect.pin", "Incorrect transaction pin provided. Please try again.");
-  }
+		Customer foundCustomer = customerService.getCustomerById(pinRequest.getCustomerId());
+		if (passwordEncoder.matches(pinRequest.getPin(), foundCustomer.getTransactionPin())) {
+			if (StringUtils.isBlank(pinRequest.getNewPin())) {
+				throw new ValidationException("Invalid.data.provided", "new pin cannot be blank");
+			}
+			foundCustomer.setTransactionPin(passwordEncoder.encode(pinRequest.getNewPin()));
+			customerRepository.save(foundCustomer);
+			return new GenericApiResponse("Transaction pin changed successfully", "success", null);
+		}
+		throw new ValidationException("incorrect.pin", "Incorrect transaction pin provided. Please try again.");
+	}
 
-  @Override
-  public void logout(Long customerId) {
+	@Override
+	public void logout(Long customerId) {
 
-    Customer foundCustomer = customerService.getCustomerById(customerId);
-    foundCustomer.setAuthenticated(false);
-    customerRepository.save(foundCustomer);
-  }
+		Customer foundCustomer = customerService.getCustomerById(customerId);
+		foundCustomer.setAuthenticated(false);
+		customerRepository.save(foundCustomer);
+	}
 
-  private String generateToken(String username, Map<String, Object> claims) {
+	private String generateToken(String username, Map<String, Object> claims) {
 
-    return jwtUtil.generateToken(username, DEFAULT_INVITATION_TOKEN_EXPIRATION_MS, claims);
-  }
+		return jwtUtil.generateToken(username, DEFAULT_INVITATION_TOKEN_EXPIRATION_MS, claims);
+	}
 }

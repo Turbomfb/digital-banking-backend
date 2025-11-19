@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class DeletePostDatedCheck {
-  private Long loanId;
+	private Long loanId;
 
-  private Long resourceId;
+	private Long resourceId;
 }

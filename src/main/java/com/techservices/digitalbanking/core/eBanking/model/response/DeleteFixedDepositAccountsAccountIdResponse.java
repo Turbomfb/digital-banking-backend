@@ -7,9 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DeleteFixedDepositAccountsAccountIdResponse {
-  private Integer clientId;
+	private Integer clientId;
 
-  private Integer officeId;
+	private Integer officeId;
 
-  private Integer resourceId;
+	private Integer resourceId;
 }

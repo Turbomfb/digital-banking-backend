@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.eBanking.model.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import lombok.Data;
 
 @Data
@@ -11,17 +12,17 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentDetailData {
 
-  private String accountNumber;
+	private String accountNumber;
 
-  private String bankNumber;
+	private String bankNumber;
 
-  private String checkNumber;
+	private String checkNumber;
 
-  private Long id;
+	private Long id;
 
-  private PaymentTypData paymentType;
+	private PaymentTypData paymentType;
 
-  private String receiptNumber;
+	private String receiptNumber;
 
-  private String routingCode;
+	private String routingCode;
 }

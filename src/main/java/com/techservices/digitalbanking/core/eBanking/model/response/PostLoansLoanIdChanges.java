@@ -9,13 +9,13 @@ import lombok.Setter;
 @Setter
 public class PostLoansLoanIdChanges {
 
-  private String approvedOnDate;
+	private String approvedOnDate;
 
-  private String dateFormat;
+	private String dateFormat;
 
-  private String locale;
+	private String locale;
 
-  private String note;
+	private String note;
 
-  private PostLoansLoanIdStatus status;
+	private PostLoansLoanIdStatus status;
 }

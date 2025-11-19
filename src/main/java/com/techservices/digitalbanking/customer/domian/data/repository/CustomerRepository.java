@@ -1,45 +1,45 @@
 /* (C)2025 */
 package com.techservices.digitalbanking.customer.domian.data.repository;
 
-import com.techservices.digitalbanking.common.domain.enums.UserType;
-import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import com.techservices.digitalbanking.common.domain.enums.UserType;
+import com.techservices.digitalbanking.customer.domian.data.model.Customer;
+
 public interface CustomerRepository extends CrudRepository<Customer, Long> {
 
-  @Query("SELECT c FROM Customer c WHERE LOWER(c.emailAddress) = LOWER(:emailAddress)")
-  Optional<Customer> findByEmailAddress(String emailAddress);
+	@Query("SELECT c FROM Customer c WHERE LOWER(c.emailAddress) = LOWER(:emailAddress)")
+	Optional<Customer> findByEmailAddress(String emailAddress);
 
-  @Query("SELECT c FROM Customer c WHERE LOWER(c.phoneNumber) = LOWER(:phoneNumber)")
-  Optional<Customer> findByPhoneNumber(String phoneNumber);
+	@Query("SELECT c FROM Customer c WHERE LOWER(c.phoneNumber) = LOWER(:phoneNumber)")
+	Optional<Customer> findByPhoneNumber(String phoneNumber);
 
-  Page<Customer> findAll(Pageable pageable);
+	Page<Customer> findAll(Pageable pageable);
 
-  Optional<Customer> findByBvnAndUserType(String bvn, UserType userType);
+	Optional<Customer> findByBvnAndUserType(String bvn, UserType userType);
 
-  Optional<Customer> findByNinAndUserType(String nin, UserType userType);
+	Optional<Customer> findByNinAndUserType(String nin, UserType userType);
 
-  Optional<Customer> findByRcNumberAndUserType(String rcNumber, UserType userType);
+	Optional<Customer> findByRcNumberAndUserType(String rcNumber, UserType userType);
 
-  Optional<Customer> findByTinAndUserType(String tin, UserType userType);
+	Optional<Customer> findByTinAndUserType(String tin, UserType userType);
 
-  @Query(
-      "SELECT c FROM Customer c WHERE LOWER(c.emailAddress) = LOWER(:emailAddress) and c.userType = :userType")
-  Optional<Customer> findByEmailAddressAndUserType(String emailAddress, UserType userType);
+	@Query("SELECT c FROM Customer c WHERE LOWER(c.emailAddress) = LOWER(:emailAddress) and c.userType = :userType")
+	Optional<Customer> findByEmailAddressAndUserType(String emailAddress, UserType userType);
 
-  @Query(
-      "SELECT c FROM Customer c WHERE LOWER(c.phoneNumber) = LOWER(:phoneNumber) and c.userType = :userType")
-  Optional<Customer> findByPhoneNumberAndUserType(String phoneNumber, UserType userType);
+	@Query("SELECT c FROM Customer c WHERE LOWER(c.phoneNumber) = LOWER(:phoneNumber) and c.userType = :userType")
+	Optional<Customer> findByPhoneNumberAndUserType(String phoneNumber, UserType userType);
 
-  Optional<Customer> findByBusinessName(String businessName);
+	Optional<Customer> findByBusinessName(String businessName);
 
-  Optional<Customer> findByRcNumber(String rcNumber);
+	Optional<Customer> findByRcNumber(String rcNumber);
 
-  Optional<Customer> findByAccountId(String accountId);
+	Optional<Customer> findByAccountId(String accountId);
 
-  Optional<Customer> findByNuban(String nuban);
+	Optional<Customer> findByNuban(String nuban);
 }

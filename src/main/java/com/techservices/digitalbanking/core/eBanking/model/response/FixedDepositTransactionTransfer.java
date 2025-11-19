@@ -1,9 +1,11 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.time.LocalDate;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,10 +15,10 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FixedDepositTransactionTransfer {
 
-  private int id;
-  private boolean reversed;
-  private GetFixedDepositAccountsAccountIdCurrency currency;
-  private double transferAmount;
-  private LocalDate transferDate;
-  private String transferDescription;
+	private int id;
+	private boolean reversed;
+	private GetFixedDepositAccountsAccountIdCurrency currency;
+	private double transferAmount;
+	private LocalDate transferDate;
+	private String transferDescription;
 }

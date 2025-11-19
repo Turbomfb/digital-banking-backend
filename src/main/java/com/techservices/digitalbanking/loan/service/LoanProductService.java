@@ -10,11 +10,11 @@ import com.techservices.digitalbanking.core.eBanking.model.response.PostLoanProd
 
 public interface LoanProductService {
 
-  BasePageResponse<LoanProductListResponse> getLoanProducts(Long fields);
+	BasePageResponse<LoanProductListResponse> getLoanProducts(Long fields);
 
-  GetLoanProductsProductIdResponse getLoanProductById(Long productId, Long fields, Long template);
+	GetLoanProductsProductIdResponse getLoanProductById(Long productId, Long fields, Long template);
 
-  PostLoanProductsResponse createALoanProduct(PostLoanProductsRequest postLoanProductRequest);
+	PostLoanProductsResponse createALoanProduct(PostLoanProductsRequest postLoanProductRequest);
 
-  GetLoanProductsTemplateResponse retrieveLoanProductTemplate();
+	GetLoanProductsTemplateResponse retrieveLoanProductTemplate();
 }

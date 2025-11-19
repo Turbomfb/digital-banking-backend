@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.domain.dto.request;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 
 @Setter
@@ -15,9 +16,9 @@ import lombok.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ToString
 public class ImageComparisonRequest {
-  private String image1;
-  private String image2;
+	private String image1;
+	private String image2;
 
-  @JsonProperty("isSubjectConsent")
-  private Boolean isSubjectConsent;
+	@JsonProperty("isSubjectConsent")
+	private Boolean isSubjectConsent;
 }

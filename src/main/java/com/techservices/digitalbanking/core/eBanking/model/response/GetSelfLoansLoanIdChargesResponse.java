@@ -9,33 +9,33 @@ import lombok.Setter;
 @Setter
 public class GetSelfLoansLoanIdChargesResponse {
 
-  private Double amount;
+	private Double amount;
 
-  private Double amountOrPercentage;
+	private Double amountOrPercentage;
 
-  private Double amountOutstanding;
+	private Double amountOutstanding;
 
-  private Double amountPaid;
+	private Double amountPaid;
 
-  private Double amountPercentageAppliedTo;
+	private Double amountPercentageAppliedTo;
 
-  private Double amountWaived;
+	private Double amountWaived;
 
-  private Double amountWrittenOff;
+	private Double amountWrittenOff;
 
-  private GetSelfLoansChargeCalculationType chargeCalculationType;
+	private GetSelfLoansChargeCalculationType chargeCalculationType;
 
-  private Integer chargeId;
+	private Integer chargeId;
 
-  private GetSelfLoansChargeTimeType chargeTimeType;
+	private GetSelfLoansChargeTimeType chargeTimeType;
 
-  private GetLoanCurrency currency;
+	private GetLoanCurrency currency;
 
-  private Integer id;
+	private Integer id;
 
-  private String name;
+	private String name;
 
-  private Boolean penalty;
+	private Boolean penalty;
 
-  private Double percentage;
+	private Double percentage;
 }

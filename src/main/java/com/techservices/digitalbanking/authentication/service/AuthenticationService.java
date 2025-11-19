@@ -9,27 +9,24 @@ import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuthenticationService {
-  AuthenticationResponse authenticate(
-      AuthenticationRequest postAuthenticationRequest,
-      UserType customerType,
-      String userAgent,
-      HttpServletRequest request);
+	AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType,
+			String userAgent, HttpServletRequest request);
 
-  boolean isTokenValid(String token);
+	boolean isTokenValid(String token);
 
-  GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest);
+	GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest);
 
-  GenericApiResponse forgotPassword(
-      PasswordMgtRequest passwordMgtRequest, String command, UserType customerType);
+	GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command, UserType customerType);
 
-  BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId);
+	BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId);
 
-  GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest);
+	GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest);
 
-  GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest);
+	GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest);
 
-  void logout(Long customerId);
+	void logout(Long customerId);
 }

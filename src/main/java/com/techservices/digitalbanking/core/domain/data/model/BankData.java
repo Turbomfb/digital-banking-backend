@@ -13,11 +13,12 @@ import lombok.ToString;
 @ToString
 public class BankData {
 
-  @Id private String id;
+	@Id
+	private String id;
 
-  @Column(name = "name")
-  private String name;
+	@Column(name = "name")
+	private String name;
 
-  @Column(name = "code")
-  private String code;
+	@Column(name = "code")
+	private String code;
 }

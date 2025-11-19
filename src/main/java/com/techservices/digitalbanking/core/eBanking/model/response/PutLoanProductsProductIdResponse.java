@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class PutLoanProductsProductIdResponse {
 
-  private PutLoanChanges changes;
+	private PutLoanChanges changes;
 
-  private Integer resourceId;
+	private Integer resourceId;
 }

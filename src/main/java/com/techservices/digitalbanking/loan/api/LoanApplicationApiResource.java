@@ -1,6 +1,15 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.loan.api;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.techservices.digitalbanking.core.configuration.security.SpringSecurityAuditorAware;
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
@@ -18,6 +27,7 @@ import com.techservices.digitalbanking.loan.domain.response.LoanDashboardRespons
 import com.techservices.digitalbanking.loan.domain.response.LoanOfferResponse;
 import com.techservices.digitalbanking.loan.domain.response.LoanScheduleCalculationResponse;
 import com.techservices.digitalbanking.loan.service.LoanApplicationService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,516 +38,207 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
-@Tag(
-    name = "Loan Management",
-    description =
-        "API for managing customer loans including applications, offers, repayments, and transaction history")
+@Tag(name = "Loan Management", description = "API for managing customer loans including applications, offers, repayments, and transaction history")
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("api/v1/customers/me/loans")
 @RestController
 @RequiredArgsConstructor
 public class LoanApplicationApiResource {
 
-  private final LoanApplicationService loanService;
-  private final SpringSecurityAuditorAware springSecurityAuditorAware;
+	private final LoanApplicationService loanService;
+	private final SpringSecurityAuditorAware springSecurityAuditorAware;
 
-  @Operation(
-      summary = "Calculate loan schedule",
-      description =
-          "Performs comprehensive loan schedule calculation based on specified loan parameters including "
-              + "principal amount, interest rate, term, repayment frequency, and calculation method. "
-              + "Returns detailed amortization schedule with payment breakdowns, interest calculations, "
-              + "principal allocations, and outstanding balances for each installment. "
-              + "Useful for loan origination, customer consultations, and financial planning.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Loan schedule calculated successfully",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = LoanScheduleCalculationResponse.class))),
-        @ApiResponse(
-            responseCode = "400",
-            description =
-                "Invalid calculation parameters, missing required fields, or invalid loan terms combination",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "422",
-            description =
-                "Calculation cannot be performed due to business rule violations, "
-                    + "invalid interest rate ranges, or unsupported parameter combinations",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred during loan schedule calculation",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @PostMapping("loan-schedule-calculation")
-  public ResponseEntity<LoanScheduleCalculationResponse> calculateLoanSchedule(
-      @Parameter(
-              description =
-                  "Loan calculation parameters including principal amount, annual interest rate, "
-                      + "loan term (number of payments), repayment frequency, calculation method, "
-                      + "disbursement date, and optional fees or charges. "
-                      + "All monetary amounts should be positive values, and interest rates should be within acceptable ranges.",
-              required = true,
-              content =
-                  @Content(
-                      mediaType = "application/json",
-                      schema = @Schema(implementation = LoanScheduleCalculationRequest.class)))
-          @RequestBody
-          @Valid
-          LoanScheduleCalculationRequest loanScheduleCalculationRequest) {
+	@Operation(summary = "Calculate loan schedule", description = "Performs comprehensive loan schedule calculation based on specified loan parameters including "
+			+ "principal amount, interest rate, term, repayment frequency, and calculation method. "
+			+ "Returns detailed amortization schedule with payment breakdowns, interest calculations, "
+			+ "principal allocations, and outstanding balances for each installment. "
+			+ "Useful for loan origination, customer consultations, and financial planning.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Loan schedule calculated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoanScheduleCalculationResponse.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid calculation parameters, missing required fields, or invalid loan terms combination", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "422", description = "Calculation cannot be performed due to business rule violations, "
+					+ "invalid interest rate ranges, or unsupported parameter combinations", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred during loan schedule calculation", content = @Content(schema = @Schema(hidden = true)))})
+	@PostMapping("loan-schedule-calculation")
+	public ResponseEntity<LoanScheduleCalculationResponse> calculateLoanSchedule(
+			@Parameter(description = "Loan calculation parameters including principal amount, annual interest rate, "
+					+ "loan term (number of payments), repayment frequency, calculation method, "
+					+ "disbursement date, and optional fees or charges. "
+					+ "All monetary amounts should be positive values, and interest rates should be within acceptable ranges.", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoanScheduleCalculationRequest.class))) @RequestBody @Valid LoanScheduleCalculationRequest loanScheduleCalculationRequest) {
 
-    LoanScheduleCalculationResponse loanScheduleCalculationResponse =
-        loanService.calculateLoanSchedule(loanScheduleCalculationRequest);
+		LoanScheduleCalculationResponse loanScheduleCalculationResponse = loanService
+				.calculateLoanSchedule(loanScheduleCalculationRequest);
 
-    return ResponseEntity.ok(loanScheduleCalculationResponse);
-  }
+		return ResponseEntity.ok(loanScheduleCalculationResponse);
+	}
 
-  @Operation(
-      summary = "Retrieve customer loan offers",
-      description =
-          "Fetches all available loan offers for the authenticated customer. "
-              + "Returns personalized loan products based on customer eligibility, credit profile, "
-              + "and current market conditions. Each offer includes terms, interest rates, and eligibility criteria.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved customer loan offers",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = BasePageResponse.class))),
-        @ApiResponse(
-            responseCode = "401",
-            description = "User not authenticated",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "403",
-            description = "User not authorized to access loan offers",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred while retrieving loan offers",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @GetMapping("offers")
-  public ResponseEntity<BasePageResponse<LoanOfferResponse>> retrieveCustomerLoanOffers() {
+	@Operation(summary = "Retrieve customer loan offers", description = "Fetches all available loan offers for the authenticated customer. "
+			+ "Returns personalized loan products based on customer eligibility, credit profile, "
+			+ "and current market conditions. Each offer includes terms, interest rates, and eligibility criteria.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved customer loan offers", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BasePageResponse.class))),
+			@ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "User not authorized to access loan offers", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred while retrieving loan offers", content = @Content(schema = @Schema(hidden = true)))})
+	@GetMapping("offers")
+	public ResponseEntity<BasePageResponse<LoanOfferResponse>> retrieveCustomerLoanOffers() {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    BasePageResponse<LoanOfferResponse> loanOfferResponseBasePageResponse =
-        loanService.retrieveCustomerLoanOffers(customerId);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		BasePageResponse<LoanOfferResponse> loanOfferResponseBasePageResponse = loanService
+				.retrieveCustomerLoanOffers(customerId);
 
-    return ResponseEntity.ok(loanOfferResponseBasePageResponse);
-  }
+		return ResponseEntity.ok(loanOfferResponseBasePageResponse);
+	}
 
-  @Operation(
-      summary = "Apply for a loan",
-      description = "Submits a new loan application for the authenticated customer.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Loan application submitted successfully",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = GenericApiResponse.class))),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid application data or missing required fields",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "401",
-            description = "User not authenticated",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "403",
-            description = "User not authorized to submit loan applications",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "422",
-            description =
-                "Application cannot be processed due to eligibility restrictions or business rules violation",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred while processing the application",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @PostMapping("application")
-  public ResponseEntity<GenericApiResponse> processLoanApplication(
-      @Parameter(
-              description = "Complete loan application",
-              required = true,
-              content =
-                  @Content(
-                      mediaType = "application/json",
-                      schema = @Schema(implementation = LoanApplicationRequest.class)))
-          @RequestBody
-          @Valid
-          LoanApplicationRequest loanApplicationRequest) {
+	@Operation(summary = "Apply for a loan", description = "Submits a new loan application for the authenticated customer.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Loan application submitted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericApiResponse.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid application data or missing required fields", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "User not authorized to submit loan applications", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "422", description = "Application cannot be processed due to eligibility restrictions or business rules violation", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred while processing the application", content = @Content(schema = @Schema(hidden = true)))})
+	@PostMapping("application")
+	public ResponseEntity<GenericApiResponse> processLoanApplication(
+			@Parameter(description = "Complete loan application", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoanApplicationRequest.class))) @RequestBody @Valid LoanApplicationRequest loanApplicationRequest) {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    GenericApiResponse genericApiResponse =
-        loanService.processLoanApplication(customerId, loanApplicationRequest);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		GenericApiResponse genericApiResponse = loanService.processLoanApplication(customerId, loanApplicationRequest);
 
-    return ResponseEntity.ok(genericApiResponse);
-  }
+		return ResponseEntity.ok(genericApiResponse);
+	}
 
-  @Operation(
-      summary = "Apply for a new loan",
-      description =
-          "Submits a new loan application for the authenticated customer. "
-              + "The application undergoes validation, credit assessment, and approval workflow. "
-              + "Requires complete borrower information, loan details, and supporting documentation references.")
-  @PostMapping("new-application")
-  public ResponseEntity<LoanApplicationResponse> processNewLoanApplication(
-      @Parameter(
-              description =
-                  "Submits a new loan application details including loan amount, purpose, term, "
-                      + "employment information, financial details, and references to supporting documents.",
-              required = true,
-              content =
-                  @Content(
-                      mediaType = "application/json",
-                      schema = @Schema(implementation = NewLoanApplicationRequest.class)))
-          @RequestBody
-          @Valid
-          NewLoanApplicationRequest loanApplicationRequest) {
+	@Operation(summary = "Apply for a new loan", description = "Submits a new loan application for the authenticated customer. "
+			+ "The application undergoes validation, credit assessment, and approval workflow. "
+			+ "Requires complete borrower information, loan details, and supporting documentation references.")
+	@PostMapping("new-application")
+	public ResponseEntity<LoanApplicationResponse> processNewLoanApplication(
+			@Parameter(description = "Submits a new loan application details including loan amount, purpose, term, "
+					+ "employment information, financial details, and references to supporting documents.", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = NewLoanApplicationRequest.class))) @RequestBody @Valid NewLoanApplicationRequest loanApplicationRequest) {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    LoanApplicationResponse genericApiResponse =
-        loanService.processNewLoanApplication(customerId, loanApplicationRequest);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		LoanApplicationResponse genericApiResponse = loanService.processNewLoanApplication(customerId,
+				loanApplicationRequest);
 
-    return ResponseEntity.ok(genericApiResponse);
-  }
+		return ResponseEntity.ok(genericApiResponse);
+	}
 
-  @Operation(
-      summary = "Retrieve customer loan dashboard",
-      description =
-          "Provides a comprehensive overview of the customer's loan portfolio including "
-              + "active loans, payment history, outstanding balances, upcoming payments, and account status. "
-              + "Serves as the main dashboard for loan management activities.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved customer loan dashboard",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = LoanDashboardResponse.class))),
-        @ApiResponse(
-            responseCode = "401",
-            description = "User not authenticated",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "403",
-            description = "User not authorized to access loan dashboard",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred while retrieving dashboard data",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @GetMapping("dashboard")
-  public ResponseEntity<LoanDashboardResponse> retrieveCustomerLoanDashboard() {
+	@Operation(summary = "Retrieve customer loan dashboard", description = "Provides a comprehensive overview of the customer's loan portfolio including "
+			+ "active loans, payment history, outstanding balances, upcoming payments, and account status. "
+			+ "Serves as the main dashboard for loan management activities.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved customer loan dashboard", content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoanDashboardResponse.class))),
+			@ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "User not authorized to access loan dashboard", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred while retrieving dashboard data", content = @Content(schema = @Schema(hidden = true)))})
+	@GetMapping("dashboard")
+	public ResponseEntity<LoanDashboardResponse> retrieveCustomerLoanDashboard() {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    LoanDashboardResponse loanDashboardResponse =
-        loanService.retrieveCustomerLoanDashboard(customerId);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		LoanDashboardResponse loanDashboardResponse = loanService.retrieveCustomerLoanDashboard(customerId);
 
-    return ResponseEntity.ok(loanDashboardResponse);
-  }
+		return ResponseEntity.ok(loanDashboardResponse);
+	}
 
-  @Operation(
-      summary = "Retrieve a loan by ID",
-      description =
-          "Fetches detailed information about a specific loan account including terms, "
-              + "current balance, payment schedule, transaction history, and account status. "
-              + "Supports various data associations and field filtering for optimized responses.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved loan details",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = GetLoansLoanIdResponse.class))),
-        @ApiResponse(
-            responseCode = "401",
-            description = "User not authenticated",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "403",
-            description = "User not authorized to access this loan account",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Loan account not found",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred while retrieving loan details",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @GetMapping("{loanId}")
-  public ResponseEntity<LoanDto> retrieveLoanById(
-      @Parameter(
-              name = "loanId",
-              description = "Unique identifier of the loan account to retrieve",
-              required = true,
-              schema = @Schema(type = "integer", format = "int64", minimum = "1"))
-          @PathVariable
-          Long loanId) {
+	@Operation(summary = "Retrieve a loan by ID", description = "Fetches detailed information about a specific loan account including terms, "
+			+ "current balance, payment schedule, transaction history, and account status. "
+			+ "Supports various data associations and field filtering for optimized responses.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved loan details", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GetLoansLoanIdResponse.class))),
+			@ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "User not authorized to access this loan account", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "404", description = "Loan account not found", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred while retrieving loan details", content = @Content(schema = @Schema(hidden = true)))})
+	@GetMapping("{loanId}")
+	public ResponseEntity<LoanDto> retrieveLoanById(
+			@Parameter(name = "loanId", description = "Unique identifier of the loan account to retrieve", required = true, schema = @Schema(type = "integer", format = "int64", minimum = "1")) @PathVariable Long loanId) {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    LoanDto getLoansLoanIdResponse = loanService.retrieveLoanById(loanId, customerId);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		LoanDto getLoansLoanIdResponse = loanService.retrieveLoanById(loanId, customerId);
 
-    return ResponseEntity.ok(getLoansLoanIdResponse);
-  }
+		return ResponseEntity.ok(getLoansLoanIdResponse);
+	}
 
-  @Operation(
-      summary = "Retrieve loan list",
-      description =
-          "Fetches a paginated list of all loans belonging to the authenticated customer. "
-              + "Supports advanced filtering, searching, sorting, and pagination capabilities. "
-              + "Useful for displaying loan portfolios and account management interfaces.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved loan list",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = GetLoansResponse.class))),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid query parameters or search criteria",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "401",
-            description = "User not authenticated",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "403",
-            description = "User not authorized to access loan list",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred while retrieving loan list",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @GetMapping
-  public ResponseEntity<BasePageResponse<LoanDto>> retrieveAllLoans(
-      @Parameter(
-              name = "limit",
-              description = "Maximum number of records to return per page",
-              schema =
-                  @Schema(type = "integer", minimum = "1", maximum = "200", defaultValue = "20"))
-          @Valid
-          @RequestParam(value = "limit", required = false)
-          Long limit,
-      @Parameter(name = "accountNo", description = "Filter loans by specific account number")
-          @Valid
-          @RequestParam(value = "accountNo", required = false)
-          String accountNo) {
+	@Operation(summary = "Retrieve loan list", description = "Fetches a paginated list of all loans belonging to the authenticated customer. "
+			+ "Supports advanced filtering, searching, sorting, and pagination capabilities. "
+			+ "Useful for displaying loan portfolios and account management interfaces.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved loan list", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GetLoansResponse.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid query parameters or search criteria", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "User not authorized to access loan list", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred while retrieving loan list", content = @Content(schema = @Schema(hidden = true)))})
+	@GetMapping
+	public ResponseEntity<BasePageResponse<LoanDto>> retrieveAllLoans(
+			@Parameter(name = "limit", description = "Maximum number of records to return per page", schema = @Schema(type = "integer", minimum = "1", maximum = "200", defaultValue = "20")) @Valid @RequestParam(value = "limit", required = false) Long limit,
+			@Parameter(name = "accountNo", description = "Filter loans by specific account number") @Valid @RequestParam(value = "accountNo", required = false) String accountNo) {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    BasePageResponse<LoanDto> getLoansResponse =
-        loanService.retrieveAllLoans(limit, accountNo, customerId);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		BasePageResponse<LoanDto> getLoansResponse = loanService.retrieveAllLoans(limit, accountNo, customerId);
 
-    return ResponseEntity.ok(getLoansResponse);
-  }
+		return ResponseEntity.ok(getLoansResponse);
+	}
 
-  @Operation(
-      summary = "Retrieve loan transactions",
-      description =
-          "Fetches a paginated list of all transactions for a specific loan account including "
-              + "payments, disbursements, charges, waivers, and adjustments. "
-              + "Provides comprehensive transaction history for account reconciliation and audit purposes.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved loan transactions",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = FineractPageResponse.class))),
-        @ApiResponse(
-            responseCode = "401",
-            description = "User not authenticated",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "403",
-            description = "User not authorized to access transactions for this loan",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Loan account not found",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred while retrieving transactions",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @GetMapping("{loanId}/transactions")
-  public ResponseEntity<BasePageResponse<LoanTransactionResponse>> retrieveLoanTransactions(
-      @Parameter(
-              name = "loanId",
-              description = "Unique identifier of the loan account whose transactions to retrieve",
-              required = true,
-              schema = @Schema(type = "integer", format = "int64", minimum = "1"))
-          @Valid
-          @PathVariable(value = "loanId")
-          Long loanId) {
+	@Operation(summary = "Retrieve loan transactions", description = "Fetches a paginated list of all transactions for a specific loan account including "
+			+ "payments, disbursements, charges, waivers, and adjustments. "
+			+ "Provides comprehensive transaction history for account reconciliation and audit purposes.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved loan transactions", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FineractPageResponse.class))),
+			@ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "User not authorized to access transactions for this loan", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "404", description = "Loan account not found", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred while retrieving transactions", content = @Content(schema = @Schema(hidden = true)))})
+	@GetMapping("{loanId}/transactions")
+	public ResponseEntity<BasePageResponse<LoanTransactionResponse>> retrieveLoanTransactions(
+			@Parameter(name = "loanId", description = "Unique identifier of the loan account whose transactions to retrieve", required = true, schema = @Schema(type = "integer", format = "int64", minimum = "1")) @Valid @PathVariable(value = "loanId") Long loanId) {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    BasePageResponse<LoanTransactionResponse> transactions =
-        loanService.retrieveLoanTransactions(loanId, customerId);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		BasePageResponse<LoanTransactionResponse> transactions = loanService.retrieveLoanTransactions(loanId,
+				customerId);
 
-    return ResponseEntity.ok(transactions);
-  }
+		return ResponseEntity.ok(transactions);
+	}
 
-  @Operation(
-      summary = "Retrieve loan transaction details by ID",
-      description =
-          "Fetches detailed information about a specific loan transaction including "
-              + "amount breakdowns, processing dates, references, and associated fees or charges. "
-              + "Useful for transaction verification and detailed financial reporting.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Successfully retrieved transaction details",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = LoanTransactionResponse.class))),
-        @ApiResponse(
-            responseCode = "401",
-            description = "User not authenticated",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "403",
-            description = "User not authorized to access this transaction",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Loan account or transaction not found",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred while retrieving transaction details",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @GetMapping("{loanId}/transactions/{transactionId}")
-  public ResponseEntity<LoanTransactionResponse> retrieveLoanTransactionDetails(
-      @Parameter(
-              name = "loanId",
-              description = "Unique identifier of the loan account",
-              required = true,
-              schema = @Schema(type = "integer", format = "int64", minimum = "1"))
-          @Valid
-          @PathVariable(value = "loanId")
-          Long loanId,
-      @Parameter(
-              name = "transactionId",
-              description = "Unique identifier of the specific transaction to retrieve",
-              required = true,
-              schema = @Schema(type = "integer", format = "int64", minimum = "1"))
-          @Valid
-          @PathVariable(value = "transactionId")
-          Long transactionId) {
+	@Operation(summary = "Retrieve loan transaction details by ID", description = "Fetches detailed information about a specific loan transaction including "
+			+ "amount breakdowns, processing dates, references, and associated fees or charges. "
+			+ "Useful for transaction verification and detailed financial reporting.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved transaction details", content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoanTransactionResponse.class))),
+			@ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "User not authorized to access this transaction", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "404", description = "Loan account or transaction not found", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred while retrieving transaction details", content = @Content(schema = @Schema(hidden = true)))})
+	@GetMapping("{loanId}/transactions/{transactionId}")
+	public ResponseEntity<LoanTransactionResponse> retrieveLoanTransactionDetails(
+			@Parameter(name = "loanId", description = "Unique identifier of the loan account", required = true, schema = @Schema(type = "integer", format = "int64", minimum = "1")) @Valid @PathVariable(value = "loanId") Long loanId,
+			@Parameter(name = "transactionId", description = "Unique identifier of the specific transaction to retrieve", required = true, schema = @Schema(type = "integer", format = "int64", minimum = "1")) @Valid @PathVariable(value = "transactionId") Long transactionId) {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    LoanTransactionResponse transaction =
-        loanService.retrieveLoanTransactionDetails(loanId, transactionId, customerId);
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		LoanTransactionResponse transaction = loanService.retrieveLoanTransactionDetails(loanId, transactionId,
+				customerId);
 
-    return ResponseEntity.ok(transaction);
-  }
+		return ResponseEntity.ok(transaction);
+	}
 
-  @Operation(
-      summary = "Repay a loan",
-      description =
-          "Processes a loan repayment transaction for the specified loan account. "
-              + "Supports various repayment types including principal, interest, fees, and penalty payments. "
-              + "Automatically calculates payment allocation and updates loan balances and schedule.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Loan repayment processed successfully",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = GenericApiResponse.class))),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid repayment data or amount",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "401",
-            description = "User not authenticated",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "403",
-            description = "User not authorized to make payments on this loan",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Loan account not found",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "422",
-            description =
-                "Repayment cannot be processed due to loan status, payment amount restrictions, or business rules",
-            content = @Content(schema = @Schema(hidden = true))),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error occurred while processing the repayment",
-            content = @Content(schema = @Schema(hidden = true)))
-      })
-  @PostMapping("{loanId}/repayment")
-  public GenericApiResponse repayLoan(
-      @Parameter(
-              name = "loanId",
-              description = "Unique identifier of the loan account to repay",
-              required = true,
-              schema = @Schema(type = "integer", format = "int64", minimum = "1"))
-          @PathVariable
-          Long loanId,
-      @Parameter(
-              description =
-                  "Repayment details including payment amount, transaction date, payment method, "
-                      + "and optional payment allocation instructions. Amount should be positive and within acceptable limits.",
-              required = true,
-              content =
-                  @Content(
-                      mediaType = "application/json",
-                      schema = @Schema(implementation = LoanRepaymentRequest.class)))
-          @RequestBody
-          @Valid
-          LoanRepaymentRequest postLoansLoanIdTransactionsRequest) {
+	@Operation(summary = "Repay a loan", description = "Processes a loan repayment transaction for the specified loan account. "
+			+ "Supports various repayment types including principal, interest, fees, and penalty payments. "
+			+ "Automatically calculates payment allocation and updates loan balances and schedule.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Loan repayment processed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericApiResponse.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid repayment data or amount", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "401", description = "User not authenticated", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "403", description = "User not authorized to make payments on this loan", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "404", description = "Loan account not found", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "422", description = "Repayment cannot be processed due to loan status, payment amount restrictions, or business rules", content = @Content(schema = @Schema(hidden = true))),
+			@ApiResponse(responseCode = "500", description = "Internal server error occurred while processing the repayment", content = @Content(schema = @Schema(hidden = true)))})
+	@PostMapping("{loanId}/repayment")
+	public GenericApiResponse repayLoan(
+			@Parameter(name = "loanId", description = "Unique identifier of the loan account to repay", required = true, schema = @Schema(type = "integer", format = "int64", minimum = "1")) @PathVariable Long loanId,
+			@Parameter(description = "Repayment details including payment amount, transaction date, payment method, "
+					+ "and optional payment allocation instructions. Amount should be positive and within acceptable limits.", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoanRepaymentRequest.class))) @RequestBody @Valid LoanRepaymentRequest postLoansLoanIdTransactionsRequest) {
 
-    Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-    return loanService.repayLoan(loanId, postLoansLoanIdTransactionsRequest, customerId);
-  }
+		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
+		return loanService.repayLoan(loanId, postLoansLoanIdTransactionsRequest, customerId);
+	}
 }

@@ -6,19 +6,17 @@ import lombok.Getter;
 @Getter
 public class AbstractPlatformResourceNotFoundException extends RuntimeException {
 
-  private final String globalisationMessageCode;
-  private final String defaultUserMessage;
-  private final Object[] defaultUserMessageArgs;
-  private final String message;
+	private final String globalisationMessageCode;
+	private final String defaultUserMessage;
+	private final Object[] defaultUserMessageArgs;
+	private final String message;
 
-  public AbstractPlatformResourceNotFoundException(
-      String globalisationMessageCode,
-      String defaultUserMessage,
-      Object... defaultUserMessageArgs) {
+	public AbstractPlatformResourceNotFoundException(String globalisationMessageCode, String defaultUserMessage,
+			Object... defaultUserMessageArgs) {
 
-    this.globalisationMessageCode = globalisationMessageCode;
-    this.defaultUserMessage = defaultUserMessage;
-    this.defaultUserMessageArgs = defaultUserMessageArgs;
-    this.message = defaultUserMessage;
-  }
+		this.globalisationMessageCode = globalisationMessageCode;
+		this.defaultUserMessage = defaultUserMessage;
+		this.defaultUserMessageArgs = defaultUserMessageArgs;
+		this.message = defaultUserMessage;
+	}
 }

@@ -1,66 +1,67 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Data
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SavingsAccountTransactionData {
 
-  private Long id;
-  private TransactionTypeData transactionType;
-  private Long accountId;
-  private String accountNo;
+	private Long id;
+	private TransactionTypeData transactionType;
+	private Long accountId;
+	private String accountNo;
 
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  private LocalDate date;
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+	private LocalDate date;
 
-  private String createdDateTime;
+	private String createdDateTime;
 
-  private GetSavingsCurrency currency;
-  private PaymentDetailData paymentDetailData;
-  private BigDecimal amount;
-  private BigDecimal outstandingChargeAmount;
-  private BigDecimal runningBalance;
-  private boolean reversed;
-  private Object transfer;
+	private GetSavingsCurrency currency;
+	private PaymentDetailData paymentDetailData;
+	private BigDecimal amount;
+	private BigDecimal outstandingChargeAmount;
+	private BigDecimal runningBalance;
+	private boolean reversed;
+	private Object transfer;
 
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  private LocalDate submittedOnDate;
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+	private LocalDate submittedOnDate;
 
-  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-  private LocalDateTime transactionDateTime;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime transactionDateTime;
 
-  private boolean interestedPostedAsOn;
-  private String submittedByUsername;
-  private String note;
-  private boolean isManualTransaction;
-  private Boolean isReversal;
-  private Long originalTransactionId;
-  private Boolean lienTransaction;
-  private Long releaseTransactionId;
-  private String reasonForBlock;
-  private String narration;
-  private String refNo;
-  private String depositIban;
-  private TransactionMetadata additionalInformation;
+	private boolean interestedPostedAsOn;
+	private String submittedByUsername;
+	private String note;
+	private boolean isManualTransaction;
+	private Boolean isReversal;
+	private Long originalTransactionId;
+	private Boolean lienTransaction;
+	private Long releaseTransactionId;
+	private String reasonForBlock;
+	private String narration;
+	private String refNo;
+	private String depositIban;
+	private TransactionMetadata additionalInformation;
 
-  public String getActualTransactionType() {
+	public String getActualTransactionType() {
 
-    return this.transactionType.getWithdrawal() || this.transactionType.getFeeDeduction()
-        ? "DEBIT"
-        : this.transactionType.getDeposit() || this.transactionType.getInterestPosting()
-            ? "CREDIT"
-            : null;
-  }
+		return this.transactionType.getWithdrawal() || this.transactionType.getFeeDeduction()
+				? "DEBIT"
+				: this.transactionType.getDeposit() || this.transactionType.getInterestPosting() ? "CREDIT" : null;
+	}
 }

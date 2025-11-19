@@ -1,13 +1,15 @@
 /* (C)2025 */
 package com.techservices.digitalbanking.common.domain.model;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,13 +18,13 @@ import lombok.Setter;
 @MappedSuperclass
 public class BaseEntity {
 
-  @Column(name = "created_at", updatable = false)
-  @JsonSerialize(using = LocalDateTimeSerializer.class)
-  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-  private LocalDateTime createdAt;
+	@Column(name = "created_at", updatable = false)
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
+	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
+	private LocalDateTime createdAt;
 
-  @JsonSerialize(using = LocalDateTimeSerializer.class)
-  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-  @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
+	@JsonSerialize(using = LocalDateTimeSerializer.class)
+	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
 }

@@ -5,18 +5,17 @@ import lombok.Getter;
 
 @Getter
 public enum UserType {
-  RETAIL(1L),
-  CORPORATE(2L);
+	RETAIL(1L), CORPORATE(2L);
 
-  private final Long id;
+	private final Long id;
 
-  UserType(Long id) {
+	UserType(Long id) {
 
-    this.id = id;
-  }
+		this.id = id;
+	}
 
-  public boolean isCorporate() {
+	public boolean isCorporate() {
 
-    return this == CORPORATE;
-  }
+		return this == CORPORATE;
+	}
 }

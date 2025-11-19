@@ -4,27 +4,27 @@ package com.techservices.digitalbanking.core.domain.dto;
 import java.util.List;
 
 public class State {
-  private String state;
-  private List<String> lgas;
+	private String state;
+	private List<String> lgas;
 
-  // Getters and Setters
-  public String getState() {
+	// Getters and Setters
+	public String getState() {
 
-    return state;
-  }
+		return state;
+	}
 
-  public void setState(String state) {
+	public void setState(String state) {
 
-    this.state = state;
-  }
+		this.state = state;
+	}
 
-  public List<String> getLgas() {
+	public List<String> getLgas() {
 
-    return lgas;
-  }
+		return lgas;
+	}
 
-  public void setLgas(List<String> lgas) {
+	public void setLgas(List<String> lgas) {
 
-    this.lgas = lgas;
-  }
+		this.lgas = lgas;
+	}
 }

@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Data;
 
 @Data
@@ -10,6 +11,6 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostClientClientIdDocumentsResponse {
 
-  private Long resourceId;
-  private String resourceIdentifier;
+	private Long resourceId;
+	private String resourceIdentifier;
 }

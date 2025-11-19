@@ -1,12 +1,14 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,40 +18,41 @@ import lombok.Setter;
 @JsonInclude(Include.NON_NULL)
 public class PostLoansResponse {
 
-  private Integer clientId;
+	private Integer clientId;
 
-  private GetLoansLoanIdCurrency currency;
+	private GetLoansLoanIdCurrency currency;
 
-  private Integer loanId;
+	private Integer loanId;
 
-  private Integer loanTermInDays;
+	private Integer loanTermInDays;
 
-  private Integer officeId;
+	private Integer officeId;
 
-  @Valid private Set<@Valid PostLoansRepaymentSchedulePeriods> periods = new LinkedHashSet<>();
+	@Valid
+	private Set<@Valid PostLoansRepaymentSchedulePeriods> periods = new LinkedHashSet<>();
 
-  private Integer resourceId;
-  private String resourceExternalId;
+	private Integer resourceId;
+	private String resourceExternalId;
 
-  private Long totalFeeChargesCharged;
+	private Long totalFeeChargesCharged;
 
-  private Double totalInterestCharged;
+	private Double totalInterestCharged;
 
-  private Long totalOutstanding;
+	private Long totalOutstanding;
 
-  private Long totalPenaltyChargesCharged;
+	private Long totalPenaltyChargesCharged;
 
-  private Long totalPrincipalDisbursed;
+	private Long totalPrincipalDisbursed;
 
-  private Long totalPrincipalExpected;
+	private Long totalPrincipalExpected;
 
-  private Long totalPrincipalPaid;
+	private Long totalPrincipalPaid;
 
-  private Long totalRepayment;
+	private Long totalRepayment;
 
-  private BigDecimal totalRepaymentExpected;
+	private BigDecimal totalRepaymentExpected;
 
-  private Long totalWaived;
+	private Long totalWaived;
 
-  private Long totalWrittenOff;
+	private Long totalWrittenOff;
 }

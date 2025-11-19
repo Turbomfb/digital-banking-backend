@@ -9,13 +9,13 @@ import lombok.Setter;
 @Setter
 public class PutSelfLoansLoanIdResponse {
 
-  private PutSelfLoansChanges changes;
+	private PutSelfLoansChanges changes;
 
-  private Integer clientId;
+	private Integer clientId;
 
-  private Integer loanId;
+	private Integer loanId;
 
-  private Integer officeId;
+	private Integer officeId;
 
-  private Integer resourceId;
+	private Integer resourceId;
 }

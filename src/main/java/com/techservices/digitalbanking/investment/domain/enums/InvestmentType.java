@@ -2,17 +2,15 @@
 package com.techservices.digitalbanking.investment.domain.enums;
 
 public enum InvestmentType {
-  FLEX,
-  LOCK,
-  WALLET;
+	FLEX, LOCK, WALLET;
 
-  public static boolean isFlex(InvestmentType investmentType) {
+	public static boolean isFlex(InvestmentType investmentType) {
 
-    return investmentType == FLEX;
-  }
+		return investmentType == FLEX;
+	}
 
-  public static boolean isLock(InvestmentType investmentType) {
+	public static boolean isLock(InvestmentType investmentType) {
 
-    return investmentType == LOCK;
-  }
+		return investmentType == LOCK;
+	}
 }

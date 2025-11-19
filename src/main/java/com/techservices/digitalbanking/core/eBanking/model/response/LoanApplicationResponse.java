@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class LoanApplicationResponse {
-  private String loanId;
-  private String customerId;
-  private String message;
+	private String loanId;
+	private String customerId;
+	private String message;
 }

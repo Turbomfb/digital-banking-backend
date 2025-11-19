@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.core.domain.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +11,7 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PutUserUpdateResponse {
 
-  private String officeId;
-  private String resourceId;
-  private Object changes;
+	private String officeId;
+	private String resourceId;
+	private Object changes;
 }

@@ -7,9 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GetFixedDepositAccountsInterestCalculationDaysInYearType {
-  private String code;
+	private String code;
 
-  private String description;
+	private String description;
 
-  private Integer id;
+	private Integer id;
 }

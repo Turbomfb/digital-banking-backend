@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class DeleteLoansLoanIdCollateralsCollateralIdResponse {
 
-  private Integer loanId;
+	private Integer loanId;
 
-  private Integer resourceId;
+	private Integer resourceId;
 }

@@ -9,5 +9,5 @@ import lombok.Setter;
 @Setter
 public class DeletePaymentTypesPaymentTypeIdResponse {
 
-  private Integer resourceId;
+	private Integer resourceId;
 }

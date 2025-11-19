@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.eBanking.model.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,8 +12,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class Charge {
-  private Long id;
-  private String name;
-  private Boolean active;
-  private Boolean penalty;
+	private Long id;
+	private String name;
+	private Boolean active;
+	private Boolean penalty;
 }

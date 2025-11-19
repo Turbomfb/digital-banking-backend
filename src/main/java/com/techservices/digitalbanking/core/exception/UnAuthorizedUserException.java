@@ -3,46 +3,44 @@ package com.techservices.digitalbanking.core.exception;
 
 public class UnAuthorizedUserException extends RuntimeException {
 
-  private final String globalisationMessageCode;
-  private final String defaultUserMessage;
-  private final Object[] defaultUserMessageArgs;
+	private final String globalisationMessageCode;
+	private final String defaultUserMessage;
+	private final Object[] defaultUserMessageArgs;
 
-  public UnAuthorizedUserException(
-      final String globalisationMessageCode,
-      final String defaultUserMessage,
-      final Object... defaultUserMessageArgs) {
+	public UnAuthorizedUserException(final String globalisationMessageCode, final String defaultUserMessage,
+			final Object... defaultUserMessageArgs) {
 
-    this.globalisationMessageCode = globalisationMessageCode;
-    this.defaultUserMessage = defaultUserMessage;
-    this.defaultUserMessageArgs = defaultUserMessageArgs;
-  }
+		this.globalisationMessageCode = globalisationMessageCode;
+		this.defaultUserMessage = defaultUserMessage;
+		this.defaultUserMessageArgs = defaultUserMessageArgs;
+	}
 
-  public UnAuthorizedUserException() {
+	public UnAuthorizedUserException() {
 
-    this.globalisationMessageCode = "error.msg.user.unauthorized";
-    this.defaultUserMessage = "User is not allowed to access resource ";
-    this.defaultUserMessageArgs = null;
-  }
+		this.globalisationMessageCode = "error.msg.user.unauthorized";
+		this.defaultUserMessage = "User is not allowed to access resource ";
+		this.defaultUserMessageArgs = null;
+	}
 
-  public UnAuthorizedUserException(final String message) {
+	public UnAuthorizedUserException(final String message) {
 
-    this.globalisationMessageCode = "error.msg.user.unauthorized";
-    this.defaultUserMessage = "message";
-    this.defaultUserMessageArgs = null;
-  }
+		this.globalisationMessageCode = "error.msg.user.unauthorized";
+		this.defaultUserMessage = "message";
+		this.defaultUserMessageArgs = null;
+	}
 
-  public String getGlobalisationMessageCode() {
+	public String getGlobalisationMessageCode() {
 
-    return this.globalisationMessageCode;
-  }
+		return this.globalisationMessageCode;
+	}
 
-  public String getDefaultUserMessage() {
+	public String getDefaultUserMessage() {
 
-    return this.defaultUserMessage;
-  }
+		return this.defaultUserMessage;
+	}
 
-  public Object[] getDefaultUserMessageArgs() {
+	public Object[] getDefaultUserMessageArgs() {
 
-    return this.defaultUserMessageArgs;
-  }
+		return this.defaultUserMessageArgs;
+	}
 }

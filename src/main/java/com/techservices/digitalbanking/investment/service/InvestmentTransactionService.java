@@ -10,16 +10,11 @@ import com.techservices.digitalbanking.investment.domain.request.RecurringDeposi
 
 public interface InvestmentTransactionService {
 
-  GetRecurringDepositTransactionResponse retrieveInvestmentTransactionById(
-      String investmentId, Long transactionId);
+	GetRecurringDepositTransactionResponse retrieveInvestmentTransactionById(String investmentId, Long transactionId);
 
-  BasePageResponse<TransactionDto> retrieveAllInvestmentTransactions(
-      String investmentId,
-      String startDate,
-      String endDate,
-      Long size,
-      TransactionType transactionType);
+	BasePageResponse<TransactionDto> retrieveAllInvestmentTransactions(String investmentId, String startDate,
+			String endDate, Long size, TransactionType transactionType);
 
-  PostRecurringDepositTransactionCommandResponse processInvestmentTransactionCommand(
-      String investmentId, RecurringDepositTransactionCommandRequest request, String command);
+	PostRecurringDepositTransactionCommandResponse processInvestmentTransactionCommand(String investmentId,
+			RecurringDepositTransactionCommandRequest request, String command);
 }

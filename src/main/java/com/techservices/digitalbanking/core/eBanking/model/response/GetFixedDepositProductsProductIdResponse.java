@@ -1,10 +1,11 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,48 +13,50 @@ import lombok.Setter;
 @Setter
 public class GetFixedDepositProductsProductIdResponse {
 
-  private Integer id;
+	private Integer id;
 
-  private String shortName;
+	private String shortName;
 
-  private GetSavingsCurrency currency;
+	private GetSavingsCurrency currency;
 
-  private String description;
+	private String description;
 
-  private BigDecimal nominalAnnualInterestRate;
+	private BigDecimal nominalAnnualInterestRate;
 
-  @Valid private Set<@Valid Object> feeToIncomeAccountMappings = new LinkedHashSet<>();
+	@Valid
+	private Set<@Valid Object> feeToIncomeAccountMappings = new LinkedHashSet<>();
 
-  private EnumOptionData interestCalculationDaysInYearType;
+	private EnumOptionData interestCalculationDaysInYearType;
 
-  private EnumOptionData interestCalculationType;
+	private EnumOptionData interestCalculationType;
 
-  private EnumOptionData interestCompoundingPeriodType;
+	private EnumOptionData interestCompoundingPeriodType;
 
-  private EnumOptionData interestPostingPeriodType;
+	private EnumOptionData interestPostingPeriodType;
 
-  private Integer maxDepositTerm;
+	private Integer maxDepositTerm;
 
-  private EnumOptionData maxDepositTermType;
+	private EnumOptionData maxDepositTermType;
 
-  private Integer minDepositTerm;
-  private BigDecimal minDepositAmount;
-  private BigDecimal depositAmount;
-  private BigDecimal maxDepositAmount;
+	private Integer minDepositTerm;
+	private BigDecimal minDepositAmount;
+	private BigDecimal depositAmount;
+	private BigDecimal maxDepositAmount;
 
-  private EnumOptionData minDepositTermType;
+	private EnumOptionData minDepositTermType;
 
-  private String name;
+	private String name;
 
-  @Valid private Set<@Valid Object> penaltyToIncomeAccountMappings = new LinkedHashSet<>();
+	@Valid
+	private Set<@Valid Object> penaltyToIncomeAccountMappings = new LinkedHashSet<>();
 
-  private Boolean preClosurePenalApplicable;
+	private Boolean preClosurePenalApplicable;
 
-  private Double preClosurePenalInterest;
+	private Double preClosurePenalInterest;
 
-  private EnumOptionData preClosurePenalInterestOnType;
+	private EnumOptionData preClosurePenalInterestOnType;
 
-  private Object accountingMappings;
+	private Object accountingMappings;
 
-  private DepositProductsCharts activeChart;
+	private DepositProductsCharts activeChart;
 }

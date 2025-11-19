@@ -1,9 +1,10 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import jakarta.validation.Valid;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,13 +13,14 @@ import lombok.Setter;
 @Setter
 public class GetSelfLoansTemplateResponse {
 
-  private Integer clientId;
+	private Integer clientId;
 
-  private String clientName;
+	private String clientName;
 
-  private Integer clientOfficeId;
+	private Integer clientOfficeId;
 
-  @Valid private Set<@Valid GetSelfLoansProductOptions> productOptions = new LinkedHashSet<>();
+	@Valid
+	private Set<@Valid GetSelfLoansProductOptions> productOptions = new LinkedHashSet<>();
 
-  private GetSelfLoansTimeline timeline;
+	private GetSelfLoansTimeline timeline;
 }

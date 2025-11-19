@@ -4,6 +4,7 @@ package com.techservices.digitalbanking.core.eBanking.model.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.eBanking.model.request.Charge;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,6 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecurringDepositPenaltyToIncomeAccountMapping {
-  private Charge charge;
-  private RecurringDepositAccountingMappingsAccount incomeAccount;
+	private Charge charge;
+	private RecurringDepositAccountingMappingsAccount incomeAccount;
 }

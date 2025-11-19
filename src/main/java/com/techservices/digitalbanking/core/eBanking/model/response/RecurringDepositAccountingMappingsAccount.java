@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class RecurringDepositAccountingMappingsAccount {
-  private Integer id;
-  private String name;
-  private String glCode;
+	private Integer id;
+	private String name;
+	private String glCode;
 }

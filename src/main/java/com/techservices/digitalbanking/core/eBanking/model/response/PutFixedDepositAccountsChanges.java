@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PutFixedDepositAccountsChanges {
-  private Double depositAmount;
+	private Double depositAmount;
 
-  private String locale;
+	private String locale;
 }

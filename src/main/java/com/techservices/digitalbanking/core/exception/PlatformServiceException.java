@@ -8,25 +8,22 @@ import lombok.ToString;
 @ToString
 public class PlatformServiceException extends RuntimeException {
 
-  private final String globalisationMessageCode;
-  private final String defaultUserMessage;
-  private final Object[] defaultUserMessageArgs;
+	private final String globalisationMessageCode;
+	private final String defaultUserMessage;
+	private final Object[] defaultUserMessageArgs;
 
-  public PlatformServiceException(
-      final String globalisationMessageCode,
-      final String defaultUserMessage,
-      final Object... defaultUserMessageArgs) {
+	public PlatformServiceException(final String globalisationMessageCode, final String defaultUserMessage,
+			final Object... defaultUserMessageArgs) {
 
-    this.globalisationMessageCode = globalisationMessageCode;
-    this.defaultUserMessage = defaultUserMessage;
-    this.defaultUserMessageArgs = defaultUserMessageArgs;
-  }
+		this.globalisationMessageCode = globalisationMessageCode;
+		this.defaultUserMessage = defaultUserMessage;
+		this.defaultUserMessageArgs = defaultUserMessageArgs;
+	}
 
-  public PlatformServiceException(
-      final String defaultUserMessage, final Object... defaultUserMessageArgs) {
+	public PlatformServiceException(final String defaultUserMessage, final Object... defaultUserMessageArgs) {
 
-    this.globalisationMessageCode = "error.msg.platform.service.exception";
-    this.defaultUserMessage = defaultUserMessage;
-    this.defaultUserMessageArgs = defaultUserMessageArgs;
-  }
+		this.globalisationMessageCode = "error.msg.platform.service.exception";
+		this.defaultUserMessage = defaultUserMessage;
+		this.defaultUserMessageArgs = defaultUserMessageArgs;
+	}
 }

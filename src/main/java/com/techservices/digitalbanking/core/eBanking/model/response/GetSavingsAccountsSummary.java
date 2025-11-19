@@ -1,9 +1,11 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.math.BigDecimal;
+
 import lombok.Data;
 
 @Data
@@ -11,18 +13,18 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetSavingsAccountsSummary {
 
-  private BigDecimal accountBalance;
-  private BigDecimal availableBalance;
-  private GetSavingsCurrency currency;
-  private BigDecimal totalDeposits;
-  private BigDecimal totalWithdrawals;
-  private BigDecimal totalInterestEarned;
+	private BigDecimal accountBalance;
+	private BigDecimal availableBalance;
+	private GetSavingsCurrency currency;
+	private BigDecimal totalDeposits;
+	private BigDecimal totalWithdrawals;
+	private BigDecimal totalInterestEarned;
 
-  public BigDecimal getAvailableBalance() {
+	public BigDecimal getAvailableBalance() {
 
-    if (availableBalance == null) {
-      return accountBalance;
-    }
-    return availableBalance;
-  }
+		if (availableBalance == null) {
+			return accountBalance;
+		}
+		return availableBalance;
+	}
 }

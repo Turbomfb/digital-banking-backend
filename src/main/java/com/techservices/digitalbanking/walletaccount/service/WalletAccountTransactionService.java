@@ -1,6 +1,9 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.walletaccount.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
@@ -10,29 +13,22 @@ import com.techservices.digitalbanking.walletaccount.domain.request.SavingsAccou
 import com.techservices.digitalbanking.walletaccount.domain.request.WalletInboundWebhookRequest;
 import com.techservices.digitalbanking.walletaccount.domain.request.WalletPaymentOrderRequest;
 import com.techservices.digitalbanking.walletaccount.domain.response.WalletPaymentOrderResponse;
+
 import jakarta.validation.Valid;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public interface WalletAccountTransactionService {
 
-  BasePageResponse<TransactionDto> retrieveSavingsAccountTransactions(
-      Long customerId,
-      String startDate,
-      String endDate,
-      @Valid Long limit,
-      TransactionType transactionType);
+	BasePageResponse<TransactionDto> retrieveSavingsAccountTransactions(Long customerId, String startDate,
+			String endDate, @Valid Long limit, TransactionType transactionType);
 
-  SavingsAccountTransactionData retrieveSavingsAccountTransactionById(
-      Long customerId, Long transactionId);
+	SavingsAccountTransactionData retrieveSavingsAccountTransactionById(Long customerId, Long transactionId);
 
-  BigDecimal getBalanceAsOfDate(Long customerId, LocalDate localDate);
+	BigDecimal getBalanceAsOfDate(Long customerId, LocalDate localDate);
 
-  GenericApiResponse processTransactionCommand(
-      @Valid String command, SavingsAccountTransactionRequest request, Long customerId);
+	GenericApiResponse processTransactionCommand(@Valid String command, SavingsAccountTransactionRequest request,
+			Long customerId);
 
-  WalletPaymentOrderResponse initiatePaymentOrder(
-      WalletPaymentOrderRequest request, Long customerId);
+	WalletPaymentOrderResponse initiatePaymentOrder(WalletPaymentOrderRequest request, Long customerId);
 
-  GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request);
+	GenericApiResponse receiveInboundWebhook(WalletInboundWebhookRequest request);
 }

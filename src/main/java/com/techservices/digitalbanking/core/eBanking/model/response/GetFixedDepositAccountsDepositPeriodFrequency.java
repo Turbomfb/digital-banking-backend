@@ -8,9 +8,9 @@ import lombok.Setter;
 @Setter
 public class GetFixedDepositAccountsDepositPeriodFrequency {
 
-  private String code;
+	private String code;
 
-  private String description;
+	private String description;
 
-  private Integer id;
+	private Integer id;
 }

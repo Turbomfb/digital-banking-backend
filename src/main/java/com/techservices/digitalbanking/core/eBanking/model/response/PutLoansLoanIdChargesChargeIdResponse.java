@@ -9,13 +9,13 @@ import lombok.Setter;
 @Setter
 public class PutLoansLoanIdChargesChargeIdResponse {
 
-  private Object changes;
+	private Object changes;
 
-  private Long clientId;
+	private Long clientId;
 
-  private Long loanId;
+	private Long loanId;
 
-  private Long officeId;
+	private Long officeId;
 
-  private Integer resourceId;
+	private Integer resourceId;
 }

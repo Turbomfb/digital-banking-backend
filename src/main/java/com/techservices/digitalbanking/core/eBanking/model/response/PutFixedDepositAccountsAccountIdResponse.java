@@ -7,13 +7,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PutFixedDepositAccountsAccountIdResponse {
-  private PutFixedDepositAccountsChanges changes;
+	private PutFixedDepositAccountsChanges changes;
 
-  private Integer clientId;
+	private Integer clientId;
 
-  private Integer officeId;
+	private Integer officeId;
 
-  private Integer resourceId;
+	private Integer resourceId;
 
-  private Integer savingsId;
+	private Integer savingsId;
 }

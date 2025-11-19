@@ -5,5 +5,5 @@ import com.techservices.digitalbanking.core.domain.dto.ProductDto;
 
 public interface InvestmentProductService {
 
-  ProductDto retrieveCurrentInvestmentProduct(String investmentType);
+	ProductDto retrieveCurrentInvestmentProduct(String investmentType);
 }

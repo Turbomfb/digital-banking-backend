@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.core.domain.dto.response;
 
 import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,6 +11,6 @@ import lombok.ToString;
 @Getter
 @ToString
 public class CustomerIdentityVerificationResponse {
-  private boolean isValid;
-  private List<String> mismatchedFields;
+	private boolean isValid;
+	private List<String> mismatchedFields;
 }

@@ -13,22 +13,22 @@ import lombok.ToString;
 @ToString
 public class IndustrySector {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-  @Column(name = "description")
-  private String description;
+	@Column(name = "description")
+	private String description;
 
-  @Column(name = "name")
-  private String name;
+	@Column(name = "name")
+	private String name;
 
-  @Column(name = "position")
-  private Long position;
+	@Column(name = "position")
+	private Long position;
 
-  @Column(name = "active")
-  private boolean active;
+	@Column(name = "active")
+	private boolean active;
 
-  @Column(name = "mandatory")
-  private boolean mandatory;
+	@Column(name = "mandatory")
+	private boolean mandatory;
 }

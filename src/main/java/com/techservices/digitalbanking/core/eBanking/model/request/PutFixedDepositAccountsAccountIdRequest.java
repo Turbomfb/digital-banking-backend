@@ -2,6 +2,7 @@
 package com.techservices.digitalbanking.core.eBanking.model.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +10,7 @@ import lombok.Setter;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PutFixedDepositAccountsAccountIdRequest {
-  private Double depositAmount;
+	private Double depositAmount;
 
-  private String locale;
+	private String locale;
 }

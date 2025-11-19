@@ -1,9 +1,11 @@
 /* (C)2024 */
 package com.techservices.digitalbanking.investment.domain.request;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.math.BigDecimal;
+
 import lombok.Data;
 
 @Data
@@ -11,14 +13,14 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FixedDepositApplicationRequest {
 
-  private String externalId;
+	private String externalId;
 
-  private BigDecimal depositAmount;
+	private BigDecimal depositAmount;
 
-  private Long depositPeriod;
+	private Long depositPeriod;
 
-  private String accountNo;
-  private String allocationName;
+	private String accountNo;
+	private String allocationName;
 
-  private String walletAccountNumber;
+	private String walletAccountNumber;
 }

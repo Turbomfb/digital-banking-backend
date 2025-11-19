@@ -8,8 +8,7 @@ import com.techservices.digitalbanking.customer.domian.dto.request.CustomerKycRe
 
 public interface CustomerKycService {
 
-  BaseAppResponse updateCustomerKyc(
-      CustomerKycRequest customerKycRequest, Long customerId, String command);
+	BaseAppResponse updateCustomerKyc(CustomerKycRequest customerKycRequest, Long customerId, String command);
 
-  BasePageResponse<KycTierDto> retrieveAllKycTier();
+	BasePageResponse<KycTierDto> retrieveAllKycTier();
 }
