@@ -86,7 +86,7 @@ public class BeneficiaryApiResource {
 
 	@PostMapping
 	@Operation(summary = "Add new beneficiary", description = "Initiates the process to add a new beneficiary to the customer's list. This is a two-step process: "
-			+ "first call generates OTP (command=generate), second call verifies OTP (command=verify) and completes the addition")
+			+ "first call generates OTP (command=generate-otp), second call verifies OTP (command=verify-otp) and completes the addition")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "OTP generated successfully or beneficiary added successfully after verification", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericApiResponse.class))),
 			@ApiResponse(responseCode = "400", description = "Invalid request body, validation failed, or OTP verification failed", content = @Content),
@@ -96,7 +96,7 @@ public class BeneficiaryApiResource {
 			@Parameter(description = "Beneficiary details including account information and optional nickname. "
 					+ "For OTP generation: provide accountName, accountNumber, bankName, bankCode, and optional nickname. "
 					+ "For OTP verification: provide uniqueId and otp received from generation step", required = true, content = @Content(schema = @Schema(implementation = AddBeneficiaryRequest.class))) @RequestBody AddBeneficiaryRequest request,
-			@Parameter(description = "Command to execute: 'generate' to initiate OTP generation, 'verify' to complete beneficiary addition with OTP", example = "generate") @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command) {
+			@Parameter(description = "Command to execute: 'generate-otp' to initiate OTP generation, 'verify-otp' to complete beneficiary addition with OTP", example = "generate-otp") @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command) {
 
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		GenericApiResponse response = beneficiaryService.addBeneficiary(request, customerId, command);
@@ -105,14 +105,14 @@ public class BeneficiaryApiResource {
 
 	@PutMapping("/update")
 	@Operation(summary = "Update existing beneficiary", description = "Updates beneficiary details such as nickname. This is a two-step process: "
-			+ "first call generates OTP (command=generate), second call verifies OTP (command=verify) and completes the update")
+			+ "first call generates OTP (command=generate-otp), second call verifies OTP (command=verify-otp) and completes the update")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "OTP generated successfully or beneficiary updated successfully after verification", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericApiResponse.class))),
 			@ApiResponse(responseCode = "400", description = "Invalid request body, validation failed, or OTP verification failed", content = @Content),
 			@ApiResponse(responseCode = "401", description = "Authentication required - invalid or missing token", content = @Content),
 			@ApiResponse(responseCode = "404", description = "Beneficiary not found or does not belong to the authenticated customer", content = @Content)})
 	public ResponseEntity<GenericApiResponse> updateBeneficiary(
-			@Parameter(description = "Command to execute: 'generate' to initiate OTP generation, 'verify' to complete beneficiary update with OTP", example = "generate") @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command,
+			@Parameter(description = "Command to execute: 'generate-otp' to initiate OTP generation, 'verify-otp' to complete beneficiary update with OTP", example = "generate-otp") @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command,
 			@Parameter(description = "Updated beneficiary information. "
 					+ "For OTP generation: provide beneficiaryId and new nickname. "
 					+ "For OTP verification: provide uniqueId and otp received from generation step", required = true, content = @Content(schema = @Schema(implementation = UpdateBeneficiaryRequest.class))) @RequestBody UpdateBeneficiaryRequest request) {
@@ -123,7 +123,7 @@ public class BeneficiaryApiResource {
 
 	@DeleteMapping("/delete")
 	@Operation(summary = "Delete beneficiary", description = "Removes a beneficiary from the customer's list. This is a two-step process: "
-			+ "first call generates OTP (command=generate), second call verifies OTP (command=verify) and completes the deletion")
+			+ "first call generates OTP (command=generate-otp), second call verifies OTP (command=verify-otp) and completes the deletion")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "204", description = "Beneficiary successfully deleted after OTP verification", content = @Content),
 			@ApiResponse(responseCode = "200", description = "OTP generated successfully for deletion verification", content = @Content(mediaType = "application/json", schema = @Schema(implementation = GenericApiResponse.class))),
@@ -133,7 +133,7 @@ public class BeneficiaryApiResource {
 	public ResponseEntity<Void> deleteBeneficiary(@Parameter(description = "Deletion request details. "
 			+ "For OTP generation: provide beneficiaryId. "
 			+ "For OTP verification: provide uniqueId and otp received from generation step", required = true) @RequestParam DeleteBeneficiaryRequest deleteBeneficiaryRequest,
-			@Parameter(description = "Command to execute: 'generate' to initiate OTP generation, 'verify' to complete beneficiary deletion with OTP", example = "generate") @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command) {
+			@Parameter(description = "Command to execute: 'generate-otp' to initiate OTP generation, 'verify-otp' to complete beneficiary deletion with OTP", example = "generate-otp") @RequestParam(value = "command", required = false, defaultValue = GENERATE_OTP_COMMAND) @Valid String command) {
 
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
 		beneficiaryService.deleteBeneficiary(customerId, command, deleteBeneficiaryRequest);
