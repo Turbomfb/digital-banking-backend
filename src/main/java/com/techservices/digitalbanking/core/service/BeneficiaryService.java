@@ -204,7 +204,7 @@ public class BeneficiaryService {
 					customer.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.DELETE_BENEFICIARY,
 					notificationRequestDto, null);
-			return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
+      return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress(), true);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
 			request.validateVerification();
 			String uniqueId = request.getUniqueId();
@@ -245,7 +245,7 @@ public class BeneficiaryService {
 					customer.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(deleteBeneficiaryRequest, OtpType.DELETE_BENEFICIARY,
 					notificationRequestDto, null);
-			return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
+      return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress(), true);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
 			deleteBeneficiaryRequest.validateVerification();
 			String uniqueId = deleteBeneficiaryRequest.getUniqueId();
@@ -322,7 +322,7 @@ public class BeneficiaryService {
 					customer.getEmailAddress());
 			OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.ADD_BENEFICIARY,
 					notificationRequestDto, null);
-			return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
+			return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress(), true);
 		} else if (VERIFY_OTP_COMMAND.equals(command)) {
 			AddBeneficiaryRequest beneficiaryRequest = (AddBeneficiaryRequest) this.redisService
 					.validateOtpWithoutDeletingRecord(request.getUniqueId(), request.getOtp(), OtpType.ADD_BENEFICIARY)
