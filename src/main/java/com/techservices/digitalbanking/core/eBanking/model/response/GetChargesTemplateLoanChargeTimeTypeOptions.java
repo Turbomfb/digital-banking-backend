@@ -1,121 +1,141 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import java.util.Objects;
 
 /** GetChargesTemplateLoanChargeTimeTypeOptions */
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
+@Generated(
+    value = "org.openapitools.codegen.languages.SpringCodegen",
+    date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]",
+    comments = "Generator version: 7.5.0")
 public class GetChargesTemplateLoanChargeTimeTypeOptions {
 
-	private String code;
+  private String code;
 
-	private String description;
+  private String description;
 
-	private Integer id;
+  private Integer id;
 
-	public GetChargesTemplateLoanChargeTimeTypeOptions code(String code) {
-		this.code = code;
-		return this;
-	}
+  public GetChargesTemplateLoanChargeTimeTypeOptions code(String code) {
 
-	/**
-	 * Get code
-	 *
-	 * @return code
-	 */
-	@Schema(name = "code", example = "chargeTimeType.specifiedDueDate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("code")
-	public String getCode() {
-		return code;
-	}
+    this.code = code;
+    return this;
+  }
 
-	public void setCode(String code) {
-		this.code = code;
-	}
+  /**
+   * Get code
+   *
+   * @return code
+   */
+  @Schema(
+      name = "code",
+      example = "chargeTimeType.specifiedDueDate",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("code")
+  public String getCode() {
 
-	public GetChargesTemplateLoanChargeTimeTypeOptions description(String description) {
-		this.description = description;
-		return this;
-	}
+    return code;
+  }
 
-	/**
-	 * Get description
-	 *
-	 * @return description
-	 */
-	@Schema(name = "description", example = "Specified due date", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("description")
-	public String getDescription() {
-		return description;
-	}
+  public void setCode(String code) {
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    this.code = code;
+  }
 
-	public GetChargesTemplateLoanChargeTimeTypeOptions id(Integer id) {
-		this.id = id;
-		return this;
-	}
+  public GetChargesTemplateLoanChargeTimeTypeOptions description(String description) {
 
-	/**
-	 * Get id
-	 *
-	 * @return id
-	 */
-	@Schema(name = "id", example = "2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("id")
-	public Integer getId() {
-		return id;
-	}
+    this.description = description;
+    return this;
+  }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+  /**
+   * Get description
+   *
+   * @return description
+   */
+  @Schema(
+      name = "description",
+      example = "Specified due date",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("description")
+  public String getDescription() {
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		GetChargesTemplateLoanChargeTimeTypeOptions getChargesTemplateLoanChargeTimeTypeOptions = (GetChargesTemplateLoanChargeTimeTypeOptions) o;
-		return Objects.equals(this.code, getChargesTemplateLoanChargeTimeTypeOptions.code)
-				&& Objects.equals(this.description, getChargesTemplateLoanChargeTimeTypeOptions.description)
-				&& Objects.equals(this.id, getChargesTemplateLoanChargeTimeTypeOptions.id);
-	}
+    return description;
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(code, description, id);
-	}
+  public void setDescription(String description) {
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("class GetChargesTemplateLoanChargeTimeTypeOptions {\n");
-		sb.append("    code: ").append(toIndentedString(code)).append("\n");
-		sb.append("    description: ").append(toIndentedString(description)).append("\n");
-		sb.append("    id: ").append(toIndentedString(id)).append("\n");
-		sb.append("}");
-		return sb.toString();
-	}
+    this.description = description;
+  }
 
-	/**
-	 * Convert the given object to string with each line indented by 4 spaces
-	 * (except the first line).
-	 */
-	private String toIndentedString(Object o) {
-		if (o == null) {
-			return "null";
-		}
-		return o.toString().replace("\n", "\n    ");
-	}
+  public GetChargesTemplateLoanChargeTimeTypeOptions id(Integer id) {
+
+    this.id = id;
+    return this;
+  }
+
+  /**
+   * Get id
+   *
+   * @return id
+   */
+  @Schema(name = "id", example = "2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("id")
+  public Integer getId() {
+
+    return id;
+  }
+
+  public void setId(Integer id) {
+
+    this.id = id;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    GetChargesTemplateLoanChargeTimeTypeOptions getChargesTemplateLoanChargeTimeTypeOptions =
+        (GetChargesTemplateLoanChargeTimeTypeOptions) o;
+    return Objects.equals(this.code, getChargesTemplateLoanChargeTimeTypeOptions.code)
+        && Objects.equals(this.description, getChargesTemplateLoanChargeTimeTypeOptions.description)
+        && Objects.equals(this.id, getChargesTemplateLoanChargeTimeTypeOptions.id);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(code, description, id);
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("class GetChargesTemplateLoanChargeTimeTypeOptions {\n");
+    sb.append("    code: ").append(toIndentedString(code)).append("\n");
+    sb.append("    description: ").append(toIndentedString(description)).append("\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
+   */
+  private String toIndentedString(Object o) {
+
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }

@@ -1,4 +1,8 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.service;
+
+import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
+import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
 
 import com.techservices.digitalbanking.core.domain.data.model.Beneficiary;
 import com.techservices.digitalbanking.core.domain.data.repository.BeneficiaryRepository;
@@ -17,19 +21,15 @@ import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
 import com.techservices.digitalbanking.customer.service.CustomerService;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static com.techservices.digitalbanking.core.util.CommandUtil.GENERATE_OTP_COMMAND;
-import static com.techservices.digitalbanking.core.util.CommandUtil.VERIFY_OTP_COMMAND;
 
 @Service
 @RequiredArgsConstructor
@@ -43,8 +43,12 @@ public class BeneficiaryService {
 
   @Transactional
   public BeneficiaryResponse addBeneficiary(AddBeneficiaryRequest request, Long customerId) {
-    log.info("Adding beneficiary for customer: {}, accountNumber: {}, bankCode: {}",
-        customerId, request.getAccountNumber(), request.getBankCode());
+
+    log.info(
+        "Adding beneficiary for customer: {}, accountNumber: {}, bankCode: {}",
+        customerId,
+        request.getAccountNumber(),
+        request.getBankCode());
 
     Beneficiary beneficiary = new Beneficiary();
     beneficiary.setCustomerId(customerId);
@@ -64,52 +68,52 @@ public class BeneficiaryService {
   }
 
   private Customer validateAddBeneficiary(AddBeneficiaryRequest request, Long customerId) {
+
     request.validate();
 
     Customer customer = customerService.getCustomerById(customerId);
 
     if (beneficiaryRepository.existsByCustomerIdAndAccountNumberAndBankCode(
         customerId, request.getAccountNumber(), request.getBankCode())) {
-      throw new ValidationException("beneficiary.already.exists",
-          "This beneficiary already exists in your list");
+      throw new ValidationException(
+          "beneficiary.already.exists", "This beneficiary already exists in your list");
     }
 
-    if (StringUtils.isNotBlank(request.getNickname()) &&
-        beneficiaryRepository.existsByCustomerIdAndNickname(customerId, request.getNickname())) {
-      throw new ValidationException("nickname.already.exists",
-          "This nickname is already used for another beneficiary");
+    if (StringUtils.isNotBlank(request.getNickname())
+        && beneficiaryRepository.existsByCustomerIdAndNickname(customerId, request.getNickname())) {
+      throw new ValidationException(
+          "nickname.already.exists", "This nickname is already used for another beneficiary");
     }
     return customer;
   }
 
   @Transactional(readOnly = true)
   public BeneficiaryListResponse getAllBeneficiaries(Long customerId) {
+
     log.info("Fetching all beneficiaries for customer: {}", customerId);
 
     if (!customerRepository.existsById(customerId)) {
       throw new ValidationException("customer.not.found", "Customer not found");
     }
 
-    List<Beneficiary> beneficiaries = beneficiaryRepository
-        .findByCustomerIdAndIsActiveTrueOrderByLastUsedAtDesc(customerId);
+    List<Beneficiary> beneficiaries =
+        beneficiaryRepository.findByCustomerIdAndIsActiveTrueOrderByLastUsedAtDesc(customerId);
 
-    List<BeneficiaryResponse> beneficiaryResponses = beneficiaries.stream()
-        .map(BeneficiaryResponse::from)
-        .collect(Collectors.toList());
+    List<BeneficiaryResponse> beneficiaryResponses =
+        beneficiaries.stream().map(BeneficiaryResponse::from).collect(Collectors.toList());
 
     long activeCount = beneficiaryRepository.countActiveByCustomerId(customerId);
 
-    log.info("Found {} active beneficiaries for customer: {}", beneficiaryResponses.size(), customerId);
+    log.info(
+        "Found {} active beneficiaries for customer: {}", beneficiaryResponses.size(), customerId);
 
     return new BeneficiaryListResponse(
-        beneficiaryResponses,
-        beneficiaryResponses.size(),
-        (int) activeCount
-    );
+        beneficiaryResponses, beneficiaryResponses.size(), (int) activeCount);
   }
 
   @Transactional(readOnly = true)
   public BeneficiaryListResponse searchBeneficiaries(Long customerId, String searchTerm) {
+
     log.info("Searching beneficiaries for customer: {}, searchTerm: {}", customerId, searchTerm);
 
     if (!customerRepository.existsById(customerId)) {
@@ -120,23 +124,26 @@ public class BeneficiaryService {
       return getAllBeneficiaries(customerId);
     }
 
-    List<Beneficiary> beneficiaries = beneficiaryRepository.searchBeneficiaries(customerId, searchTerm);
+    List<Beneficiary> beneficiaries =
+        beneficiaryRepository.searchBeneficiaries(customerId, searchTerm);
 
-    List<BeneficiaryResponse> beneficiaryResponses = beneficiaries.stream()
-        .map(BeneficiaryResponse::from)
-        .collect(Collectors.toList());
+    List<BeneficiaryResponse> beneficiaryResponses =
+        beneficiaries.stream().map(BeneficiaryResponse::from).collect(Collectors.toList());
 
-    log.info("Found {} beneficiaries matching search term for customer: {}", beneficiaryResponses.size(), customerId);
+    log.info(
+        "Found {} beneficiaries matching search term for customer: {}",
+        beneficiaryResponses.size(),
+        customerId);
 
     return new BeneficiaryListResponse(
         beneficiaryResponses,
         beneficiaryResponses.size(),
-        beneficiaryResponses.stream().filter(BeneficiaryResponse::getIsActive).count()
-    );
+        beneficiaryResponses.stream().filter(BeneficiaryResponse::getIsActive).count());
   }
 
   @Transactional(readOnly = true)
   public BeneficiaryListResponse getFrequentBeneficiaries(Long customerId) {
+
     log.info("Fetching frequent beneficiaries for customer: {}", customerId);
 
     if (!customerRepository.existsById(customerId)) {
@@ -145,22 +152,24 @@ public class BeneficiaryService {
 
     List<Beneficiary> beneficiaries = beneficiaryRepository.findFrequentBeneficiaries(customerId);
 
-    List<BeneficiaryResponse> beneficiaryResponses = beneficiaries.stream()
-        .limit(10)
-        .map(BeneficiaryResponse::from)
-        .collect(Collectors.toList());
+    List<BeneficiaryResponse> beneficiaryResponses =
+        beneficiaries.stream()
+            .limit(10)
+            .map(BeneficiaryResponse::from)
+            .collect(Collectors.toList());
 
-    log.info("Found {} frequent beneficiaries for customer: {}", beneficiaryResponses.size(), customerId);
+    log.info(
+        "Found {} frequent beneficiaries for customer: {}",
+        beneficiaryResponses.size(),
+        customerId);
 
     return new BeneficiaryListResponse(
-        beneficiaryResponses,
-        beneficiaryResponses.size(),
-        beneficiaryResponses.size()
-    );
+        beneficiaryResponses, beneficiaryResponses.size(), beneficiaryResponses.size());
   }
 
   @Transactional(readOnly = true)
   public BeneficiaryResponse getBeneficiaryById(Long beneficiaryId, Long customerId) {
+
     log.info("Fetching beneficiary: {} for customer: {}", beneficiaryId, customerId);
 
     Beneficiary beneficiary = findBeneficiaryById(beneficiaryId, customerId);
@@ -169,7 +178,9 @@ public class BeneficiaryService {
   }
 
   @Transactional
-  public BeneficiaryResponse updateBeneficiary(Long beneficiaryId, UpdateBeneficiaryRequest request, Long customerId) {
+  public BeneficiaryResponse updateBeneficiary(
+      Long beneficiaryId, UpdateBeneficiaryRequest request, Long customerId) {
+
     log.info("Updating beneficiary: {} for customer: {}", beneficiaryId, customerId);
 
     request.validateGenerate();
@@ -189,7 +200,9 @@ public class BeneficiaryService {
   }
 
   @Transactional
-  public GenericApiResponse updateBeneficiary(UpdateBeneficiaryRequest request, Long customerId, String command) {
+  public GenericApiResponse updateBeneficiary(
+      UpdateBeneficiaryRequest request, Long customerId, String command) {
+
     Long beneficiaryId = request.getBeneficiaryId();
     log.info("Updating beneficiary: {} for customer: {}", beneficiaryId, customerId);
     if (GENERATE_OTP_COMMAND.equals(command)) {
@@ -202,17 +215,22 @@ public class BeneficiaryService {
       if (request.getNickname() != null) {
         validateNickname(request, customerId, beneficiaryId);
       }
-      NotificationRequestDto notificationRequestDto = new NotificationRequestDto(
-          customer.getPhoneNumber(), customer.getEmailAddress());
-      OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.DELETE_BENEFICIARY,
-          notificationRequestDto, null);
-      return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
+      NotificationRequestDto notificationRequestDto =
+          new NotificationRequestDto(customer.getPhoneNumber(), customer.getEmailAddress());
+      OtpDto otpDto =
+          this.redisService.generateOtpRequest(
+              request, OtpType.DELETE_BENEFICIARY, notificationRequestDto, null);
+      return new GenericApiResponse(
+          otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
     } else if (VERIFY_OTP_COMMAND.equals(command)) {
       request.validateVerification();
       String uniqueId = request.getUniqueId();
       String otp = request.getOtp();
-      UpdateBeneficiaryRequest savedRequest = (UpdateBeneficiaryRequest) this.redisService.validateOtpWithoutDeletingRecord(
-          uniqueId, otp, OtpType.UPDATE_BENEFICIARY).getData();
+      UpdateBeneficiaryRequest savedRequest =
+          (UpdateBeneficiaryRequest)
+              this.redisService
+                  .validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.UPDATE_BENEFICIARY)
+                  .getData();
       Long savedBeneficiaryId = savedRequest.getBeneficiaryId();
       this.updateBeneficiary(savedBeneficiaryId, savedRequest, customerId);
       return new GenericApiResponse("Beneficiary has been updated successfully", "success");
@@ -221,35 +239,45 @@ public class BeneficiaryService {
     }
   }
 
-  private void validateNickname(UpdateBeneficiaryRequest request, Long customerId, Long beneficiaryId) {
+  private void validateNickname(
+      UpdateBeneficiaryRequest request, Long customerId, Long beneficiaryId) {
+
     if (beneficiaryRepository.existsByCustomerIdAndNickname(customerId, request.getNickname())) {
-      Optional<Beneficiary> existing = beneficiaryRepository.findByCustomerIdAndNickname(customerId, request.getNickname());
+      Optional<Beneficiary> existing =
+          beneficiaryRepository.findByCustomerIdAndNickname(customerId, request.getNickname());
       if (existing.isPresent() && !existing.get().getId().equals(beneficiaryId)) {
-        throw new ValidationException("nickname.already.exists",
-            "This nickname is already used for another beneficiary");
+        throw new ValidationException(
+            "nickname.already.exists", "This nickname is already used for another beneficiary");
       }
     }
   }
 
   @Transactional
-  public GenericApiResponse deleteBeneficiary(Long customerId, @Valid String command, DeleteBeneficiaryRequest deleteBeneficiaryRequest) {
+  public GenericApiResponse deleteBeneficiary(
+      Long customerId, @Valid String command, DeleteBeneficiaryRequest deleteBeneficiaryRequest) {
+
     Long beneficiaryId = deleteBeneficiaryRequest.getBeneficiaryId();
     log.info("Deleting beneficiary: {} for customer: {}", beneficiaryId, customerId);
     Beneficiary beneficiary = findBeneficiaryById(beneficiaryId, customerId);
     if (GENERATE_OTP_COMMAND.equals(command)) {
       deleteBeneficiaryRequest.validateGenerate();
       Customer customer = customerService.getCustomerById(customerId);
-      NotificationRequestDto notificationRequestDto = new NotificationRequestDto(
-          customer.getPhoneNumber(), customer.getEmailAddress());
-      OtpDto otpDto = this.redisService.generateOtpRequest(deleteBeneficiaryRequest, OtpType.DELETE_BENEFICIARY,
-          notificationRequestDto, null);
-      return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
+      NotificationRequestDto notificationRequestDto =
+          new NotificationRequestDto(customer.getPhoneNumber(), customer.getEmailAddress());
+      OtpDto otpDto =
+          this.redisService.generateOtpRequest(
+              deleteBeneficiaryRequest, OtpType.DELETE_BENEFICIARY, notificationRequestDto, null);
+      return new GenericApiResponse(
+          otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
     } else if (VERIFY_OTP_COMMAND.equals(command)) {
       deleteBeneficiaryRequest.validateVerification();
       String uniqueId = deleteBeneficiaryRequest.getUniqueId();
       String otp = deleteBeneficiaryRequest.getOtp();
-      DeleteBeneficiaryRequest savedRequest = (DeleteBeneficiaryRequest) this.redisService.validateOtpWithoutDeletingRecord(
-          uniqueId, otp, OtpType.DELETE_BENEFICIARY).getData();
+      DeleteBeneficiaryRequest savedRequest =
+          (DeleteBeneficiaryRequest)
+              this.redisService
+                  .validateOtpWithoutDeletingRecord(uniqueId, otp, OtpType.DELETE_BENEFICIARY)
+                  .getData();
       Long savedBeneficiaryId = savedRequest.getBeneficiaryId();
       this.hardDeleteBeneficiary(savedBeneficiaryId, customerId);
       return new GenericApiResponse("Beneficiary has been deleted successfully", "success");
@@ -259,13 +287,16 @@ public class BeneficiaryService {
   }
 
   private Beneficiary findBeneficiaryById(Long beneficiaryId, Long customerId) {
-    return beneficiaryRepository.findByIdAndCustomerId(beneficiaryId, customerId)
-        .orElseThrow(() -> new ValidationException("beneficiary.not.found",
-            "Beneficiary not found"));
+
+    return beneficiaryRepository
+        .findByIdAndCustomerId(beneficiaryId, customerId)
+        .orElseThrow(
+            () -> new ValidationException("beneficiary.not.found", "Beneficiary not found"));
   }
 
   @Transactional
   public void hardDeleteBeneficiary(Long beneficiaryId, Long customerId) {
+
     log.info("Hard deleting beneficiary: {} for customer: {}", beneficiaryId, customerId);
 
     Beneficiary beneficiary = findBeneficiaryById(beneficiaryId, customerId);
@@ -277,50 +308,80 @@ public class BeneficiaryService {
 
   @Transactional
   public void markBeneficiaryAsUsed(String accountNumber, String bankCode, Long customerId) {
-    log.info("Marking beneficiary as used - accountNumber: {}, bankCode: {}, customer: {}",
-        accountNumber, bankCode, customerId);
 
-    beneficiaryRepository.findByCustomerIdAndAccountNumberAndBankCode(customerId, accountNumber, bankCode)
-        .ifPresent(beneficiary -> {
-          beneficiary.incrementUsageCount();
-          beneficiaryRepository.save(beneficiary);
-          log.info("Beneficiary usage count updated: {}", beneficiary.getId());
-        });
+    log.info(
+        "Marking beneficiary as used - accountNumber: {}, bankCode: {}, customer: {}",
+        accountNumber,
+        bankCode,
+        customerId);
+
+    beneficiaryRepository
+        .findByCustomerIdAndAccountNumberAndBankCode(customerId, accountNumber, bankCode)
+        .ifPresent(
+            beneficiary -> {
+              beneficiary.incrementUsageCount();
+              beneficiaryRepository.save(beneficiary);
+              log.info("Beneficiary usage count updated: {}", beneficiary.getId());
+            });
   }
 
-  public void markBeneficiaryAsUsed(String accountNumber, String bankNipCode, String accountName, String bankName,
-      boolean addToBeneficiary, Long customerId) {
+  public void markBeneficiaryAsUsed(
+      String accountNumber,
+      String bankNipCode,
+      String accountName,
+      String bankName,
+      boolean addToBeneficiary,
+      Long customerId) {
+
     if (addToBeneficiary) {
       this.addBeneficiary(accountNumber, bankNipCode, accountName, bankName, customerId, null);
     }
     this.markBeneficiaryAsUsed(accountNumber, bankName, customerId);
   }
 
-  private void addBeneficiary(String accountNumber, String bankNipCode, String accountName,
-      String bankName, Long customerId, String nickname) {
+  private void addBeneficiary(
+      String accountNumber,
+      String bankNipCode,
+      String accountName,
+      String bankName,
+      Long customerId,
+      String nickname) {
+
     AddBeneficiaryRequest request = new AddBeneficiaryRequest();
     request.setAccountNumber(accountNumber);
     request.setAccountName(accountName);
     request.setBankName(bankName);
     request.setBankCode(bankNipCode);
-    request.setNickname(StringUtils.isBlank(nickname) ? accountName + " "+ bankName :  nickname);
+    request.setNickname(StringUtils.isBlank(nickname) ? accountName + " " + bankName : nickname);
     validateAddBeneficiary(request, customerId);
     this.addBeneficiary(request, customerId);
   }
 
-  public GenericApiResponse addBeneficiary(AddBeneficiaryRequest request, Long customerId,
-      @Valid String command) {
+  public GenericApiResponse addBeneficiary(
+      AddBeneficiaryRequest request, Long customerId, @Valid String command) {
+
     if (GENERATE_OTP_COMMAND.equals(command)) {
       Customer customer = validateAddBeneficiary(request, customerId);
-      NotificationRequestDto notificationRequestDto = new NotificationRequestDto(
-          customer.getPhoneNumber(), customer.getEmailAddress());
-      OtpDto otpDto = this.redisService.generateOtpRequest(request, OtpType.ADD_BENEFICIARY,
-          notificationRequestDto, null);
-      return new GenericApiResponse(otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
+      NotificationRequestDto notificationRequestDto =
+          new NotificationRequestDto(customer.getPhoneNumber(), customer.getEmailAddress());
+      OtpDto otpDto =
+          this.redisService.generateOtpRequest(
+              request, OtpType.ADD_BENEFICIARY, notificationRequestDto, null);
+      return new GenericApiResponse(
+          otpDto.getUniqueId(), customer.getPhoneNumber(), customer.getEmailAddress());
     } else if (VERIFY_OTP_COMMAND.equals(command)) {
-      AddBeneficiaryRequest beneficiaryRequest = (AddBeneficiaryRequest) this.redisService.validateOtpWithoutDeletingRecord(
-          request.getUniqueId(), request.getOtp(), OtpType.ADD_BENEFICIARY).getData();
-      this.addBeneficiary(beneficiaryRequest.getAccountNumber(), beneficiaryRequest.getBankCode(), beneficiaryRequest.getAccountName(), beneficiaryRequest.getBankName(), customerId,
+      AddBeneficiaryRequest beneficiaryRequest =
+          (AddBeneficiaryRequest)
+              this.redisService
+                  .validateOtpWithoutDeletingRecord(
+                      request.getUniqueId(), request.getOtp(), OtpType.ADD_BENEFICIARY)
+                  .getData();
+      this.addBeneficiary(
+          beneficiaryRequest.getAccountNumber(),
+          beneficiaryRequest.getBankCode(),
+          beneficiaryRequest.getAccountName(),
+          beneficiaryRequest.getBankName(),
+          customerId,
           beneficiaryRequest.getNickname());
       return new GenericApiResponse("Beneficiary has been added successfully", "success");
     } else {

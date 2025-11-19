@@ -1,32 +1,31 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.service;
-
-import java.util.List;
-
-import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.eBanking.api.CustomerApiClient;
 import com.techservices.digitalbanking.core.eBanking.model.request.PutClientClientIdAddressesRequest;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetClientAddressTemplateResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetClientClientIdAddressesResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PutClientClientIdAddressesResponse;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ClientAddressService {
 
-	private final CustomerApiClient customerApiClient;
+  private final CustomerApiClient customerApiClient;
 
-	public List<GetClientClientIdAddressesResponse> getCustomerAddresses(Long customerId) {
-		return customerApiClient.getClientAddresses(customerId, null, null);
-	}
+  public List<GetClientClientIdAddressesResponse> getCustomerAddresses(Long customerId) {
 
-	public PutClientClientIdAddressesResponse updateCustomerAddress(Long customerId,
-			PutClientClientIdAddressesRequest putClientClientIdAddressesRequest) {
-		return customerApiClient.updateClientAddress(customerId, null, putClientClientIdAddressesRequest);
-	}
+    return customerApiClient.getClientAddresses(customerId, null, null);
+  }
+
+  public PutClientClientIdAddressesResponse updateCustomerAddress(
+      Long customerId, PutClientClientIdAddressesRequest putClientClientIdAddressesRequest) {
+
+    return customerApiClient.updateClientAddress(
+        customerId, null, putClientClientIdAddressesRequest);
+  }
 }

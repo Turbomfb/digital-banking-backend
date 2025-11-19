@@ -1,22 +1,26 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.domain.enums;
 
 public enum BusinessCategoryType {
-    PRIVATE_SECTOR("PRIVATE_SECTOR", "Private Sector"),
-    PUBLIC_SECTOR("PUBLIC_SECTOR", "Public Sector");
+  PRIVATE_SECTOR("PRIVATE_SECTOR", "Private Sector"),
+  PUBLIC_SECTOR("PUBLIC_SECTOR", "Public Sector");
 
-    private final String code;
-    private final String description;
+  private final String code;
+  private final String description;
 
-    BusinessCategoryType(String code, String description) {
-        this.code = code;
-        this.description = description;
-    }
+  BusinessCategoryType(String code, String description) {
 
-    public String getCode() {
-        return code;
-    }
+    this.code = code;
+    this.description = description;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getCode() {
+
+    return code;
+  }
+
+  public String getDescription() {
+
+    return description;
+  }
 }

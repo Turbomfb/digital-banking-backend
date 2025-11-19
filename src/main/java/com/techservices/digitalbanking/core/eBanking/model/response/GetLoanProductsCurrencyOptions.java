@@ -1,193 +1,222 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import java.util.Objects;
 
 /** GetLoanProductsCurrencyOptions */
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
+@Generated(
+    value = "org.openapitools.codegen.languages.SpringCodegen",
+    date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]",
+    comments = "Generator version: 7.5.0")
 public class GetLoanProductsCurrencyOptions {
 
-	private String code;
+  private String code;
 
-	private Integer decimalPlaces;
+  private Integer decimalPlaces;
 
-	private String displayLabel;
+  private String displayLabel;
 
-	private String displaySymbol;
+  private String displaySymbol;
 
-	private String name;
+  private String name;
 
-	private String nameCode;
+  private String nameCode;
 
-	public GetLoanProductsCurrencyOptions code(String code) {
-		this.code = code;
-		return this;
-	}
+  public GetLoanProductsCurrencyOptions code(String code) {
 
-	/**
-	 * Get code
-	 *
-	 * @return code
-	 */
-	@Schema(name = "code", example = "USD", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("code")
-	public String getCode() {
-		return code;
-	}
+    this.code = code;
+    return this;
+  }
 
-	public void setCode(String code) {
-		this.code = code;
-	}
+  /**
+   * Get code
+   *
+   * @return code
+   */
+  @Schema(name = "code", example = "USD", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("code")
+  public String getCode() {
 
-	public GetLoanProductsCurrencyOptions decimalPlaces(Integer decimalPlaces) {
-		this.decimalPlaces = decimalPlaces;
-		return this;
-	}
+    return code;
+  }
 
-	/**
-	 * Get decimalPlaces
-	 *
-	 * @return decimalPlaces
-	 */
-	@Schema(name = "decimalPlaces", example = "2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("decimalPlaces")
-	public Integer getDecimalPlaces() {
-		return decimalPlaces;
-	}
+  public void setCode(String code) {
 
-	public void setDecimalPlaces(Integer decimalPlaces) {
-		this.decimalPlaces = decimalPlaces;
-	}
+    this.code = code;
+  }
 
-	public GetLoanProductsCurrencyOptions displayLabel(String displayLabel) {
-		this.displayLabel = displayLabel;
-		return this;
-	}
+  public GetLoanProductsCurrencyOptions decimalPlaces(Integer decimalPlaces) {
 
-	/**
-	 * Get displayLabel
-	 *
-	 * @return displayLabel
-	 */
-	@Schema(name = "displayLabel", example = "US Dollar ($)", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("displayLabel")
-	public String getDisplayLabel() {
-		return displayLabel;
-	}
+    this.decimalPlaces = decimalPlaces;
+    return this;
+  }
 
-	public void setDisplayLabel(String displayLabel) {
-		this.displayLabel = displayLabel;
-	}
+  /**
+   * Get decimalPlaces
+   *
+   * @return decimalPlaces
+   */
+  @Schema(name = "decimalPlaces", example = "2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("decimalPlaces")
+  public Integer getDecimalPlaces() {
 
-	public GetLoanProductsCurrencyOptions displaySymbol(String displaySymbol) {
-		this.displaySymbol = displaySymbol;
-		return this;
-	}
+    return decimalPlaces;
+  }
 
-	/**
-	 * Get displaySymbol
-	 *
-	 * @return displaySymbol
-	 */
-	@Schema(name = "displaySymbol", example = "$", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("displaySymbol")
-	public String getDisplaySymbol() {
-		return displaySymbol;
-	}
+  public void setDecimalPlaces(Integer decimalPlaces) {
 
-	public void setDisplaySymbol(String displaySymbol) {
-		this.displaySymbol = displaySymbol;
-	}
+    this.decimalPlaces = decimalPlaces;
+  }
 
-	public GetLoanProductsCurrencyOptions name(String name) {
-		this.name = name;
-		return this;
-	}
+  public GetLoanProductsCurrencyOptions displayLabel(String displayLabel) {
 
-	/**
-	 * Get name
-	 *
-	 * @return name
-	 */
-	@Schema(name = "name", example = "US Dollar", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("name")
-	public String getName() {
-		return name;
-	}
+    this.displayLabel = displayLabel;
+    return this;
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Get displayLabel
+   *
+   * @return displayLabel
+   */
+  @Schema(
+      name = "displayLabel",
+      example = "US Dollar ($)",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("displayLabel")
+  public String getDisplayLabel() {
 
-	public GetLoanProductsCurrencyOptions nameCode(String nameCode) {
-		this.nameCode = nameCode;
-		return this;
-	}
+    return displayLabel;
+  }
 
-	/**
-	 * Get nameCode
-	 *
-	 * @return nameCode
-	 */
-	@Schema(name = "nameCode", example = "currency.USD", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("nameCode")
-	public String getNameCode() {
-		return nameCode;
-	}
+  public void setDisplayLabel(String displayLabel) {
 
-	public void setNameCode(String nameCode) {
-		this.nameCode = nameCode;
-	}
+    this.displayLabel = displayLabel;
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		GetLoanProductsCurrencyOptions getLoanProductsCurrencyOptions = (GetLoanProductsCurrencyOptions) o;
-		return Objects.equals(this.code, getLoanProductsCurrencyOptions.code)
-				&& Objects.equals(this.decimalPlaces, getLoanProductsCurrencyOptions.decimalPlaces)
-				&& Objects.equals(this.displayLabel, getLoanProductsCurrencyOptions.displayLabel)
-				&& Objects.equals(this.displaySymbol, getLoanProductsCurrencyOptions.displaySymbol)
-				&& Objects.equals(this.name, getLoanProductsCurrencyOptions.name)
-				&& Objects.equals(this.nameCode, getLoanProductsCurrencyOptions.nameCode);
-	}
+  public GetLoanProductsCurrencyOptions displaySymbol(String displaySymbol) {
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(code, decimalPlaces, displayLabel, displaySymbol, name, nameCode);
-	}
+    this.displaySymbol = displaySymbol;
+    return this;
+  }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("class GetLoanProductsCurrencyOptions {\n");
-		sb.append("    code: ").append(toIndentedString(code)).append("\n");
-		sb.append("    decimalPlaces: ").append(toIndentedString(decimalPlaces)).append("\n");
-		sb.append("    displayLabel: ").append(toIndentedString(displayLabel)).append("\n");
-		sb.append("    displaySymbol: ").append(toIndentedString(displaySymbol)).append("\n");
-		sb.append("    name: ").append(toIndentedString(name)).append("\n");
-		sb.append("    nameCode: ").append(toIndentedString(nameCode)).append("\n");
-		sb.append("}");
-		return sb.toString();
-	}
+  /**
+   * Get displaySymbol
+   *
+   * @return displaySymbol
+   */
+  @Schema(name = "displaySymbol", example = "$", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("displaySymbol")
+  public String getDisplaySymbol() {
 
-	/**
-	 * Convert the given object to string with each line indented by 4 spaces
-	 * (except the first line).
-	 */
-	private String toIndentedString(Object o) {
-		if (o == null) {
-			return "null";
-		}
-		return o.toString().replace("\n", "\n    ");
-	}
+    return displaySymbol;
+  }
+
+  public void setDisplaySymbol(String displaySymbol) {
+
+    this.displaySymbol = displaySymbol;
+  }
+
+  public GetLoanProductsCurrencyOptions name(String name) {
+
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * Get name
+   *
+   * @return name
+   */
+  @Schema(name = "name", example = "US Dollar", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("name")
+  public String getName() {
+
+    return name;
+  }
+
+  public void setName(String name) {
+
+    this.name = name;
+  }
+
+  public GetLoanProductsCurrencyOptions nameCode(String nameCode) {
+
+    this.nameCode = nameCode;
+    return this;
+  }
+
+  /**
+   * Get nameCode
+   *
+   * @return nameCode
+   */
+  @Schema(
+      name = "nameCode",
+      example = "currency.USD",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("nameCode")
+  public String getNameCode() {
+
+    return nameCode;
+  }
+
+  public void setNameCode(String nameCode) {
+
+    this.nameCode = nameCode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    GetLoanProductsCurrencyOptions getLoanProductsCurrencyOptions =
+        (GetLoanProductsCurrencyOptions) o;
+    return Objects.equals(this.code, getLoanProductsCurrencyOptions.code)
+        && Objects.equals(this.decimalPlaces, getLoanProductsCurrencyOptions.decimalPlaces)
+        && Objects.equals(this.displayLabel, getLoanProductsCurrencyOptions.displayLabel)
+        && Objects.equals(this.displaySymbol, getLoanProductsCurrencyOptions.displaySymbol)
+        && Objects.equals(this.name, getLoanProductsCurrencyOptions.name)
+        && Objects.equals(this.nameCode, getLoanProductsCurrencyOptions.nameCode);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(code, decimalPlaces, displayLabel, displaySymbol, name, nameCode);
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("class GetLoanProductsCurrencyOptions {\n");
+    sb.append("    code: ").append(toIndentedString(code)).append("\n");
+    sb.append("    decimalPlaces: ").append(toIndentedString(decimalPlaces)).append("\n");
+    sb.append("    displayLabel: ").append(toIndentedString(displayLabel)).append("\n");
+    sb.append("    displaySymbol: ").append(toIndentedString(displaySymbol)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    nameCode: ").append(toIndentedString(nameCode)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
+   */
+  private String toIndentedString(Object o) {
+
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }

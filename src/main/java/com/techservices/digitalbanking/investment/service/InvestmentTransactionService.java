@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.investment.service;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
@@ -10,10 +10,16 @@ import com.techservices.digitalbanking.investment.domain.request.RecurringDeposi
 
 public interface InvestmentTransactionService {
 
-	GetRecurringDepositTransactionResponse retrieveInvestmentTransactionById(String investmentId, Long transactionId);
+  GetRecurringDepositTransactionResponse retrieveInvestmentTransactionById(
+      String investmentId, Long transactionId);
 
-	BasePageResponse<TransactionDto> retrieveAllInvestmentTransactions(String investmentId, String startDate, String endDate, Long size, TransactionType transactionType);
+  BasePageResponse<TransactionDto> retrieveAllInvestmentTransactions(
+      String investmentId,
+      String startDate,
+      String endDate,
+      Long size,
+      TransactionType transactionType);
 
-	PostRecurringDepositTransactionCommandResponse processInvestmentTransactionCommand(String investmentId,
-			RecurringDepositTransactionCommandRequest request, String command);
+  PostRecurringDepositTransactionCommandResponse processInvestmentTransactionCommand(
+      String investmentId, RecurringDepositTransactionCommandRequest request, String command);
 }

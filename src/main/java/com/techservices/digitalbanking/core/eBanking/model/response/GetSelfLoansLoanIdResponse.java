@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import lombok.Getter;
@@ -9,63 +9,63 @@ import lombok.Setter;
 @Setter
 public class GetSelfLoansLoanIdResponse {
 
-	private Long accountNo;
+  private Long accountNo;
 
-	private GetLoansLoanIdAmortizationType amortizationType;
+  private GetLoansLoanIdAmortizationType amortizationType;
 
-	private Integer annualInterestRate;
+  private Integer annualInterestRate;
 
-	private Integer clientId;
+  private Integer clientId;
 
-	private String clientName;
+  private String clientName;
 
-	private Integer clientOfficeId;
+  private Integer clientOfficeId;
 
-	private GetLoansLoanIdCurrency currency;
+  private GetLoansLoanIdCurrency currency;
 
-	private Long id;
+  private Long id;
 
-	private GetLoansLoanIdInterestCalculationPeriodType interestCalculationPeriodType;
+  private GetLoansLoanIdInterestCalculationPeriodType interestCalculationPeriodType;
 
-	private GetLoansLoanIdInterestRateFrequencyType interestRateFrequencyType;
+  private GetLoansLoanIdInterestRateFrequencyType interestRateFrequencyType;
 
-	private Integer interestRatePerPeriod;
+  private Integer interestRatePerPeriod;
 
-	private GetLoansLoanIdInterestType interestType;
+  private GetLoansLoanIdInterestType interestType;
 
-	private Integer loanOfficerId;
+  private Integer loanOfficerId;
 
-	private String loanOfficerName;
+  private String loanOfficerName;
 
-	private String loanProductDescription;
+  private String loanProductDescription;
 
-	private Integer loanProductId;
+  private Integer loanProductId;
 
-	private String loanProductName;
+  private String loanProductName;
 
-	private Integer loanPurposeId;
+  private Integer loanPurposeId;
 
-	private String loanPurposeName;
+  private String loanPurposeName;
 
-	private GetLoansLoanIdLoanType loanType;
+  private GetLoansLoanIdLoanType loanType;
 
-	private Integer numberOfRepayments;
+  private Integer numberOfRepayments;
 
-	private Long principal;
+  private Long principal;
 
-	private Integer repaymentEvery;
+  private Integer repaymentEvery;
 
-	private GetLoansLoanIdRepaymentFrequencyType repaymentFrequencyType;
+  private GetLoansLoanIdRepaymentFrequencyType repaymentFrequencyType;
 
-	private GetLoansLoanIdStatus status;
+  private GetLoansLoanIdStatus status;
 
-	private GetLoansLoanIdSummary summary;
+  private GetLoansLoanIdSummary summary;
 
-	private Integer termFrequency;
+  private Integer termFrequency;
 
-	private GetLoansLoanIdTermPeriodFrequencyType termPeriodFrequencyType;
+  private GetLoansLoanIdTermPeriodFrequencyType termPeriodFrequencyType;
 
-	private GetLoansLoanIdTimeline timeline;
+  private GetLoansLoanIdTimeline timeline;
 
-	private Integer transactionProcessingStrategyId;
+  private Integer transactionProcessingStrategyId;
 }

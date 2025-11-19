@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.investment.domain.request;
 
 import lombok.*;
@@ -6,8 +6,8 @@ import lombok.*;
 @Setter
 @Getter
 public class RecurringDepositCommandRequest {
-	private String note;
-	private Long onAccountClosureId;
-	private Long toSavingsAccountId;
-	private String transferDescription;
+  private String note;
+  private Long onAccountClosureId;
+  private Long toSavingsAccountId;
+  private String transferDescription;
 }

@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -10,6 +10,6 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostClientClientIdDocumentsResponse {
 
-	private Long resourceId;
-	private String resourceIdentifier;
+  private Long resourceId;
+  private String resourceIdentifier;
 }

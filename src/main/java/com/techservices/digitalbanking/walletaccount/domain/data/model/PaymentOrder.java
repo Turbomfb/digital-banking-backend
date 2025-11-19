@@ -1,16 +1,14 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.walletaccount.domain.data.model;
 
-import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.common.domain.model.BaseEntity;
-import com.techservices.digitalbanking.customer.domian.CustomerKycTier;
 import com.techservices.digitalbanking.walletaccount.domain.data.PaymentOrderStatus;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payment_order")
@@ -18,41 +16,43 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 public class PaymentOrder extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "payment_order_seq_gen")
-    @SequenceGenerator(name = "payment_order_seq_gen", sequenceName = "payment_order_seq", allocationSize = 1)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "payment_order_seq_gen")
+  @SequenceGenerator(
+      name = "payment_order_seq_gen",
+      sequenceName = "payment_order_seq",
+      allocationSize = 1)
+  private Long id;
 
-    @Column(name = "amount")
-    private BigDecimal amount;
+  @Column(name = "amount")
+  private BigDecimal amount;
 
-    @Column(name = "reference")
-    private String reference;
+  @Column(name = "reference")
+  private String reference;
 
-    @Column(name = "currency")
-    private String currency;
+  @Column(name = "currency")
+  private String currency;
 
-    @Column(name = "customer_id")
-    private Long customerId;
+  @Column(name = "customer_id")
+  private Long customerId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private PaymentOrderStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status")
+  private PaymentOrderStatus status;
 
+  @PrePersist
+  public void prePersist() {
 
-    @PrePersist
-    public void prePersist() {
-        LocalDateTime now = LocalDateTime.now();
-        if (getCreatedAt() == null) {
-            this.setCreatedAt(now);
-        }
-        this.setUpdatedAt(now);
+    LocalDateTime now = LocalDateTime.now();
+    if (getCreatedAt() == null) {
+      this.setCreatedAt(now);
     }
+    this.setUpdatedAt(now);
+  }
 
+  @PreUpdate
+  public void preUpdate() {
 
-    @PreUpdate
-    public void preUpdate() {
-        this.setUpdatedAt(LocalDateTime.now());
-    }
-
+    this.setUpdatedAt(LocalDateTime.now());
+  }
 }

@@ -1,315 +1,384 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
+import java.util.Objects;
 
 /** PostLoansLoanIdStatus */
 @Schema(name = "PostLoansLoanIdStatus", description = "PostLoansLoanIdStatus")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
+@Generated(
+    value = "org.openapitools.codegen.languages.SpringCodegen",
+    date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]",
+    comments = "Generator version: 7.5.0")
 public class PostLoansLoanIdStatus {
 
-	private Boolean active;
+  private Boolean active;
 
-	private Boolean closed;
+  private Boolean closed;
 
-	private Boolean closedObligationsMet;
+  private Boolean closedObligationsMet;
 
-	private Boolean closedRescheduled;
+  private Boolean closedRescheduled;
 
-	private Boolean closedWrittenOff;
+  private Boolean closedWrittenOff;
 
-	private String code;
+  private String code;
 
-	private Integer id;
+  private Integer id;
 
-	private Boolean overpaid;
+  private Boolean overpaid;
 
-	private Boolean pendingApproval;
+  private Boolean pendingApproval;
 
-	private String value;
+  private String value;
 
-	private Boolean waitingForDisbursal;
+  private Boolean waitingForDisbursal;
 
-	public PostLoansLoanIdStatus active(Boolean active) {
-		this.active = active;
-		return this;
-	}
+  public PostLoansLoanIdStatus active(Boolean active) {
 
-	/**
-	 * Get active
-	 *
-	 * @return active
-	 */
-	@Schema(name = "active", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("active")
-	public Boolean getActive() {
-		return active;
-	}
+    this.active = active;
+    return this;
+  }
 
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
+  /**
+   * Get active
+   *
+   * @return active
+   */
+  @Schema(name = "active", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("active")
+  public Boolean getActive() {
 
-	public PostLoansLoanIdStatus closed(Boolean closed) {
-		this.closed = closed;
-		return this;
-	}
+    return active;
+  }
 
-	/**
-	 * Get closed
-	 *
-	 * @return closed
-	 */
-	@Schema(name = "closed", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("closed")
-	public Boolean getClosed() {
-		return closed;
-	}
+  public void setActive(Boolean active) {
 
-	public void setClosed(Boolean closed) {
-		this.closed = closed;
-	}
+    this.active = active;
+  }
 
-	public PostLoansLoanIdStatus closedObligationsMet(Boolean closedObligationsMet) {
-		this.closedObligationsMet = closedObligationsMet;
-		return this;
-	}
+  public PostLoansLoanIdStatus closed(Boolean closed) {
 
-	/**
-	 * Get closedObligationsMet
-	 *
-	 * @return closedObligationsMet
-	 */
-	@Schema(name = "closedObligationsMet", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("closedObligationsMet")
-	public Boolean getClosedObligationsMet() {
-		return closedObligationsMet;
-	}
+    this.closed = closed;
+    return this;
+  }
 
-	public void setClosedObligationsMet(Boolean closedObligationsMet) {
-		this.closedObligationsMet = closedObligationsMet;
-	}
+  /**
+   * Get closed
+   *
+   * @return closed
+   */
+  @Schema(name = "closed", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("closed")
+  public Boolean getClosed() {
 
-	public PostLoansLoanIdStatus closedRescheduled(Boolean closedRescheduled) {
-		this.closedRescheduled = closedRescheduled;
-		return this;
-	}
+    return closed;
+  }
 
-	/**
-	 * Get closedRescheduled
-	 *
-	 * @return closedRescheduled
-	 */
-	@Schema(name = "closedRescheduled", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("closedRescheduled")
-	public Boolean getClosedRescheduled() {
-		return closedRescheduled;
-	}
+  public void setClosed(Boolean closed) {
 
-	public void setClosedRescheduled(Boolean closedRescheduled) {
-		this.closedRescheduled = closedRescheduled;
-	}
+    this.closed = closed;
+  }
 
-	public PostLoansLoanIdStatus closedWrittenOff(Boolean closedWrittenOff) {
-		this.closedWrittenOff = closedWrittenOff;
-		return this;
-	}
+  public PostLoansLoanIdStatus closedObligationsMet(Boolean closedObligationsMet) {
 
-	/**
-	 * Get closedWrittenOff
-	 *
-	 * @return closedWrittenOff
-	 */
-	@Schema(name = "closedWrittenOff", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("closedWrittenOff")
-	public Boolean getClosedWrittenOff() {
-		return closedWrittenOff;
-	}
+    this.closedObligationsMet = closedObligationsMet;
+    return this;
+  }
 
-	public void setClosedWrittenOff(Boolean closedWrittenOff) {
-		this.closedWrittenOff = closedWrittenOff;
-	}
+  /**
+   * Get closedObligationsMet
+   *
+   * @return closedObligationsMet
+   */
+  @Schema(
+      name = "closedObligationsMet",
+      example = "false",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("closedObligationsMet")
+  public Boolean getClosedObligationsMet() {
 
-	public PostLoansLoanIdStatus code(String code) {
-		this.code = code;
-		return this;
-	}
+    return closedObligationsMet;
+  }
 
-	/**
-	 * Get code
-	 *
-	 * @return code
-	 */
-	@Schema(name = "code", example = "loanStatusType.approved", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("code")
-	public String getCode() {
-		return code;
-	}
+  public void setClosedObligationsMet(Boolean closedObligationsMet) {
 
-	public void setCode(String code) {
-		this.code = code;
-	}
+    this.closedObligationsMet = closedObligationsMet;
+  }
 
-	public PostLoansLoanIdStatus id(Integer id) {
-		this.id = id;
-		return this;
-	}
+  public PostLoansLoanIdStatus closedRescheduled(Boolean closedRescheduled) {
 
-	/**
-	 * Get id
-	 *
-	 * @return id
-	 */
-	@Schema(name = "id", example = "300", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("id")
-	public Integer getId() {
-		return id;
-	}
+    this.closedRescheduled = closedRescheduled;
+    return this;
+  }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+  /**
+   * Get closedRescheduled
+   *
+   * @return closedRescheduled
+   */
+  @Schema(
+      name = "closedRescheduled",
+      example = "false",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("closedRescheduled")
+  public Boolean getClosedRescheduled() {
 
-	public PostLoansLoanIdStatus overpaid(Boolean overpaid) {
-		this.overpaid = overpaid;
-		return this;
-	}
+    return closedRescheduled;
+  }
 
-	/**
-	 * Get overpaid
-	 *
-	 * @return overpaid
-	 */
-	@Schema(name = "overpaid", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("overpaid")
-	public Boolean getOverpaid() {
-		return overpaid;
-	}
+  public void setClosedRescheduled(Boolean closedRescheduled) {
 
-	public void setOverpaid(Boolean overpaid) {
-		this.overpaid = overpaid;
-	}
+    this.closedRescheduled = closedRescheduled;
+  }
 
-	public PostLoansLoanIdStatus pendingApproval(Boolean pendingApproval) {
-		this.pendingApproval = pendingApproval;
-		return this;
-	}
+  public PostLoansLoanIdStatus closedWrittenOff(Boolean closedWrittenOff) {
 
-	/**
-	 * Get pendingApproval
-	 *
-	 * @return pendingApproval
-	 */
-	@Schema(name = "pendingApproval", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("pendingApproval")
-	public Boolean getPendingApproval() {
-		return pendingApproval;
-	}
+    this.closedWrittenOff = closedWrittenOff;
+    return this;
+  }
 
-	public void setPendingApproval(Boolean pendingApproval) {
-		this.pendingApproval = pendingApproval;
-	}
+  /**
+   * Get closedWrittenOff
+   *
+   * @return closedWrittenOff
+   */
+  @Schema(
+      name = "closedWrittenOff",
+      example = "false",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("closedWrittenOff")
+  public Boolean getClosedWrittenOff() {
 
-	public PostLoansLoanIdStatus value(String value) {
-		this.value = value;
-		return this;
-	}
+    return closedWrittenOff;
+  }
 
-	/**
-	 * Get value
-	 *
-	 * @return value
-	 */
-	@Schema(name = "value", example = "Approved", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("value")
-	public String getValue() {
-		return value;
-	}
+  public void setClosedWrittenOff(Boolean closedWrittenOff) {
 
-	public void setValue(String value) {
-		this.value = value;
-	}
+    this.closedWrittenOff = closedWrittenOff;
+  }
 
-	public PostLoansLoanIdStatus waitingForDisbursal(Boolean waitingForDisbursal) {
-		this.waitingForDisbursal = waitingForDisbursal;
-		return this;
-	}
+  public PostLoansLoanIdStatus code(String code) {
 
-	/**
-	 * Get waitingForDisbursal
-	 *
-	 * @return waitingForDisbursal
-	 */
-	@Schema(name = "waitingForDisbursal", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("waitingForDisbursal")
-	public Boolean getWaitingForDisbursal() {
-		return waitingForDisbursal;
-	}
+    this.code = code;
+    return this;
+  }
 
-	public void setWaitingForDisbursal(Boolean waitingForDisbursal) {
-		this.waitingForDisbursal = waitingForDisbursal;
-	}
+  /**
+   * Get code
+   *
+   * @return code
+   */
+  @Schema(
+      name = "code",
+      example = "loanStatusType.approved",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("code")
+  public String getCode() {
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		PostLoansLoanIdStatus postLoansLoanIdStatus = (PostLoansLoanIdStatus) o;
-		return Objects.equals(this.active, postLoansLoanIdStatus.active)
-				&& Objects.equals(this.closed, postLoansLoanIdStatus.closed)
-				&& Objects.equals(this.closedObligationsMet, postLoansLoanIdStatus.closedObligationsMet)
-				&& Objects.equals(this.closedRescheduled, postLoansLoanIdStatus.closedRescheduled)
-				&& Objects.equals(this.closedWrittenOff, postLoansLoanIdStatus.closedWrittenOff)
-				&& Objects.equals(this.code, postLoansLoanIdStatus.code)
-				&& Objects.equals(this.id, postLoansLoanIdStatus.id)
-				&& Objects.equals(this.overpaid, postLoansLoanIdStatus.overpaid)
-				&& Objects.equals(this.pendingApproval, postLoansLoanIdStatus.pendingApproval)
-				&& Objects.equals(this.value, postLoansLoanIdStatus.value)
-				&& Objects.equals(this.waitingForDisbursal, postLoansLoanIdStatus.waitingForDisbursal);
-	}
+    return code;
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(active, closed, closedObligationsMet, closedRescheduled, closedWrittenOff, code, id,
-				overpaid, pendingApproval, value, waitingForDisbursal);
-	}
+  public void setCode(String code) {
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("class PostLoansLoanIdStatus {\n");
-		sb.append("    active: ").append(toIndentedString(active)).append("\n");
-		sb.append("    closed: ").append(toIndentedString(closed)).append("\n");
-		sb.append("    closedObligationsMet: ").append(toIndentedString(closedObligationsMet)).append("\n");
-		sb.append("    closedRescheduled: ").append(toIndentedString(closedRescheduled)).append("\n");
-		sb.append("    closedWrittenOff: ").append(toIndentedString(closedWrittenOff)).append("\n");
-		sb.append("    code: ").append(toIndentedString(code)).append("\n");
-		sb.append("    id: ").append(toIndentedString(id)).append("\n");
-		sb.append("    overpaid: ").append(toIndentedString(overpaid)).append("\n");
-		sb.append("    pendingApproval: ").append(toIndentedString(pendingApproval)).append("\n");
-		sb.append("    value: ").append(toIndentedString(value)).append("\n");
-		sb.append("    waitingForDisbursal: ").append(toIndentedString(waitingForDisbursal)).append("\n");
-		sb.append("}");
-		return sb.toString();
-	}
+    this.code = code;
+  }
 
-	/**
-	 * Convert the given object to string with each line indented by 4 spaces
-	 * (except the first line).
-	 */
-	private String toIndentedString(Object o) {
-		if (o == null) {
-			return "null";
-		}
-		return o.toString().replace("\n", "\n    ");
-	}
+  public PostLoansLoanIdStatus id(Integer id) {
+
+    this.id = id;
+    return this;
+  }
+
+  /**
+   * Get id
+   *
+   * @return id
+   */
+  @Schema(name = "id", example = "300", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("id")
+  public Integer getId() {
+
+    return id;
+  }
+
+  public void setId(Integer id) {
+
+    this.id = id;
+  }
+
+  public PostLoansLoanIdStatus overpaid(Boolean overpaid) {
+
+    this.overpaid = overpaid;
+    return this;
+  }
+
+  /**
+   * Get overpaid
+   *
+   * @return overpaid
+   */
+  @Schema(name = "overpaid", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("overpaid")
+  public Boolean getOverpaid() {
+
+    return overpaid;
+  }
+
+  public void setOverpaid(Boolean overpaid) {
+
+    this.overpaid = overpaid;
+  }
+
+  public PostLoansLoanIdStatus pendingApproval(Boolean pendingApproval) {
+
+    this.pendingApproval = pendingApproval;
+    return this;
+  }
+
+  /**
+   * Get pendingApproval
+   *
+   * @return pendingApproval
+   */
+  @Schema(
+      name = "pendingApproval",
+      example = "false",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("pendingApproval")
+  public Boolean getPendingApproval() {
+
+    return pendingApproval;
+  }
+
+  public void setPendingApproval(Boolean pendingApproval) {
+
+    this.pendingApproval = pendingApproval;
+  }
+
+  public PostLoansLoanIdStatus value(String value) {
+
+    this.value = value;
+    return this;
+  }
+
+  /**
+   * Get value
+   *
+   * @return value
+   */
+  @Schema(name = "value", example = "Approved", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("value")
+  public String getValue() {
+
+    return value;
+  }
+
+  public void setValue(String value) {
+
+    this.value = value;
+  }
+
+  public PostLoansLoanIdStatus waitingForDisbursal(Boolean waitingForDisbursal) {
+
+    this.waitingForDisbursal = waitingForDisbursal;
+    return this;
+  }
+
+  /**
+   * Get waitingForDisbursal
+   *
+   * @return waitingForDisbursal
+   */
+  @Schema(
+      name = "waitingForDisbursal",
+      example = "false",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("waitingForDisbursal")
+  public Boolean getWaitingForDisbursal() {
+
+    return waitingForDisbursal;
+  }
+
+  public void setWaitingForDisbursal(Boolean waitingForDisbursal) {
+
+    this.waitingForDisbursal = waitingForDisbursal;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    PostLoansLoanIdStatus postLoansLoanIdStatus = (PostLoansLoanIdStatus) o;
+    return Objects.equals(this.active, postLoansLoanIdStatus.active)
+        && Objects.equals(this.closed, postLoansLoanIdStatus.closed)
+        && Objects.equals(this.closedObligationsMet, postLoansLoanIdStatus.closedObligationsMet)
+        && Objects.equals(this.closedRescheduled, postLoansLoanIdStatus.closedRescheduled)
+        && Objects.equals(this.closedWrittenOff, postLoansLoanIdStatus.closedWrittenOff)
+        && Objects.equals(this.code, postLoansLoanIdStatus.code)
+        && Objects.equals(this.id, postLoansLoanIdStatus.id)
+        && Objects.equals(this.overpaid, postLoansLoanIdStatus.overpaid)
+        && Objects.equals(this.pendingApproval, postLoansLoanIdStatus.pendingApproval)
+        && Objects.equals(this.value, postLoansLoanIdStatus.value)
+        && Objects.equals(this.waitingForDisbursal, postLoansLoanIdStatus.waitingForDisbursal);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(
+        active,
+        closed,
+        closedObligationsMet,
+        closedRescheduled,
+        closedWrittenOff,
+        code,
+        id,
+        overpaid,
+        pendingApproval,
+        value,
+        waitingForDisbursal);
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("class PostLoansLoanIdStatus {\n");
+    sb.append("    active: ").append(toIndentedString(active)).append("\n");
+    sb.append("    closed: ").append(toIndentedString(closed)).append("\n");
+    sb.append("    closedObligationsMet: ")
+        .append(toIndentedString(closedObligationsMet))
+        .append("\n");
+    sb.append("    closedRescheduled: ").append(toIndentedString(closedRescheduled)).append("\n");
+    sb.append("    closedWrittenOff: ").append(toIndentedString(closedWrittenOff)).append("\n");
+    sb.append("    code: ").append(toIndentedString(code)).append("\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    overpaid: ").append(toIndentedString(overpaid)).append("\n");
+    sb.append("    pendingApproval: ").append(toIndentedString(pendingApproval)).append("\n");
+    sb.append("    value: ").append(toIndentedString(value)).append("\n");
+    sb.append("    waitingForDisbursal: ")
+        .append(toIndentedString(waitingForDisbursal))
+        .append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
+   */
+  private String toIndentedString(Object o) {
+
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }

@@ -1,16 +1,14 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.request;
-
-import java.util.Collections;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import jakarta.validation.Valid;
+import java.util.Collections;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -18,100 +16,110 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PutClientsClientIdRequest {
 
-	@JsonProperty("phoneNumber")
-	private String mobileNo;
+  @JsonProperty("phoneNumber")
+  private String mobileNo;
 
-	@JsonProperty("firstName")
-	private String firstname;
+  @JsonProperty("firstName")
+  private String firstname;
 
-	@JsonProperty("lastName")
-	private String lastname;
+  @JsonProperty("lastName")
+  private String lastname;
 
-	@JsonProperty("middlename")
-	private String middleName;
+  @JsonProperty("middlename")
+  private String middleName;
 
-	@JsonProperty("fullName")
-	private String fullName;
+  @JsonProperty("fullName")
+  private String fullName;
 
-	@JsonProperty("emailAddress")
-	private String emailAddress;
+  @JsonProperty("emailAddress")
+  private String emailAddress;
 
-	@JsonProperty("dateOfBirth")
-	private String dateOfBirth;
+  @JsonProperty("dateOfBirth")
+  private String dateOfBirth;
 
-	@JsonProperty("dateFormat")
-	private String dateFormat;
+  @JsonProperty("dateFormat")
+  private String dateFormat;
 
-	@JsonProperty("gender")
-	private String gender;
+  @JsonProperty("gender")
+  private String gender;
 
-	@JsonProperty("externalId")
-	private String externalId;
+  @JsonProperty("externalId")
+  private String externalId;
 
-	@JsonProperty("activationDate")
-	private String activationDate;
+  @JsonProperty("activationDate")
+  private String activationDate;
 
-	@JsonProperty("active")
-	private Boolean active;
+  @JsonProperty("active")
+  private Boolean active;
 
-	@JsonProperty("legalFormId")
-	private Integer legalFormId;
+  @JsonProperty("legalFormId")
+  private Integer legalFormId;
 
-	@JsonProperty("locale")
-	private String locale;
+  @JsonProperty("locale")
+  private String locale;
 
-	@JsonProperty("submittedOnDate")
-	private String submittedOnDate;
+  @JsonProperty("submittedOnDate")
+  private String submittedOnDate;
 
-	@JsonProperty("pepStatus")
-	private String pepStatus;
+  @JsonProperty("pepStatus")
+  private String pepStatus;
 
-	@JsonProperty("nin")
-	private String nin;
-	private String tin;
-	private String rcNumber;
+  @JsonProperty("nin")
+  private String nin;
 
-	@JsonProperty("bvn")
-	private String bvn;
+  private String tin;
+  private String rcNumber;
 
-	@JsonProperty("sourceSystem")
-	private String sourceSystem;
+  @JsonProperty("bvn")
+  private String bvn;
 
-	private Long kycTier;
+  @JsonProperty("sourceSystem")
+  private String sourceSystem;
 
-	private PostClientNonPersonDetails clientNonPersonDetails;
-	private Long clientTypeId;
-	private Long clientClassificationId;
+  private Long kycTier;
 
-	private Boolean proofOfAddress;
+  private PostClientNonPersonDetails clientNonPersonDetails;
+  private Long clientTypeId;
+  private Long clientClassificationId;
 
-	@JsonProperty("account_number")
-	private String accountNumber;
+  private Boolean proofOfAddress;
 
-	@JsonProperty("account_name")
-	private String accountName;
+  @JsonProperty("account_number")
+  private String accountNumber;
 
-	@JsonProperty("bank_code")
-	private String bankCode;
+  @JsonProperty("account_name")
+  private String accountName;
 
-	@JsonProperty("bank_name")
-	private String bankName;
+  @JsonProperty("bank_code")
+  private String bankCode;
 
-	@Valid
-	private List<@Valid PostClientsDatatable> datatables = Collections.emptyList();
+  @JsonProperty("bank_name")
+  private String bankName;
 
-	// you cannot directly update this , but this is to ensure we keep all the data
-	// in one request
-	// body
-	@Valid
-	private List<@Valid PostClientsAddressRequest> address = Collections.emptyList();
+  @Valid private List<@Valid PostClientsDatatable> datatables = Collections.emptyList();
 
-	// check if all fields aside from address are null
-	@JsonIgnore
-	public boolean isAllFieldsNull() {
-		return (mobileNo == null && firstname == null && lastname == null && middleName == null && nin == null
-				&& kycTier == null && bvn == null && fullName == null && emailAddress == null
-				&& proofOfAddress == null && dateOfBirth == null && clientClassificationId == null
-				&& clientTypeId == null && clientNonPersonDetails == null);
-	}
+  // you cannot directly update this , but this is to ensure we keep all the data
+  // in one request
+  // body
+  @Valid private List<@Valid PostClientsAddressRequest> address = Collections.emptyList();
+
+  // check if all fields aside from address are null
+  @JsonIgnore
+  public boolean isAllFieldsNull() {
+
+    return (mobileNo == null
+        && firstname == null
+        && lastname == null
+        && middleName == null
+        && nin == null
+        && kycTier == null
+        && bvn == null
+        && fullName == null
+        && emailAddress == null
+        && proofOfAddress == null
+        && dateOfBirth == null
+        && clientClassificationId == null
+        && clientTypeId == null
+        && clientNonPersonDetails == null);
+  }
 }

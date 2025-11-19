@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import lombok.Getter;
@@ -9,33 +9,33 @@ import lombok.Setter;
 @Setter
 public class PutSelfLoansLoanIdRequest {
 
-	private Integer amortizationType;
+  private Integer amortizationType;
 
-	private String dateFormat;
+  private String dateFormat;
 
-	private String expectedDisbursementDate;
+  private String expectedDisbursementDate;
 
-	private Integer interestCalculationPeriodType;
+  private Integer interestCalculationPeriodType;
 
-	private Integer interestRatePerPeriod;
+  private Integer interestRatePerPeriod;
 
-	private Integer interestType;
+  private Integer interestType;
 
-	private Integer loanTermFrequency;
+  private Integer loanTermFrequency;
 
-	private Integer loanTermFrequencyType;
+  private Integer loanTermFrequencyType;
 
-	private String locale;
+  private String locale;
 
-	private Integer numberOfRepayments;
+  private Integer numberOfRepayments;
 
-	private Long principal;
+  private Long principal;
 
-	private Integer productId;
+  private Integer productId;
 
-	private Integer repaymentEvery;
+  private Integer repaymentEvery;
 
-	private Integer repaymentFrequencyType;
+  private Integer repaymentFrequencyType;
 
-	private Integer transactionProcessingStrategyId;
+  private Integer transactionProcessingStrategyId;
 }

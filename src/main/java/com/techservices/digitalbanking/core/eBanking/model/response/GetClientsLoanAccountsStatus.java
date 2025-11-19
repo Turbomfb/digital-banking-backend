@@ -1,10 +1,9 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import lombok.Data;
 
 @Data
@@ -12,25 +11,25 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetClientsLoanAccountsStatus {
 
-	private Boolean active;
+  private Boolean active;
 
-	private Boolean closed;
+  private Boolean closed;
 
-	private Boolean closedObligationsMet;
+  private Boolean closedObligationsMet;
 
-	private Boolean closedRescheduled;
+  private Boolean closedRescheduled;
 
-	private Boolean closedWrittenOff;
+  private Boolean closedWrittenOff;
 
-	private String code;
+  private String code;
 
-	private String description;
+  private String description;
 
-	private Integer id;
+  private Integer id;
 
-	private Boolean overpaid;
+  private Boolean overpaid;
 
-	private Boolean pendingApproval;
+  private Boolean pendingApproval;
 
-	private Boolean waitingForDisbursal;
+  private Boolean waitingForDisbursal;
 }

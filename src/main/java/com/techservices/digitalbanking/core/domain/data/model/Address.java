@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.domain.data.model;
 
 import jakarta.persistence.Column;
@@ -8,12 +9,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "address")
@@ -23,42 +23,44 @@ import java.time.LocalDateTime;
 @Builder
 public class Address {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+  @Column(name = "customer_id", nullable = false)
+  private Long customerId;
 
-    @Column(length = 50)
-    private String type;
+  @Column(length = 50)
+  private String type;
 
-    @Column(length = 50)
-    private String lga;
+  @Column(length = 50)
+  private String lga;
 
-    @Column(length = 50, nullable = false)
-    private String town;
+  @Column(length = 50, nullable = false)
+  private String town;
 
-    @Column(name = "address_line", length = 200, nullable = false)
-    private String addressLine;
+  @Column(name = "address_line", length = 200, nullable = false)
+  private String addressLine;
 
-    @Column(length = 50, nullable = false)
-    private String state;
+  @Column(length = 50, nullable = false)
+  private String state;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+  @Column(name = "created_at", updatable = false)
+  private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+  @Column(name = "updated_at")
+  private LocalDateTime updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = createdAt;
-    }
+  @PrePersist
+  protected void onCreate() {
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    createdAt = LocalDateTime.now();
+    updatedAt = createdAt;
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+
+    updatedAt = LocalDateTime.now();
+  }
 }

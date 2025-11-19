@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.domain.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,22 +21,27 @@ public class AddBeneficiaryRequest {
   private String bankCode;
   private String nickname;
 
-  //verify
+  // verify
   private String uniqueId;
   private String otp;
 
   public void validate() {
+
     if (StringUtils.isBlank(this.accountName)) {
-      throw new ValidationException("accountName.field.cannot.be.blank", "Account name cannot be empty");
+      throw new ValidationException(
+          "accountName.field.cannot.be.blank", "Account name cannot be empty");
     }
     if (StringUtils.isBlank(this.accountNumber)) {
-      throw new ValidationException("accountNumber.field.cannot.be.blank", "Account number cannot be empty");
+      throw new ValidationException(
+          "accountNumber.field.cannot.be.blank", "Account number cannot be empty");
     }
     if (this.accountNumber.length() != 10) {
-      throw new ValidationException("accountNumber.invalid.length", "Account number must be 10 digits");
+      throw new ValidationException(
+          "accountNumber.invalid.length", "Account number must be 10 digits");
     }
     if (!this.accountNumber.matches("\\d+")) {
-      throw new ValidationException("accountNumber.invalid.format", "Account number must contain only digits");
+      throw new ValidationException(
+          "accountNumber.invalid.format", "Account number must contain only digits");
     }
     if (StringUtils.isBlank(this.bankName)) {
       throw new ValidationException("bankName.field.cannot.be.blank", "Bank name cannot be empty");

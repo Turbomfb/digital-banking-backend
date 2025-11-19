@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -10,13 +11,13 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FlexInvestmentCreationResponse {
-    private Long customerId;
+  private Long customerId;
 
-    private Long officeId;
+  private Long officeId;
 
-    private Long resourceId;
+  private Long resourceId;
 
-    private Long savingsId;
+  private Long savingsId;
 
-    private String accountNumber;
+  private String accountNumber;
 }

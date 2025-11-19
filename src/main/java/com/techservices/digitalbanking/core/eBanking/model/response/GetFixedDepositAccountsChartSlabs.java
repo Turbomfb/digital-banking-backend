@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import lombok.Getter;
@@ -8,15 +8,15 @@ import lombok.Setter;
 @Setter
 public class GetFixedDepositAccountsChartSlabs {
 
-	private Double annualInterestRate;
+  private Double annualInterestRate;
 
-	private GetFixedDepositAccountsAccountChartCurrency currency;
+  private GetFixedDepositAccountsAccountChartCurrency currency;
 
-	private Integer fromPeriod;
+  private Integer fromPeriod;
 
-	private Integer id;
+  private Integer id;
 
-	private EnumOptionData periodType;
+  private EnumOptionData periodType;
 
-	private Integer toPeriod;
+  private Integer toPeriod;
 }

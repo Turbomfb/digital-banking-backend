@@ -1,11 +1,11 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.domain.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.domain.data.model.Beneficiary;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -25,6 +25,7 @@ public class BeneficiaryResponse {
   private Integer usageCount;
 
   public static BeneficiaryResponse from(Beneficiary beneficiary) {
+
     BeneficiaryResponse response = new BeneficiaryResponse();
     response.setId(beneficiary.getId());
     response.setAccountName(beneficiary.getAccountName());

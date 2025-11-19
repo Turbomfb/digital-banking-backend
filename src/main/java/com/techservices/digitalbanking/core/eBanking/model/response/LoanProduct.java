@@ -1,163 +1,162 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /** LoanProduct */
 @Getter
 @Setter
 public class LoanProduct {
 
-	private Boolean accountingDisabled;
+  private Boolean accountingDisabled;
 
-	private Integer accountingType;
+  private Integer accountingType;
 
-	private Boolean accrualBasedAccountingEnabled;
+  private Boolean accrualBasedAccountingEnabled;
 
-	private Boolean allowApprovedDisbursedAmountsOverApplied;
+  private Boolean allowApprovedDisbursedAmountsOverApplied;
 
-	private Boolean arrearsBasedOnOriginalSchedule;
+  private Boolean arrearsBasedOnOriginalSchedule;
 
-	private Boolean cashBasedAccountingEnabled;
+  private Boolean cashBasedAccountingEnabled;
 
-	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-	private LocalDate closeDate;
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+  private LocalDate closeDate;
 
-	private Object currency;
+  private Object currency;
 
-	private Boolean disallowExpectedDisbursements;
+  private Boolean disallowExpectedDisbursements;
 
-	private Boolean equalAmortization;
+  private Boolean equalAmortization;
 
-	private String externalId;
+  private String externalId;
 
-	private BigDecimal fixedPrincipalPercentagePerInstallment;
+  private BigDecimal fixedPrincipalPercentagePerInstallment;
 
-	private LoanProductFloatingRates floatingRates;
+  private LoanProductFloatingRates floatingRates;
 
-	private Boolean holdGuaranteeFundsEnabled;
+  private Boolean holdGuaranteeFundsEnabled;
 
-	private Long id;
+  private Long id;
 
-	private Boolean includeInBorrowerCycle;
+  private Boolean includeInBorrowerCycle;
 
-	private Integer installmentAmountInMultiplesOf;
+  private Integer installmentAmountInMultiplesOf;
 
-	/** Gets or Sets interestPeriodFrequencyType */
-	public enum InterestPeriodFrequencyTypeEnum {
-		DAYS("DAYS"),
+  /** Gets or Sets interestPeriodFrequencyType */
+  public enum InterestPeriodFrequencyTypeEnum {
+    DAYS("DAYS"),
 
-		WEEKS("WEEKS"),
+    WEEKS("WEEKS"),
 
-		MONTHS("MONTHS"),
+    MONTHS("MONTHS"),
 
-		YEARS("YEARS"),
+    YEARS("YEARS"),
 
-		WHOLE_TERM("WHOLE_TERM"),
+    WHOLE_TERM("WHOLE_TERM"),
 
-		INVALID("INVALID");
+    INVALID("INVALID");
 
-		private String value;
+    private String value;
 
-		InterestPeriodFrequencyTypeEnum(String value) {
-			this.value = value;
-		}
+    InterestPeriodFrequencyTypeEnum(String value) {
 
-		@JsonValue
-		public String getValue() {
-			return value;
-		}
+      this.value = value;
+    }
 
-		@Override
-		public String toString() {
-			return String.valueOf(value);
-		}
+    @JsonValue
+    public String getValue() {
 
-		@JsonCreator
-		public static InterestPeriodFrequencyTypeEnum fromValue(String value) {
-			for (InterestPeriodFrequencyTypeEnum b : InterestPeriodFrequencyTypeEnum.values()) {
-				if (b.value.equals(value)) {
-					return b;
-				}
-			}
-			throw new IllegalArgumentException("Unexpected value '" + value + "'");
-		}
-	}
+      return value;
+    }
 
-	private InterestPeriodFrequencyTypeEnum interestPeriodFrequencyType;
+    @Override
+    public String toString() {
 
-	private Boolean interestRecalculationEnabled;
+      return String.valueOf(value);
+    }
 
-	private Boolean linkedToFloatingInterestRate;
+    @JsonCreator
+    public static InterestPeriodFrequencyTypeEnum fromValue(String value) {
 
-	private LoanProductTrancheDetails loanProducTrancheDetails;
+      for (InterestPeriodFrequencyTypeEnum b : InterestPeriodFrequencyTypeEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+  }
 
-	@Valid
-	private List<@Valid Object> loanProductCharges = new ArrayList<>();
+  private InterestPeriodFrequencyTypeEnum interestPeriodFrequencyType;
 
-	private LoanProductConfigurableAttributes loanProductConfigurableAttributes;
+  private Boolean interestRecalculationEnabled;
 
-	private LoanProductGuaranteeDetails loanProductGuaranteeDetails;
+  private Boolean linkedToFloatingInterestRate;
 
-	private LoanProductRelatedDetail loanProductRelatedDetail;
+  private LoanProductTrancheDetails loanProducTrancheDetails;
 
-	private BigDecimal maxNominalInterestRatePerPeriod;
+  @Valid private List<@Valid Object> loanProductCharges = new ArrayList<>();
 
-	private Integer maxNumberOfRepayments;
+  private LoanProductConfigurableAttributes loanProductConfigurableAttributes;
 
-	private Object maxPrincipalAmount;
+  private LoanProductGuaranteeDetails loanProductGuaranteeDetails;
 
-	private BigDecimal minNominalInterestRatePerPeriod;
+  private LoanProductRelatedDetail loanProductRelatedDetail;
 
-	private Integer minNumberOfRepayments;
+  private BigDecimal maxNominalInterestRatePerPeriod;
 
-	private Object minPrincipalAmount;
+  private Integer maxNumberOfRepayments;
 
-	private Integer minimumDaysBetweenDisbursalAndFirstRepayment;
+  private Object maxPrincipalAmount;
 
-	private Boolean multiDisburseLoan;
+  private BigDecimal minNominalInterestRatePerPeriod;
 
-	private Boolean _new;
+  private Integer minNumberOfRepayments;
 
-	private BigDecimal nominalInterestRatePerPeriod;
+  private Object minPrincipalAmount;
 
-	private Integer numberOfRepayments;
+  private Integer minimumDaysBetweenDisbursalAndFirstRepayment;
 
-	private String overAppliedCalculationType;
+  private Boolean multiDisburseLoan;
 
-	private Integer overAppliedNumber;
+  private Boolean _new;
 
-	private Boolean periodicAccrualAccountingEnabled;
+  private BigDecimal nominalInterestRatePerPeriod;
 
-	private Object principalAmount;
+  private Integer numberOfRepayments;
 
-	private BigDecimal principalThresholdForLastInstallment;
+  private String overAppliedCalculationType;
 
-	private LoanProductInterestRecalculationDetails productInterestRecalculationDetails;
+  private Integer overAppliedNumber;
 
-	@Valid
-	private List<@Valid Object> rates = new ArrayList<>();
+  private Boolean periodicAccrualAccountingEnabled;
 
-	private LoanTransactionProcessingStrategy repaymentStrategy;
+  private Object principalAmount;
 
-	private String shortName;
+  private BigDecimal principalThresholdForLastInstallment;
 
-	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-	private LocalDate startDate;
+  private LoanProductInterestRecalculationDetails productInterestRecalculationDetails;
 
-	private Boolean syncExpectedWithDisbursementDate;
+  @Valid private List<@Valid Object> rates = new ArrayList<>();
 
-	private Boolean upfrontAccrualAccountingEnabled;
+  private LoanTransactionProcessingStrategy repaymentStrategy;
+
+  private String shortName;
+
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+  private LocalDate startDate;
+
+  private Boolean syncExpectedWithDisbursementDate;
+
+  private Boolean upfrontAccrualAccountingEnabled;
 }

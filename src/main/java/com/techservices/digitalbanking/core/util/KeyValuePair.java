@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.util;
 
 import lombok.Getter;
@@ -8,11 +8,12 @@ import lombok.Setter;
 @Setter
 public class KeyValuePair<K, V> {
 
-	private K key;
-	private V value;
+  private K key;
+  private V value;
 
-	public KeyValuePair(K key, V value) {
-		this.key = key;
-		this.value = value;
-	}
+  public KeyValuePair(K key, V value) {
+
+    this.key = key;
+    this.value = value;
+  }
 }

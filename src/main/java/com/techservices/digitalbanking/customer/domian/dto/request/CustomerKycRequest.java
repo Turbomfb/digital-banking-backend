@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.customer.domian.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -11,15 +11,16 @@ import lombok.Data;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CustomerKycRequest {
-	@JsonProperty("nin")
-	private String nin;
+  @JsonProperty("nin")
+  private String nin;
 
-	@JsonProperty("bvn")
-	private String bvn;
-	private String tin;
-	private String rcNumber;
+  @JsonProperty("bvn")
+  private String bvn;
 
-	private String uniqueId;
-	private String otp;
-	private String base64Image;
+  private String tin;
+  private String rcNumber;
+
+  private String uniqueId;
+  private String otp;
+  private String base64Image;
 }

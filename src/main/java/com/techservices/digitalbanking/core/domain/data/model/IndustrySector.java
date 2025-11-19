@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.domain.data.model;
 
 import jakarta.persistence.*;
@@ -10,20 +11,24 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-public class IndustrySector{
+public class IndustrySector {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "description")
-    private String description;
-    @Column(name = "name")
-    private String name;
-    @Column(name = "position")
-    private Long position;
-    @Column(name = "active")
-    private boolean active;
-    @Column(name = "mandatory")
-    private boolean mandatory;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
+  @Column(name = "description")
+  private String description;
+
+  @Column(name = "name")
+  private String name;
+
+  @Column(name = "position")
+  private Long position;
+
+  @Column(name = "active")
+  private boolean active;
+
+  @Column(name = "mandatory")
+  private boolean mandatory;
 }

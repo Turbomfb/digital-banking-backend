@@ -1,12 +1,12 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -14,26 +14,26 @@ import java.time.LocalDateTime;
 @Getter
 public class CustomerDto {
 
-    private String id;
+  private String id;
 
-    private String firstName;
+  private String firstName;
 
-    private String lastName;
+  private String lastName;
 
-    private String emailAddress;
-    private String phoneNumber;
-    private String bvn;
+  private String emailAddress;
+  private String phoneNumber;
+  private String bvn;
 
-    private String customerType;
+  private String customerType;
 
-    private String status;
+  private String status;
 
-    private LocalDate dateOfBirth;
-    private String address;
-    private String city;
-    private String state;
-    private String country;
-    private String postalCode;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+  private LocalDate dateOfBirth;
+  private String address;
+  private String city;
+  private String state;
+  private String country;
+  private String postalCode;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 }

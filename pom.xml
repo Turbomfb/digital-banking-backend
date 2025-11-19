@@ -233,6 +233,46 @@
                     </java>
                 </configuration>
             </plugin>
+
+          <!-- Spotless Plugin Configuration -->
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>2.43.0</version>
+            <configuration>
+              <java>
+                <!-- Include only Java source files in main and test directories -->
+                <includes>
+                  <include>src/main/java/**/*.java</include>
+                  <include>src/test/java/**/*.java</include>
+                </includes>
+
+                <eclipse/>
+
+                <!-- Remove unused imports and sort imports with specified order -->
+                <removeUnusedImports/>
+                <importOrder>
+                  <wildcardsLast>false</wildcardsLast>
+                  <order>java|javax,org,com,com.diffplug,,\#com.diffplug,\#</order>
+                  <semanticSort>false</semanticSort>
+                </importOrder>
+
+                <!-- Add license header to each file -->
+                <licenseHeader>
+                  <content>/* (C)$YEAR */</content>
+                </licenseHeader>
+              </java>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <!-- Uncomment the apply goal if you want to apply formatting changes automatically -->
+                  <goal>apply</goal>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
     </build>
 </project>

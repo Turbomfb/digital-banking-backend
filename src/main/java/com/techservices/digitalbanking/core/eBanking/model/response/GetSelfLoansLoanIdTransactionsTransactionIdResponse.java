@@ -1,30 +1,28 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import java.time.LocalDate;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /** GetSelfLoansLoanIdTransactionsTransactionIdResponse */
 @Getter
 @Setter
 public class GetSelfLoansLoanIdTransactionsTransactionIdResponse {
 
-	private Double amount;
+  private Double amount;
 
-	private GetLoanCurrency currency;
+  private GetLoanCurrency currency;
 
-	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-	private LocalDate date;
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+  private LocalDate date;
 
-	private Integer id;
+  private Integer id;
 
-	private Double interestPortion;
+  private Double interestPortion;
 
-	private Boolean manuallyReversed;
+  private Boolean manuallyReversed;
 
-	private GetSelfLoansLoanIdTransactionsType type;
+  private GetSelfLoansLoanIdTransactionsType type;
 }

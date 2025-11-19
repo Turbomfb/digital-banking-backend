@@ -1,270 +1,339 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
+import java.util.Objects;
 
 /** GetLoanProductsInterestRecalculationData */
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
+@Generated(
+    value = "org.openapitools.codegen.languages.SpringCodegen",
+    date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]",
+    comments = "Generator version: 7.5.0")
 public class GetLoanProductsInterestRecalculationData {
 
-	private Integer id;
+  private Integer id;
 
-	private GetLoanProductsInterestRecalculationCompoundingFrequencyType interestRecalculationCompoundingFrequencyType;
+  private GetLoanProductsInterestRecalculationCompoundingFrequencyType
+      interestRecalculationCompoundingFrequencyType;
 
-	private GetLoanProductsInterestRecalculationCompoundingType interestRecalculationCompoundingType;
+  private GetLoanProductsInterestRecalculationCompoundingType interestRecalculationCompoundingType;
 
-	private Boolean isArrearsBasedOnOriginalSchedule;
+  private Boolean isArrearsBasedOnOriginalSchedule;
 
-	private GetLoanProductsPreClosureInterestCalculationStrategy preClosureInterestCalculationStrategy;
+  private GetLoanProductsPreClosureInterestCalculationStrategy
+      preClosureInterestCalculationStrategy;
 
-	private Integer productId;
+  private Integer productId;
 
-	private GetLoanProductsInterestRecalculationCompoundingFrequencyType recalculationRestFrequencyType;
+  private GetLoanProductsInterestRecalculationCompoundingFrequencyType
+      recalculationRestFrequencyType;
 
-	private GetLoanProductsRescheduleStrategyType rescheduleStrategyType;
+  private GetLoanProductsRescheduleStrategyType rescheduleStrategyType;
 
-	public GetLoanProductsInterestRecalculationData id(Integer id) {
-		this.id = id;
-		return this;
-	}
+  public GetLoanProductsInterestRecalculationData id(Integer id) {
 
-	/**
-	 * Get id
-	 *
-	 * @return id
-	 */
-	@Schema(name = "id", example = "3", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("id")
-	public Integer getId() {
-		return id;
-	}
+    this.id = id;
+    return this;
+  }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+  /**
+   * Get id
+   *
+   * @return id
+   */
+  @Schema(name = "id", example = "3", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("id")
+  public Integer getId() {
 
-	public GetLoanProductsInterestRecalculationData interestRecalculationCompoundingFrequencyType(
-			GetLoanProductsInterestRecalculationCompoundingFrequencyType interestRecalculationCompoundingFrequencyType) {
-		this.interestRecalculationCompoundingFrequencyType = interestRecalculationCompoundingFrequencyType;
-		return this;
-	}
+    return id;
+  }
 
-	/**
-	 * Get interestRecalculationCompoundingFrequencyType
-	 *
-	 * @return interestRecalculationCompoundingFrequencyType
-	 */
-	@Valid
-	@Schema(name = "interestRecalculationCompoundingFrequencyType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("interestRecalculationCompoundingFrequencyType")
-	public GetLoanProductsInterestRecalculationCompoundingFrequencyType getInterestRecalculationCompoundingFrequencyType() {
-		return interestRecalculationCompoundingFrequencyType;
-	}
+  public void setId(Integer id) {
 
-	public void setInterestRecalculationCompoundingFrequencyType(
-			GetLoanProductsInterestRecalculationCompoundingFrequencyType interestRecalculationCompoundingFrequencyType) {
-		this.interestRecalculationCompoundingFrequencyType = interestRecalculationCompoundingFrequencyType;
-	}
+    this.id = id;
+  }
 
-	public GetLoanProductsInterestRecalculationData interestRecalculationCompoundingType(
-			GetLoanProductsInterestRecalculationCompoundingType interestRecalculationCompoundingType) {
-		this.interestRecalculationCompoundingType = interestRecalculationCompoundingType;
-		return this;
-	}
+  public GetLoanProductsInterestRecalculationData interestRecalculationCompoundingFrequencyType(
+      GetLoanProductsInterestRecalculationCompoundingFrequencyType
+          interestRecalculationCompoundingFrequencyType) {
 
-	/**
-	 * Get interestRecalculationCompoundingType
-	 *
-	 * @return interestRecalculationCompoundingType
-	 */
-	@Valid
-	@Schema(name = "interestRecalculationCompoundingType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("interestRecalculationCompoundingType")
-	public GetLoanProductsInterestRecalculationCompoundingType getInterestRecalculationCompoundingType() {
-		return interestRecalculationCompoundingType;
-	}
+    this.interestRecalculationCompoundingFrequencyType =
+        interestRecalculationCompoundingFrequencyType;
+    return this;
+  }
 
-	public void setInterestRecalculationCompoundingType(
-			GetLoanProductsInterestRecalculationCompoundingType interestRecalculationCompoundingType) {
-		this.interestRecalculationCompoundingType = interestRecalculationCompoundingType;
-	}
+  /**
+   * Get interestRecalculationCompoundingFrequencyType
+   *
+   * @return interestRecalculationCompoundingFrequencyType
+   */
+  @Valid
+  @Schema(
+      name = "interestRecalculationCompoundingFrequencyType",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("interestRecalculationCompoundingFrequencyType")
+  public GetLoanProductsInterestRecalculationCompoundingFrequencyType
+      getInterestRecalculationCompoundingFrequencyType() {
 
-	public GetLoanProductsInterestRecalculationData isArrearsBasedOnOriginalSchedule(
-			Boolean isArrearsBasedOnOriginalSchedule) {
-		this.isArrearsBasedOnOriginalSchedule = isArrearsBasedOnOriginalSchedule;
-		return this;
-	}
+    return interestRecalculationCompoundingFrequencyType;
+  }
 
-	/**
-	 * Get isArrearsBasedOnOriginalSchedule
-	 *
-	 * @return isArrearsBasedOnOriginalSchedule
-	 */
-	@Schema(name = "isArrearsBasedOnOriginalSchedule", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("isArrearsBasedOnOriginalSchedule")
-	public Boolean getIsArrearsBasedOnOriginalSchedule() {
-		return isArrearsBasedOnOriginalSchedule;
-	}
+  public void setInterestRecalculationCompoundingFrequencyType(
+      GetLoanProductsInterestRecalculationCompoundingFrequencyType
+          interestRecalculationCompoundingFrequencyType) {
 
-	public void setIsArrearsBasedOnOriginalSchedule(Boolean isArrearsBasedOnOriginalSchedule) {
-		this.isArrearsBasedOnOriginalSchedule = isArrearsBasedOnOriginalSchedule;
-	}
+    this.interestRecalculationCompoundingFrequencyType =
+        interestRecalculationCompoundingFrequencyType;
+  }
 
-	public GetLoanProductsInterestRecalculationData preClosureInterestCalculationStrategy(
-			GetLoanProductsPreClosureInterestCalculationStrategy preClosureInterestCalculationStrategy) {
-		this.preClosureInterestCalculationStrategy = preClosureInterestCalculationStrategy;
-		return this;
-	}
+  public GetLoanProductsInterestRecalculationData interestRecalculationCompoundingType(
+      GetLoanProductsInterestRecalculationCompoundingType interestRecalculationCompoundingType) {
 
-	/**
-	 * Get preClosureInterestCalculationStrategy
-	 *
-	 * @return preClosureInterestCalculationStrategy
-	 */
-	@Valid
-	@Schema(name = "preClosureInterestCalculationStrategy", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("preClosureInterestCalculationStrategy")
-	public GetLoanProductsPreClosureInterestCalculationStrategy getPreClosureInterestCalculationStrategy() {
-		return preClosureInterestCalculationStrategy;
-	}
+    this.interestRecalculationCompoundingType = interestRecalculationCompoundingType;
+    return this;
+  }
 
-	public void setPreClosureInterestCalculationStrategy(
-			GetLoanProductsPreClosureInterestCalculationStrategy preClosureInterestCalculationStrategy) {
-		this.preClosureInterestCalculationStrategy = preClosureInterestCalculationStrategy;
-	}
+  /**
+   * Get interestRecalculationCompoundingType
+   *
+   * @return interestRecalculationCompoundingType
+   */
+  @Valid
+  @Schema(
+      name = "interestRecalculationCompoundingType",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("interestRecalculationCompoundingType")
+  public GetLoanProductsInterestRecalculationCompoundingType
+      getInterestRecalculationCompoundingType() {
 
-	public GetLoanProductsInterestRecalculationData productId(Integer productId) {
-		this.productId = productId;
-		return this;
-	}
+    return interestRecalculationCompoundingType;
+  }
 
-	/**
-	 * Get productId
-	 *
-	 * @return productId
-	 */
-	@Schema(name = "productId", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("productId")
-	public Integer getProductId() {
-		return productId;
-	}
+  public void setInterestRecalculationCompoundingType(
+      GetLoanProductsInterestRecalculationCompoundingType interestRecalculationCompoundingType) {
 
-	public void setProductId(Integer productId) {
-		this.productId = productId;
-	}
+    this.interestRecalculationCompoundingType = interestRecalculationCompoundingType;
+  }
 
-	public GetLoanProductsInterestRecalculationData recalculationRestFrequencyType(
-			GetLoanProductsInterestRecalculationCompoundingFrequencyType recalculationRestFrequencyType) {
-		this.recalculationRestFrequencyType = recalculationRestFrequencyType;
-		return this;
-	}
+  public GetLoanProductsInterestRecalculationData isArrearsBasedOnOriginalSchedule(
+      Boolean isArrearsBasedOnOriginalSchedule) {
 
-	/**
-	 * Get recalculationRestFrequencyType
-	 *
-	 * @return recalculationRestFrequencyType
-	 */
-	@Valid
-	@Schema(name = "recalculationRestFrequencyType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("recalculationRestFrequencyType")
-	public GetLoanProductsInterestRecalculationCompoundingFrequencyType getRecalculationRestFrequencyType() {
-		return recalculationRestFrequencyType;
-	}
+    this.isArrearsBasedOnOriginalSchedule = isArrearsBasedOnOriginalSchedule;
+    return this;
+  }
 
-	public void setRecalculationRestFrequencyType(
-			GetLoanProductsInterestRecalculationCompoundingFrequencyType recalculationRestFrequencyType) {
-		this.recalculationRestFrequencyType = recalculationRestFrequencyType;
-	}
+  /**
+   * Get isArrearsBasedOnOriginalSchedule
+   *
+   * @return isArrearsBasedOnOriginalSchedule
+   */
+  @Schema(
+      name = "isArrearsBasedOnOriginalSchedule",
+      example = "true",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("isArrearsBasedOnOriginalSchedule")
+  public Boolean getIsArrearsBasedOnOriginalSchedule() {
 
-	public GetLoanProductsInterestRecalculationData rescheduleStrategyType(
-			GetLoanProductsRescheduleStrategyType rescheduleStrategyType) {
-		this.rescheduleStrategyType = rescheduleStrategyType;
-		return this;
-	}
+    return isArrearsBasedOnOriginalSchedule;
+  }
 
-	/**
-	 * Get rescheduleStrategyType
-	 *
-	 * @return rescheduleStrategyType
-	 */
-	@Valid
-	@Schema(name = "rescheduleStrategyType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("rescheduleStrategyType")
-	public GetLoanProductsRescheduleStrategyType getRescheduleStrategyType() {
-		return rescheduleStrategyType;
-	}
+  public void setIsArrearsBasedOnOriginalSchedule(Boolean isArrearsBasedOnOriginalSchedule) {
 
-	public void setRescheduleStrategyType(GetLoanProductsRescheduleStrategyType rescheduleStrategyType) {
-		this.rescheduleStrategyType = rescheduleStrategyType;
-	}
+    this.isArrearsBasedOnOriginalSchedule = isArrearsBasedOnOriginalSchedule;
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		GetLoanProductsInterestRecalculationData getLoanProductsInterestRecalculationData = (GetLoanProductsInterestRecalculationData) o;
-		return Objects.equals(this.id, getLoanProductsInterestRecalculationData.id)
-				&& Objects.equals(this.interestRecalculationCompoundingFrequencyType,
-						getLoanProductsInterestRecalculationData.interestRecalculationCompoundingFrequencyType)
-				&& Objects.equals(this.interestRecalculationCompoundingType,
-						getLoanProductsInterestRecalculationData.interestRecalculationCompoundingType)
-				&& Objects.equals(this.isArrearsBasedOnOriginalSchedule,
-						getLoanProductsInterestRecalculationData.isArrearsBasedOnOriginalSchedule)
-				&& Objects.equals(this.preClosureInterestCalculationStrategy,
-						getLoanProductsInterestRecalculationData.preClosureInterestCalculationStrategy)
-				&& Objects.equals(this.productId, getLoanProductsInterestRecalculationData.productId)
-				&& Objects.equals(this.recalculationRestFrequencyType,
-						getLoanProductsInterestRecalculationData.recalculationRestFrequencyType)
-				&& Objects.equals(this.rescheduleStrategyType,
-						getLoanProductsInterestRecalculationData.rescheduleStrategyType);
-	}
+  public GetLoanProductsInterestRecalculationData preClosureInterestCalculationStrategy(
+      GetLoanProductsPreClosureInterestCalculationStrategy preClosureInterestCalculationStrategy) {
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id, interestRecalculationCompoundingFrequencyType, interestRecalculationCompoundingType,
-				isArrearsBasedOnOriginalSchedule, preClosureInterestCalculationStrategy, productId,
-				recalculationRestFrequencyType, rescheduleStrategyType);
-	}
+    this.preClosureInterestCalculationStrategy = preClosureInterestCalculationStrategy;
+    return this;
+  }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("class GetLoanProductsInterestRecalculationData {\n");
-		sb.append("    id: ").append(toIndentedString(id)).append("\n");
-		sb.append("    interestRecalculationCompoundingFrequencyType: ")
-				.append(toIndentedString(interestRecalculationCompoundingFrequencyType)).append("\n");
-		sb.append("    interestRecalculationCompoundingType: ")
-				.append(toIndentedString(interestRecalculationCompoundingType)).append("\n");
-		sb.append("    isArrearsBasedOnOriginalSchedule: ").append(toIndentedString(isArrearsBasedOnOriginalSchedule))
-				.append("\n");
-		sb.append("    preClosureInterestCalculationStrategy: ")
-				.append(toIndentedString(preClosureInterestCalculationStrategy)).append("\n");
-		sb.append("    productId: ").append(toIndentedString(productId)).append("\n");
-		sb.append("    recalculationRestFrequencyType: ").append(toIndentedString(recalculationRestFrequencyType))
-				.append("\n");
-		sb.append("    rescheduleStrategyType: ").append(toIndentedString(rescheduleStrategyType)).append("\n");
-		sb.append("}");
-		return sb.toString();
-	}
+  /**
+   * Get preClosureInterestCalculationStrategy
+   *
+   * @return preClosureInterestCalculationStrategy
+   */
+  @Valid
+  @Schema(
+      name = "preClosureInterestCalculationStrategy",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("preClosureInterestCalculationStrategy")
+  public GetLoanProductsPreClosureInterestCalculationStrategy
+      getPreClosureInterestCalculationStrategy() {
 
-	/**
-	 * Convert the given object to string with each line indented by 4 spaces
-	 * (except the first line).
-	 */
-	private String toIndentedString(Object o) {
-		if (o == null) {
-			return "null";
-		}
-		return o.toString().replace("\n", "\n    ");
-	}
+    return preClosureInterestCalculationStrategy;
+  }
+
+  public void setPreClosureInterestCalculationStrategy(
+      GetLoanProductsPreClosureInterestCalculationStrategy preClosureInterestCalculationStrategy) {
+
+    this.preClosureInterestCalculationStrategy = preClosureInterestCalculationStrategy;
+  }
+
+  public GetLoanProductsInterestRecalculationData productId(Integer productId) {
+
+    this.productId = productId;
+    return this;
+  }
+
+  /**
+   * Get productId
+   *
+   * @return productId
+   */
+  @Schema(name = "productId", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("productId")
+  public Integer getProductId() {
+
+    return productId;
+  }
+
+  public void setProductId(Integer productId) {
+
+    this.productId = productId;
+  }
+
+  public GetLoanProductsInterestRecalculationData recalculationRestFrequencyType(
+      GetLoanProductsInterestRecalculationCompoundingFrequencyType recalculationRestFrequencyType) {
+
+    this.recalculationRestFrequencyType = recalculationRestFrequencyType;
+    return this;
+  }
+
+  /**
+   * Get recalculationRestFrequencyType
+   *
+   * @return recalculationRestFrequencyType
+   */
+  @Valid
+  @Schema(name = "recalculationRestFrequencyType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("recalculationRestFrequencyType")
+  public GetLoanProductsInterestRecalculationCompoundingFrequencyType
+      getRecalculationRestFrequencyType() {
+
+    return recalculationRestFrequencyType;
+  }
+
+  public void setRecalculationRestFrequencyType(
+      GetLoanProductsInterestRecalculationCompoundingFrequencyType recalculationRestFrequencyType) {
+
+    this.recalculationRestFrequencyType = recalculationRestFrequencyType;
+  }
+
+  public GetLoanProductsInterestRecalculationData rescheduleStrategyType(
+      GetLoanProductsRescheduleStrategyType rescheduleStrategyType) {
+
+    this.rescheduleStrategyType = rescheduleStrategyType;
+    return this;
+  }
+
+  /**
+   * Get rescheduleStrategyType
+   *
+   * @return rescheduleStrategyType
+   */
+  @Valid
+  @Schema(name = "rescheduleStrategyType", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("rescheduleStrategyType")
+  public GetLoanProductsRescheduleStrategyType getRescheduleStrategyType() {
+
+    return rescheduleStrategyType;
+  }
+
+  public void setRescheduleStrategyType(
+      GetLoanProductsRescheduleStrategyType rescheduleStrategyType) {
+
+    this.rescheduleStrategyType = rescheduleStrategyType;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    GetLoanProductsInterestRecalculationData getLoanProductsInterestRecalculationData =
+        (GetLoanProductsInterestRecalculationData) o;
+    return Objects.equals(this.id, getLoanProductsInterestRecalculationData.id)
+        && Objects.equals(
+            this.interestRecalculationCompoundingFrequencyType,
+            getLoanProductsInterestRecalculationData.interestRecalculationCompoundingFrequencyType)
+        && Objects.equals(
+            this.interestRecalculationCompoundingType,
+            getLoanProductsInterestRecalculationData.interestRecalculationCompoundingType)
+        && Objects.equals(
+            this.isArrearsBasedOnOriginalSchedule,
+            getLoanProductsInterestRecalculationData.isArrearsBasedOnOriginalSchedule)
+        && Objects.equals(
+            this.preClosureInterestCalculationStrategy,
+            getLoanProductsInterestRecalculationData.preClosureInterestCalculationStrategy)
+        && Objects.equals(this.productId, getLoanProductsInterestRecalculationData.productId)
+        && Objects.equals(
+            this.recalculationRestFrequencyType,
+            getLoanProductsInterestRecalculationData.recalculationRestFrequencyType)
+        && Objects.equals(
+            this.rescheduleStrategyType,
+            getLoanProductsInterestRecalculationData.rescheduleStrategyType);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(
+        id,
+        interestRecalculationCompoundingFrequencyType,
+        interestRecalculationCompoundingType,
+        isArrearsBasedOnOriginalSchedule,
+        preClosureInterestCalculationStrategy,
+        productId,
+        recalculationRestFrequencyType,
+        rescheduleStrategyType);
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("class GetLoanProductsInterestRecalculationData {\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    interestRecalculationCompoundingFrequencyType: ")
+        .append(toIndentedString(interestRecalculationCompoundingFrequencyType))
+        .append("\n");
+    sb.append("    interestRecalculationCompoundingType: ")
+        .append(toIndentedString(interestRecalculationCompoundingType))
+        .append("\n");
+    sb.append("    isArrearsBasedOnOriginalSchedule: ")
+        .append(toIndentedString(isArrearsBasedOnOriginalSchedule))
+        .append("\n");
+    sb.append("    preClosureInterestCalculationStrategy: ")
+        .append(toIndentedString(preClosureInterestCalculationStrategy))
+        .append("\n");
+    sb.append("    productId: ").append(toIndentedString(productId)).append("\n");
+    sb.append("    recalculationRestFrequencyType: ")
+        .append(toIndentedString(recalculationRestFrequencyType))
+        .append("\n");
+    sb.append("    rescheduleStrategyType: ")
+        .append(toIndentedString(rescheduleStrategyType))
+        .append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
+   */
+  private String toIndentedString(Object o) {
+
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }

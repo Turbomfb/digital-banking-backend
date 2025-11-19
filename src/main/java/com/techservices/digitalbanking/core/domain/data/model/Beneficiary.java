@@ -1,14 +1,17 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.domain.data.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "beneficiary", uniqueConstraints = @UniqueConstraint(columnNames = {"customer_id", "account_number", "bank_code"}))
+@Table(
+    name = "beneficiary",
+    uniqueConstraints =
+        @UniqueConstraint(columnNames = {"customer_id", "account_number", "bank_code"}))
 @Setter
 @Getter
 @ToString
@@ -56,15 +59,18 @@ public class Beneficiary {
 
   @PrePersist
   protected void onCreate() {
+
     createdAt = LocalDateTime.now();
   }
 
   @PreUpdate
   protected void onUpdate() {
+
     lastModifiedAt = LocalDateTime.now();
   }
 
   public void incrementUsageCount() {
+
     if (this.usageCount == null) {
       this.usageCount = 0;
     }

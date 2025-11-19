@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class DeleteLoansLoanIdCollateralsCollateralIdResponse {
 
-	private Integer loanId;
+  private Integer loanId;
 
-	private Integer resourceId;
+  private Integer resourceId;
 }

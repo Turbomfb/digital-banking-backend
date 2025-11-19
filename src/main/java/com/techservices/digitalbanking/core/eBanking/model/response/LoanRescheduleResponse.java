@@ -1,8 +1,7 @@
-/* Developed by MKAN Engineering (C)2025 */
+/* (C)2025 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +10,6 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoanRescheduleResponse {
 
-	private Long loanId;
-	private Long resourceId;
+  private Long loanId;
+  private Long resourceId;
 }

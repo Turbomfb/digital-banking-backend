@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.customer.service;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
@@ -9,35 +9,46 @@ import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.dto.request.*;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
-import org.springframework.data.domain.Pageable;
-
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 
 public interface CustomerService {
 
-	BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType);
+  BaseAppResponse createCustomer(
+      CreateCustomerRequest createCustomerRequest, String command, UserType customerType);
 
-	Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer existingCustomer, boolean isExternalServiceUpdateAllowed);
+  Customer updateCustomer(
+      CustomerUpdateRequest customerUpdateRequest,
+      Long customerId,
+      Customer existingCustomer,
+      boolean isExternalServiceUpdateAllowed);
 
-	Customer getCustomerById(Long customerId);
-	Optional<Customer> getCustomerByEmailAddress(String emailAddress);
-	Optional<Customer> getCustomerByPhoneNumber(String phoneNumber);
-	Optional<Customer> getCustomerByEmailAddressAndUserType(String emailAddress, UserType customerType);
-	Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber, UserType customerType);
+  Customer getCustomerById(Long customerId);
 
-	BasePageResponse<CustomerDtoResponse> getAllCustomers(Pageable pageable);
+  Optional<Customer> getCustomerByEmailAddress(String emailAddress);
 
-	CustomerDashboardResponse retrieveCustomerDashboard(Long customerId);
+  Optional<Customer> getCustomerByPhoneNumber(String phoneNumber);
 
-	GenericApiResponse createTransactionPin(Long customerId, CustomerTransactionPinRequest customerTransactionPinRequest);
+  Optional<Customer> getCustomerByEmailAddressAndUserType(
+      String emailAddress, UserType customerType);
 
-	String getCustomerSavingsId(Long customerId);
+  Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber, UserType customerType);
 
-	GenericApiResponse closeAccount(Long customerId, CustomerAccountClosureRequest request);
+  BasePageResponse<CustomerDtoResponse> getAllCustomers(Pageable pageable);
 
-	void validateDuplicateCustomerByRcNumber(String rcNumber);
+  CustomerDashboardResponse retrieveCustomerDashboard(Long customerId);
 
-    GenericApiResponse activateAccount(CustomerAccountActivationRequest request, UserType userType);
+  GenericApiResponse createTransactionPin(
+      Long customerId, CustomerTransactionPinRequest customerTransactionPinRequest);
 
-	Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber, UserType customerType);
+  String getCustomerSavingsId(Long customerId);
+
+  GenericApiResponse closeAccount(Long customerId, CustomerAccountClosureRequest request);
+
+  void validateDuplicateCustomerByRcNumber(String rcNumber);
+
+  GenericApiResponse activateAccount(CustomerAccountActivationRequest request, UserType userType);
+
+  Customer getCustomerByEmailOrPhoneNumber(
+      String emailAddress, String phoneNumber, UserType customerType);
 }

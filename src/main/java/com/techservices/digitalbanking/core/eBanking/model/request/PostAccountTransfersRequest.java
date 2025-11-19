@@ -1,11 +1,9 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.request;
-
-import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
+import java.math.BigDecimal;
 import lombok.*;
 
 @Data
@@ -16,13 +14,13 @@ import lombok.*;
 @AllArgsConstructor
 public class PostAccountTransfersRequest {
 
-	private String fromAccountId;
+  private String fromAccountId;
 
-	private String toAccountId;
+  private String toAccountId;
 
-	private BigDecimal transferAmount;
+  private BigDecimal transferAmount;
 
-	private String transactionReference;
+  private String transactionReference;
 
-	private String transferDescription;
+  private String transferDescription;
 }

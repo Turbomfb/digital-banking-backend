@@ -1,16 +1,13 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.loan.domain.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.techservices.digitalbanking.core.domain.dto.LoanDto;
-import com.techservices.digitalbanking.core.eBanking.model.response.GetLoansLoanIdResponse;
+import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Setter
 @Getter
@@ -19,10 +16,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Builder
 public class LoanDashboardResponse {
-    private BigDecimal activeLoanBalance;
-    private BigDecimal totalExpectedRepayment;
-    private BigDecimal totalRepaid;
-    private Long activeLoanCount;
-    private Long pendingLoanCount;
-    private Long liquidatedLoanCount;
+  private BigDecimal activeLoanBalance;
+  private BigDecimal totalExpectedRepayment;
+  private BigDecimal totalRepaid;
+  private Long activeLoanCount;
+  private Long pendingLoanCount;
+  private Long liquidatedLoanCount;
 }

@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import lombok.Getter;
@@ -9,15 +9,15 @@ import lombok.Setter;
 @Setter
 public class GetGroupsGroupIdAccountsLoanAccounts {
 
-	private Long accountNo;
+  private Long accountNo;
 
-	private Integer id;
+  private Integer id;
 
-	private GetGroupsGroupIdAccountsLoanType loanType;
+  private GetGroupsGroupIdAccountsLoanType loanType;
 
-	private Integer productId;
+  private Integer productId;
 
-	private String productName;
+  private String productName;
 
-	private Object status;
+  private Object status;
 }

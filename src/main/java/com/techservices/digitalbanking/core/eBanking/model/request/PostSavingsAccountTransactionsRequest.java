@@ -1,15 +1,9 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.request;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import lombok.Data;
 
 @Data
@@ -17,7 +11,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostSavingsAccountTransactionsRequest {
 
-	private BigDecimal transactionAmount;
-	private String transactionReference;
-	private String narration;
+  private BigDecimal transactionAmount;
+  private String transactionReference;
+  private String narration;
 }

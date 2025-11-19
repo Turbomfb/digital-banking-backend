@@ -1,10 +1,9 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import lombok.Data;
 
 @Data
@@ -12,19 +11,19 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetClientsLoanAccounts {
 
-	private String accountNo;
+  private String accountNo;
 
-	private String externalId;
+  private String externalId;
 
-	private Integer id;
+  private Integer id;
 
-	private Integer loanCycle;
+  private Integer loanCycle;
 
-	private EnumOptionData loanType;
+  private EnumOptionData loanType;
 
-	private Integer productId;
+  private Integer productId;
 
-	private String productName;
+  private String productName;
 
-	private GetClientsLoanAccountsStatus status;
+  private GetClientsLoanAccountsStatus status;
 }

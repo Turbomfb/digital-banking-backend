@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import lombok.Getter;
@@ -7,35 +7,35 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GetFixedDepositProductsResponse {
-	private GetFixedDepositProductsAccountingRule accountingRule;
+  private GetFixedDepositProductsAccountingRule accountingRule;
 
-	private GetSavingsCurrency currency;
+  private GetSavingsCurrency currency;
 
-	private String description;
+  private String description;
 
-	private Integer id;
+  private Integer id;
 
-	private EnumOptionData interestCalculationDaysInYearType;
+  private EnumOptionData interestCalculationDaysInYearType;
 
-	private EnumOptionData interestCalculationType;
+  private EnumOptionData interestCalculationType;
 
-	private EnumOptionData interestCompoundingPeriodType;
+  private EnumOptionData interestCompoundingPeriodType;
 
-	private EnumOptionData interestPostingPeriodType;
+  private EnumOptionData interestPostingPeriodType;
 
-	private Integer maxDepositTerm;
+  private Integer maxDepositTerm;
 
-	private EnumOptionData maxDepositTermType;
+  private EnumOptionData maxDepositTermType;
 
-	private Integer minDepositTerm;
+  private Integer minDepositTerm;
 
-	private EnumOptionData minDepositTermType;
+  private EnumOptionData minDepositTermType;
 
-	private String name;
+  private String name;
 
-	private Double nominalAnnualInterestRate;
+  private Double nominalAnnualInterestRate;
 
-	private Boolean preClosurePenalApplicable;
+  private Boolean preClosurePenalApplicable;
 
-	private String shortName;
+  private String shortName;
 }

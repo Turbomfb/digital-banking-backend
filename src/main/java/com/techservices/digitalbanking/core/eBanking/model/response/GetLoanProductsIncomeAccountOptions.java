@@ -1,295 +1,358 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
+import java.util.Objects;
 
 /** GetLoanProductsIncomeAccountOptions */
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
+@Generated(
+    value = "org.openapitools.codegen.languages.SpringCodegen",
+    date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]",
+    comments = "Generator version: 7.5.0")
 public class GetLoanProductsIncomeAccountOptions {
 
-	private Boolean disabled;
+  private Boolean disabled;
 
-	private Integer glCode;
+  private Integer glCode;
 
-	private Integer id;
+  private Integer id;
 
-	private Boolean manualEntriesAllowed;
+  private Boolean manualEntriesAllowed;
 
-	private String name;
+  private String name;
 
-	private String nameDecorated;
+  private String nameDecorated;
 
-	private Integer organizationRunningBalance;
+  private Integer organizationRunningBalance;
 
-	private GetLoanProductsLiabilityTagId tagId;
+  private GetLoanProductsLiabilityTagId tagId;
 
-	private GetLoanProductsIncomeType type;
+  private GetLoanProductsIncomeType type;
 
-	private GetLoanProductsLiabilityUsage usage;
+  private GetLoanProductsLiabilityUsage usage;
 
-	public GetLoanProductsIncomeAccountOptions disabled(Boolean disabled) {
-		this.disabled = disabled;
-		return this;
-	}
+  public GetLoanProductsIncomeAccountOptions disabled(Boolean disabled) {
 
-	/**
-	 * Get disabled
-	 *
-	 * @return disabled
-	 */
-	@Schema(name = "disabled", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("disabled")
-	public Boolean getDisabled() {
-		return disabled;
-	}
+    this.disabled = disabled;
+    return this;
+  }
 
-	public void setDisabled(Boolean disabled) {
-		this.disabled = disabled;
-	}
+  /**
+   * Get disabled
+   *
+   * @return disabled
+   */
+  @Schema(name = "disabled", example = "false", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("disabled")
+  public Boolean getDisabled() {
 
-	public GetLoanProductsIncomeAccountOptions glCode(Integer glCode) {
-		this.glCode = glCode;
-		return this;
-	}
+    return disabled;
+  }
 
-	/**
-	 * Get glCode
-	 *
-	 * @return glCode
-	 */
-	@Schema(name = "glCode", example = "4", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("glCode")
-	public Integer getGlCode() {
-		return glCode;
-	}
+  public void setDisabled(Boolean disabled) {
 
-	public void setGlCode(Integer glCode) {
-		this.glCode = glCode;
-	}
+    this.disabled = disabled;
+  }
 
-	public GetLoanProductsIncomeAccountOptions id(Integer id) {
-		this.id = id;
-		return this;
-	}
+  public GetLoanProductsIncomeAccountOptions glCode(Integer glCode) {
 
-	/**
-	 * Get id
-	 *
-	 * @return id
-	 */
-	@Schema(name = "id", example = "4", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("id")
-	public Integer getId() {
-		return id;
-	}
+    this.glCode = glCode;
+    return this;
+  }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+  /**
+   * Get glCode
+   *
+   * @return glCode
+   */
+  @Schema(name = "glCode", example = "4", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("glCode")
+  public Integer getGlCode() {
 
-	public GetLoanProductsIncomeAccountOptions manualEntriesAllowed(Boolean manualEntriesAllowed) {
-		this.manualEntriesAllowed = manualEntriesAllowed;
-		return this;
-	}
+    return glCode;
+  }
 
-	/**
-	 * Get manualEntriesAllowed
-	 *
-	 * @return manualEntriesAllowed
-	 */
-	@Schema(name = "manualEntriesAllowed", example = "true", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("manualEntriesAllowed")
-	public Boolean getManualEntriesAllowed() {
-		return manualEntriesAllowed;
-	}
+  public void setGlCode(Integer glCode) {
 
-	public void setManualEntriesAllowed(Boolean manualEntriesAllowed) {
-		this.manualEntriesAllowed = manualEntriesAllowed;
-	}
+    this.glCode = glCode;
+  }
 
-	public GetLoanProductsIncomeAccountOptions name(String name) {
-		this.name = name;
-		return this;
-	}
+  public GetLoanProductsIncomeAccountOptions id(Integer id) {
 
-	/**
-	 * Get name
-	 *
-	 * @return name
-	 */
-	@Schema(name = "name", example = "income from interest", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("name")
-	public String getName() {
-		return name;
-	}
+    this.id = id;
+    return this;
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Get id
+   *
+   * @return id
+   */
+  @Schema(name = "id", example = "4", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("id")
+  public Integer getId() {
 
-	public GetLoanProductsIncomeAccountOptions nameDecorated(String nameDecorated) {
-		this.nameDecorated = nameDecorated;
-		return this;
-	}
+    return id;
+  }
 
-	/**
-	 * Get nameDecorated
-	 *
-	 * @return nameDecorated
-	 */
-	@Schema(name = "nameDecorated", example = "income from interest", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("nameDecorated")
-	public String getNameDecorated() {
-		return nameDecorated;
-	}
+  public void setId(Integer id) {
 
-	public void setNameDecorated(String nameDecorated) {
-		this.nameDecorated = nameDecorated;
-	}
+    this.id = id;
+  }
 
-	public GetLoanProductsIncomeAccountOptions organizationRunningBalance(Integer organizationRunningBalance) {
-		this.organizationRunningBalance = organizationRunningBalance;
-		return this;
-	}
+  public GetLoanProductsIncomeAccountOptions manualEntriesAllowed(Boolean manualEntriesAllowed) {
 
-	/**
-	 * Get organizationRunningBalance
-	 *
-	 * @return organizationRunningBalance
-	 */
-	@Schema(name = "organizationRunningBalance", example = "19", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("organizationRunningBalance")
-	public Integer getOrganizationRunningBalance() {
-		return organizationRunningBalance;
-	}
+    this.manualEntriesAllowed = manualEntriesAllowed;
+    return this;
+  }
 
-	public void setOrganizationRunningBalance(Integer organizationRunningBalance) {
-		this.organizationRunningBalance = organizationRunningBalance;
-	}
+  /**
+   * Get manualEntriesAllowed
+   *
+   * @return manualEntriesAllowed
+   */
+  @Schema(
+      name = "manualEntriesAllowed",
+      example = "true",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("manualEntriesAllowed")
+  public Boolean getManualEntriesAllowed() {
 
-	public GetLoanProductsIncomeAccountOptions tagId(GetLoanProductsLiabilityTagId tagId) {
-		this.tagId = tagId;
-		return this;
-	}
+    return manualEntriesAllowed;
+  }
 
-	/**
-	 * Get tagId
-	 *
-	 * @return tagId
-	 */
-	@Valid
-	@Schema(name = "tagId", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("tagId")
-	public GetLoanProductsLiabilityTagId getTagId() {
-		return tagId;
-	}
+  public void setManualEntriesAllowed(Boolean manualEntriesAllowed) {
 
-	public void setTagId(GetLoanProductsLiabilityTagId tagId) {
-		this.tagId = tagId;
-	}
+    this.manualEntriesAllowed = manualEntriesAllowed;
+  }
 
-	public GetLoanProductsIncomeAccountOptions type(GetLoanProductsIncomeType type) {
-		this.type = type;
-		return this;
-	}
+  public GetLoanProductsIncomeAccountOptions name(String name) {
 
-	/**
-	 * Get type
-	 *
-	 * @return type
-	 */
-	@Valid
-	@Schema(name = "type", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("type")
-	public GetLoanProductsIncomeType getType() {
-		return type;
-	}
+    this.name = name;
+    return this;
+  }
 
-	public void setType(GetLoanProductsIncomeType type) {
-		this.type = type;
-	}
+  /**
+   * Get name
+   *
+   * @return name
+   */
+  @Schema(
+      name = "name",
+      example = "income from interest",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("name")
+  public String getName() {
 
-	public GetLoanProductsIncomeAccountOptions usage(GetLoanProductsLiabilityUsage usage) {
-		this.usage = usage;
-		return this;
-	}
+    return name;
+  }
 
-	/**
-	 * Get usage
-	 *
-	 * @return usage
-	 */
-	@Valid
-	@Schema(name = "usage", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("usage")
-	public GetLoanProductsLiabilityUsage getUsage() {
-		return usage;
-	}
+  public void setName(String name) {
 
-	public void setUsage(GetLoanProductsLiabilityUsage usage) {
-		this.usage = usage;
-	}
+    this.name = name;
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		GetLoanProductsIncomeAccountOptions getLoanProductsIncomeAccountOptions = (GetLoanProductsIncomeAccountOptions) o;
-		return Objects.equals(this.disabled, getLoanProductsIncomeAccountOptions.disabled)
-				&& Objects.equals(this.glCode, getLoanProductsIncomeAccountOptions.glCode)
-				&& Objects.equals(this.id, getLoanProductsIncomeAccountOptions.id)
-				&& Objects.equals(this.manualEntriesAllowed, getLoanProductsIncomeAccountOptions.manualEntriesAllowed)
-				&& Objects.equals(this.name, getLoanProductsIncomeAccountOptions.name)
-				&& Objects.equals(this.nameDecorated, getLoanProductsIncomeAccountOptions.nameDecorated)
-				&& Objects.equals(this.organizationRunningBalance,
-						getLoanProductsIncomeAccountOptions.organizationRunningBalance)
-				&& Objects.equals(this.tagId, getLoanProductsIncomeAccountOptions.tagId)
-				&& Objects.equals(this.type, getLoanProductsIncomeAccountOptions.type)
-				&& Objects.equals(this.usage, getLoanProductsIncomeAccountOptions.usage);
-	}
+  public GetLoanProductsIncomeAccountOptions nameDecorated(String nameDecorated) {
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(disabled, glCode, id, manualEntriesAllowed, name, nameDecorated, organizationRunningBalance,
-				tagId, type, usage);
-	}
+    this.nameDecorated = nameDecorated;
+    return this;
+  }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("class GetLoanProductsIncomeAccountOptions {\n");
-		sb.append("    disabled: ").append(toIndentedString(disabled)).append("\n");
-		sb.append("    glCode: ").append(toIndentedString(glCode)).append("\n");
-		sb.append("    id: ").append(toIndentedString(id)).append("\n");
-		sb.append("    manualEntriesAllowed: ").append(toIndentedString(manualEntriesAllowed)).append("\n");
-		sb.append("    name: ").append(toIndentedString(name)).append("\n");
-		sb.append("    nameDecorated: ").append(toIndentedString(nameDecorated)).append("\n");
-		sb.append("    organizationRunningBalance: ").append(toIndentedString(organizationRunningBalance)).append("\n");
-		sb.append("    tagId: ").append(toIndentedString(tagId)).append("\n");
-		sb.append("    type: ").append(toIndentedString(type)).append("\n");
-		sb.append("    usage: ").append(toIndentedString(usage)).append("\n");
-		sb.append("}");
-		return sb.toString();
-	}
+  /**
+   * Get nameDecorated
+   *
+   * @return nameDecorated
+   */
+  @Schema(
+      name = "nameDecorated",
+      example = "income from interest",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("nameDecorated")
+  public String getNameDecorated() {
 
-	/**
-	 * Convert the given object to string with each line indented by 4 spaces
-	 * (except the first line).
-	 */
-	private String toIndentedString(Object o) {
-		if (o == null) {
-			return "null";
-		}
-		return o.toString().replace("\n", "\n    ");
-	}
+    return nameDecorated;
+  }
+
+  public void setNameDecorated(String nameDecorated) {
+
+    this.nameDecorated = nameDecorated;
+  }
+
+  public GetLoanProductsIncomeAccountOptions organizationRunningBalance(
+      Integer organizationRunningBalance) {
+
+    this.organizationRunningBalance = organizationRunningBalance;
+    return this;
+  }
+
+  /**
+   * Get organizationRunningBalance
+   *
+   * @return organizationRunningBalance
+   */
+  @Schema(
+      name = "organizationRunningBalance",
+      example = "19",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("organizationRunningBalance")
+  public Integer getOrganizationRunningBalance() {
+
+    return organizationRunningBalance;
+  }
+
+  public void setOrganizationRunningBalance(Integer organizationRunningBalance) {
+
+    this.organizationRunningBalance = organizationRunningBalance;
+  }
+
+  public GetLoanProductsIncomeAccountOptions tagId(GetLoanProductsLiabilityTagId tagId) {
+
+    this.tagId = tagId;
+    return this;
+  }
+
+  /**
+   * Get tagId
+   *
+   * @return tagId
+   */
+  @Valid
+  @Schema(name = "tagId", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("tagId")
+  public GetLoanProductsLiabilityTagId getTagId() {
+
+    return tagId;
+  }
+
+  public void setTagId(GetLoanProductsLiabilityTagId tagId) {
+
+    this.tagId = tagId;
+  }
+
+  public GetLoanProductsIncomeAccountOptions type(GetLoanProductsIncomeType type) {
+
+    this.type = type;
+    return this;
+  }
+
+  /**
+   * Get type
+   *
+   * @return type
+   */
+  @Valid
+  @Schema(name = "type", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("type")
+  public GetLoanProductsIncomeType getType() {
+
+    return type;
+  }
+
+  public void setType(GetLoanProductsIncomeType type) {
+
+    this.type = type;
+  }
+
+  public GetLoanProductsIncomeAccountOptions usage(GetLoanProductsLiabilityUsage usage) {
+
+    this.usage = usage;
+    return this;
+  }
+
+  /**
+   * Get usage
+   *
+   * @return usage
+   */
+  @Valid
+  @Schema(name = "usage", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("usage")
+  public GetLoanProductsLiabilityUsage getUsage() {
+
+    return usage;
+  }
+
+  public void setUsage(GetLoanProductsLiabilityUsage usage) {
+
+    this.usage = usage;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    GetLoanProductsIncomeAccountOptions getLoanProductsIncomeAccountOptions =
+        (GetLoanProductsIncomeAccountOptions) o;
+    return Objects.equals(this.disabled, getLoanProductsIncomeAccountOptions.disabled)
+        && Objects.equals(this.glCode, getLoanProductsIncomeAccountOptions.glCode)
+        && Objects.equals(this.id, getLoanProductsIncomeAccountOptions.id)
+        && Objects.equals(
+            this.manualEntriesAllowed, getLoanProductsIncomeAccountOptions.manualEntriesAllowed)
+        && Objects.equals(this.name, getLoanProductsIncomeAccountOptions.name)
+        && Objects.equals(this.nameDecorated, getLoanProductsIncomeAccountOptions.nameDecorated)
+        && Objects.equals(
+            this.organizationRunningBalance,
+            getLoanProductsIncomeAccountOptions.organizationRunningBalance)
+        && Objects.equals(this.tagId, getLoanProductsIncomeAccountOptions.tagId)
+        && Objects.equals(this.type, getLoanProductsIncomeAccountOptions.type)
+        && Objects.equals(this.usage, getLoanProductsIncomeAccountOptions.usage);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(
+        disabled,
+        glCode,
+        id,
+        manualEntriesAllowed,
+        name,
+        nameDecorated,
+        organizationRunningBalance,
+        tagId,
+        type,
+        usage);
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("class GetLoanProductsIncomeAccountOptions {\n");
+    sb.append("    disabled: ").append(toIndentedString(disabled)).append("\n");
+    sb.append("    glCode: ").append(toIndentedString(glCode)).append("\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
+    sb.append("    manualEntriesAllowed: ")
+        .append(toIndentedString(manualEntriesAllowed))
+        .append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    nameDecorated: ").append(toIndentedString(nameDecorated)).append("\n");
+    sb.append("    organizationRunningBalance: ")
+        .append(toIndentedString(organizationRunningBalance))
+        .append("\n");
+    sb.append("    tagId: ").append(toIndentedString(tagId)).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
+    sb.append("    usage: ").append(toIndentedString(usage)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
+   */
+  private String toIndentedString(Object o) {
+
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }

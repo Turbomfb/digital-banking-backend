@@ -1,9 +1,8 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import lombok.Data;
 
 @Data
@@ -11,21 +10,21 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostClientClientIdAddressesRequest {
 
-	private String addressLine1;
+  private String addressLine1;
 
-	private String addressLine2;
+  private String addressLine2;
 
-	private String addressLine3;
+  private String addressLine3;
 
-	private String city;
+  private String city;
 
-	private Integer countryId;
+  private Integer countryId;
 
-	private Boolean isActive;
+  private Boolean isActive;
 
-	private Long postalCode;
+  private Long postalCode;
 
-	private Integer stateProvinceId;
+  private Integer stateProvinceId;
 
-	private String street;
+  private String street;
 }

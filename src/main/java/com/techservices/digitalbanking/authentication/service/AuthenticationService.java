@@ -1,23 +1,4 @@
-/*
- * Copyright (c) 2025 Techservice Engineering Team.
- * All rights reserved.
- *
- * This software is proprietary and confidential. It may not be reproduced,
- * distributed, or transmitted in any form or by any means, including photocopying,
- * recording, or other electronic or mechanical methods, without the prior written
- * permission of Techservice Engineering Team.
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- *
- * For any questions regarding this license, please contact:
- * Techservice Engineering Team
- * Email: engineering@techservice.com
- */ 
+/* (C)2025 */
 package com.techservices.digitalbanking.authentication.service;
 
 import com.techservices.digitalbanking.authentication.domain.data.model.UserLoginActivity;
@@ -31,17 +12,24 @@ import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTrans
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuthenticationService {
-    AuthenticationResponse authenticate(AuthenticationRequest postAuthenticationRequest, UserType customerType, String userAgent, HttpServletRequest request);
-    boolean isTokenValid(String token);
-    GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest);
+  AuthenticationResponse authenticate(
+      AuthenticationRequest postAuthenticationRequest,
+      UserType customerType,
+      String userAgent,
+      HttpServletRequest request);
 
-    GenericApiResponse forgotPassword(PasswordMgtRequest passwordMgtRequest, String command, UserType customerType);
+  boolean isTokenValid(String token);
 
-    BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId);
+  GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest);
 
-    GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest);
+  GenericApiResponse forgotPassword(
+      PasswordMgtRequest passwordMgtRequest, String command, UserType customerType);
 
-    GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest);
+  BasePageResponse<UserLoginActivity> retrieveUserLoginActivities(Long customerId);
 
-    void logout(Long customerId);
+  GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest);
+
+  GenericApiResponse changeTransactionPin(CustomerTransactionPinRequest pinRequest);
+
+  void logout(Long customerId);
 }

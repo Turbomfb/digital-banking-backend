@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.api;
 
 import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
@@ -14,11 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/system")
 @RequiredArgsConstructor
 public class SystemApiResource {
-    private final SystemService systemService;
+  private final SystemService systemService;
 
-    @GetMapping("/codes/{codeId}")
-    public ResponseEntity<BasePageResponse<GetCodeValuesDataResponse>> retrieveCodeValuesByCodeId(@PathVariable("codeId") Long codeId) {
-        BasePageResponse<GetCodeValuesDataResponse> response = systemService.retrieveCodeValuesByCodeId(codeId);
-        return ResponseEntity.ok(response);
-    }
+  @GetMapping("/codes/{codeId}")
+  public ResponseEntity<BasePageResponse<GetCodeValuesDataResponse>> retrieveCodeValuesByCodeId(
+      @PathVariable("codeId") Long codeId) {
+
+    BasePageResponse<GetCodeValuesDataResponse> response =
+        systemService.retrieveCodeValuesByCodeId(codeId);
+    return ResponseEntity.ok(response);
+  }
 }

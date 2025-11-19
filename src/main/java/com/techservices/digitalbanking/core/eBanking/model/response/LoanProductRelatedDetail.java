@@ -1,11 +1,9 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
-
-import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
+import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,60 +12,64 @@ import lombok.Setter;
 @Setter
 public class LoanProductRelatedDetail {
 
-	private Boolean allowPartialPeriodInterestCalcualtion;
+  private Boolean allowPartialPeriodInterestCalcualtion;
 
-	/** Gets or Sets amortizationMethod */
-	public enum AmortizationMethodEnum {
-		EQUAL_PRINCIPAL("EQUAL_PRINCIPAL"),
+  /** Gets or Sets amortizationMethod */
+  public enum AmortizationMethodEnum {
+    EQUAL_PRINCIPAL("EQUAL_PRINCIPAL"),
 
-		EQUAL_INSTALLMENTS("EQUAL_INSTALLMENTS"),
+    EQUAL_INSTALLMENTS("EQUAL_INSTALLMENTS"),
 
-		INVALID("INVALID");
+    INVALID("INVALID");
 
-		private String value;
+    private String value;
 
-		AmortizationMethodEnum(String value) {
-			this.value = value;
-		}
+    AmortizationMethodEnum(String value) {
 
-		@JsonValue
-		public String getValue() {
-			return value;
-		}
+      this.value = value;
+    }
 
-		@Override
-		public String toString() {
-			return String.valueOf(value);
-		}
+    @JsonValue
+    public String getValue() {
 
-		@JsonCreator
-		public static AmortizationMethodEnum fromValue(String value) {
-			for (AmortizationMethodEnum b : AmortizationMethodEnum.values()) {
-				if (b.value.equals(value)) {
-					return b;
-				}
-			}
-			throw new IllegalArgumentException("Unexpected value '" + value + "'");
-		}
-	}
+      return value;
+    }
 
-	private AmortizationMethodEnum amortizationMethod;
+    @Override
+    public String toString() {
 
-	private BigDecimal annualNominalInterestRate;
+      return String.valueOf(value);
+    }
 
-	private BigDecimal arrearsTolerance;
+    @JsonCreator
+    public static AmortizationMethodEnum fromValue(String value) {
 
-	private Object currency;
+      for (AmortizationMethodEnum b : AmortizationMethodEnum.values()) {
+        if (b.value.equals(value)) {
+          return b;
+        }
+      }
+      throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    }
+  }
 
-	private Boolean equalAmortization;
+  private AmortizationMethodEnum amortizationMethod;
 
-	private Integer graceOnArrearsAgeing;
+  private BigDecimal annualNominalInterestRate;
 
-	private Integer graceOnDueDate;
+  private BigDecimal arrearsTolerance;
 
-	private Integer graceOnInterestPayment;
+  private Object currency;
 
-	private Integer graceOnPrincipalPayment;
+  private Boolean equalAmortization;
 
-	private Object inArrearsTolerance;
+  private Integer graceOnArrearsAgeing;
+
+  private Integer graceOnDueDate;
+
+  private Integer graceOnInterestPayment;
+
+  private Integer graceOnPrincipalPayment;
+
+  private Object inArrearsTolerance;
 }

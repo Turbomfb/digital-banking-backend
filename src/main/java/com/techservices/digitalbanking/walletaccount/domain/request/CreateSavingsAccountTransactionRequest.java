@@ -1,11 +1,13 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.walletaccount.domain.request;
 
+import com.techservices.digitalbanking.core.eBanking.model.response.TransactionMetadata;
 import java.math.BigDecimal;
 
-import com.techservices.digitalbanking.core.eBanking.model.response.TransactionMetadata;
-
-public record CreateSavingsAccountTransactionRequest(BigDecimal transactionAmount, String transactionReference,
-		String narration, String beneficiaryAccountNumber, String reasonForBlock,
-		TransactionMetadata additionalInformation) {
-}
+public record CreateSavingsAccountTransactionRequest(
+    BigDecimal transactionAmount,
+    String transactionReference,
+    String narration,
+    String beneficiaryAccountNumber,
+    String reasonForBlock,
+    TransactionMetadata additionalInformation) {}

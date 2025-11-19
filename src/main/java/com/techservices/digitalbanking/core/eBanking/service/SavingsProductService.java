@@ -1,9 +1,7 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
+import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_LOCALE;
 
 import com.techservices.digitalbanking.core.eBanking.api.WalletAccountProductApiClient;
 import com.techservices.digitalbanking.core.eBanking.model.request.PostSavingsAccountProductRequest;
@@ -11,36 +9,40 @@ import com.techservices.digitalbanking.core.eBanking.model.request.PutSavingsAcc
 import com.techservices.digitalbanking.core.eBanking.model.response.GetSavingsAccountProductsResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PostSavingsAccountProductsResponse;
 import com.techservices.digitalbanking.core.eBanking.model.response.PutSavingsAccountProductsProductIdResponse;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import static com.techservices.digitalbanking.core.util.DateUtil.DEFAULT_LOCALE;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class SavingsProductService {
 
-	private final WalletAccountProductApiClient savingsAccountProductApiClient;
+  private final WalletAccountProductApiClient savingsAccountProductApiClient;
 
-	public PostSavingsAccountProductsResponse createSavingsAccountProduct(
-			PostSavingsAccountProductRequest postSavingsAccountProductRequest) {
-		postSavingsAccountProductRequest.setLocale(DEFAULT_LOCALE);
-		return savingsAccountProductApiClient.createSavingsAccountProduct(postSavingsAccountProductRequest);
-	}
+  public PostSavingsAccountProductsResponse createSavingsAccountProduct(
+      PostSavingsAccountProductRequest postSavingsAccountProductRequest) {
 
-	public List<GetSavingsAccountProductsResponse> retrieveAllSavingsAccountProducts() {
-		return savingsAccountProductApiClient.retrieveAll();
-	}
+    postSavingsAccountProductRequest.setLocale(DEFAULT_LOCALE);
+    return savingsAccountProductApiClient.createSavingsAccountProduct(
+        postSavingsAccountProductRequest);
+  }
 
-	public GetSavingsAccountProductsResponse retrieveSavingsProductById(Long productId) {
-		return savingsAccountProductApiClient.retrieveById(productId);
-	}
+  public List<GetSavingsAccountProductsResponse> retrieveAllSavingsAccountProducts() {
 
-	public PutSavingsAccountProductsProductIdResponse updateSavingsAccountProduct(Long productId,
-			PutSavingsAccountProductRequest request) {
-		request.setLocale(DEFAULT_LOCALE);
-		return savingsAccountProductApiClient.updateSavingsAccountProduct(request, productId);
-	}
+    return savingsAccountProductApiClient.retrieveAll();
+  }
+
+  public GetSavingsAccountProductsResponse retrieveSavingsProductById(Long productId) {
+
+    return savingsAccountProductApiClient.retrieveById(productId);
+  }
+
+  public PutSavingsAccountProductsProductIdResponse updateSavingsAccountProduct(
+      Long productId, PutSavingsAccountProductRequest request) {
+
+    request.setLocale(DEFAULT_LOCALE);
+    return savingsAccountProductApiClient.updateSavingsAccountProduct(request, productId);
+  }
 }

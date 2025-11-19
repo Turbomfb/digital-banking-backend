@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.walletaccount.domain.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,20 +11,19 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NameEnquiryRequest {
-    private String accountNumber;
-    private String bankCode;
-    @JsonProperty("isSubjectConsent")
-    private boolean isSubjectConsent;
+  private String accountNumber;
+  private String bankCode;
 
+  @JsonProperty("isSubjectConsent")
+  private boolean isSubjectConsent;
 
+  @Override
+  public String toString() {
 
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this)
-                .append("accountNumber", accountNumber)
-                .append("bankCode", bankCode)
-                .append("isSubjectConsent", isSubjectConsent)
-                .toString();
-    }
-
+    return new ToStringBuilder(this)
+        .append("accountNumber", accountNumber)
+        .append("bankCode", bankCode)
+        .append("isSubjectConsent", isSubjectConsent)
+        .toString();
+  }
 }

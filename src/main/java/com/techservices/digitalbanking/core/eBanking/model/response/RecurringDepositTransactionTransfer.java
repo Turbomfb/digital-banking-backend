@@ -1,11 +1,9 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
-
-import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,10 +13,10 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RecurringDepositTransactionTransfer {
 
-	private int id;
-	private boolean reversed;
-	private GetRecurringDepositProductProductIdResponse.Currency currency;
-	private double transferAmount;
-	private LocalDate transferDate;
-	private String transferDescription;
+  private int id;
+  private boolean reversed;
+  private GetRecurringDepositProductProductIdResponse.Currency currency;
+  private double transferAmount;
+  private LocalDate transferDate;
+  private String transferDescription;
 }

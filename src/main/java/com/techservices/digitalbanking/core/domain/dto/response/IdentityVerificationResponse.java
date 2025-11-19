@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.domain.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -15,117 +16,128 @@ import lombok.ToString;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ToString
 public class IdentityVerificationResponse {
-    private IdentityVerificationResponseData data;
-    private Object errors;
-    private boolean success;
-    private String statusMessage;
-    private String statusCode;
-    private String message;
-    private String dataSource;
+  private IdentityVerificationResponseData data;
+  private Object errors;
+  private boolean success;
+  private String statusMessage;
+  private String statusCode;
+  private String message;
+  private String dataSource;
 
+  @Setter
+  @Getter
+  @ToString
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public static class IdentityVerificationResponseData {
+    private String id;
+    private String firstName;
+    private String middleName;
+    private String lastName;
+    private String mobile;
+    private String email;
+    private String dateOfBirth;
+    private String gender;
+    private String image;
+    private String religion;
+    private String signature;
+
+    private Address address;
+
+    // for business
+    private String name;
 
     @Setter
     @Getter
     @ToString
     @JsonIgnoreProperties(ignoreUnknown = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class IdentityVerificationResponseData {
-        private String id;
-        private String firstName;
-        private String middleName;
-        private String lastName;
-        private String mobile;
-        private String email;
-        private String dateOfBirth;
-        private String gender;
-        private String image;
-        private String religion;
-        private String signature;
-
-        private Address address;
-
-//        for business
-        private String name;
-
-
-        @Setter
-        @Getter
-        @ToString
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class Address {
-            private String town;
-            private String lga;
-            private String state;
-            private String addressLine;
-        }
+    public static class Address {
+      private String town;
+      private String lga;
+      private String state;
+      private String addressLine;
     }
+  }
 
+  public static IdentityVerificationResponse parse(BusinessDataResponse.BusinessData businessData) {
 
-    public static IdentityVerificationResponse parse(BusinessDataResponse.BusinessData businessData) {
-        IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
-        IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData = new IdentityVerificationResponse.IdentityVerificationResponseData();
-        identityVerificationResponseData.setName(businessData.getName());
-        identityVerificationResponseData.setMobile(businessData.getPhone());
-        identityVerificationResponseData.setEmail(businessData.getEmail());
-        identityVerificationResponse.setData(identityVerificationResponseData);
-        identityVerificationResponse.setSuccess(true);
-        identityVerificationResponse.setDataSource("INTERNAL");
-        return identityVerificationResponse;
+    IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
+    IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData =
+        new IdentityVerificationResponse.IdentityVerificationResponseData();
+    identityVerificationResponseData.setName(businessData.getName());
+    identityVerificationResponseData.setMobile(businessData.getPhone());
+    identityVerificationResponseData.setEmail(businessData.getEmail());
+    identityVerificationResponse.setData(identityVerificationResponseData);
+    identityVerificationResponse.setSuccess(true);
+    identityVerificationResponse.setDataSource("INTERNAL");
+    return identityVerificationResponse;
+  }
+
+  public static IdentityVerificationResponse parse(
+      BusinessDataResponse.BusinessData businessData, String source) {
+
+    IdentityVerificationResponse identityVerificationResponse =
+        IdentityVerificationResponse.parse(businessData);
+    identityVerificationResponse.setDataSource(source);
+    return identityVerificationResponse;
+  }
+
+  public boolean isSuccess() {
+
+    return success
+        && errors == null
+        && data != null
+        && ((StringUtils.isNotBlank(data.firstName) && StringUtils.isNotBlank(data.lastName)
+            || StringUtils.isNotBlank(data.name)));
+  }
+
+  public static IdentityVerificationResponse parse(GetClientsClientIdResponse client) {
+
+    IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
+    IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData =
+        new IdentityVerificationResponse.IdentityVerificationResponseData();
+    identityVerificationResponseData.setFirstName(client.getFirstName());
+    identityVerificationResponseData.setLastName(client.getLastName());
+    identityVerificationResponseData.setMobile(client.getPhoneNumber());
+    identityVerificationResponseData.setEmail(client.getEmailAddress());
+    identityVerificationResponse.setData(identityVerificationResponseData);
+    identityVerificationResponse.setSuccess(true);
+    identityVerificationResponse.setDataSource("INTERNAL");
+    return identityVerificationResponse;
+  }
+
+  public static IdentityVerificationResponse parse(
+      IdentityVerificationData identityVerificationData) {
+
+    IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
+    IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData =
+        new IdentityVerificationResponse.IdentityVerificationResponseData();
+    identityVerificationResponseData.setId(identityVerificationData.getId());
+    identityVerificationResponseData.setFirstName(identityVerificationData.getFirstName());
+    identityVerificationResponseData.setMiddleName(identityVerificationData.getMiddleName());
+    identityVerificationResponseData.setLastName(identityVerificationData.getLastName());
+    identityVerificationResponseData.setImage(identityVerificationData.getImage());
+    identityVerificationResponseData.setMobile(identityVerificationData.getMobile());
+    identityVerificationResponseData.setReligion(identityVerificationData.getReligion());
+    identityVerificationResponseData.setEmail(identityVerificationData.getEmail());
+    identityVerificationResponseData.setGender(identityVerificationData.getGender());
+    identityVerificationResponseData.setDateOfBirth(identityVerificationData.getDateOfBirth());
+    IdentityVerificationResponseData.Address address = null;
+    if (StringUtils.isNotBlank(identityVerificationData.getAddressLine())
+        || StringUtils.isNotBlank(identityVerificationData.getTown())
+        || StringUtils.isNotBlank(identityVerificationData.getLga())
+        || StringUtils.isNotBlank(identityVerificationData.getState())) {
+
+      address = new IdentityVerificationResponseData.Address();
+      address.setAddressLine(identityVerificationData.getAddressLine());
+      address.setTown(identityVerificationData.getTown());
+      address.setLga(identityVerificationData.getLga());
+      address.setState(identityVerificationData.getState());
     }
-
-
-    public static IdentityVerificationResponse parse(BusinessDataResponse.BusinessData businessData, String source) {
-        IdentityVerificationResponse identityVerificationResponse =IdentityVerificationResponse.parse(businessData);
-        identityVerificationResponse.setDataSource(source);
-        return identityVerificationResponse;
-    }
-
-    public boolean isSuccess() {
-        return success && errors == null && data != null && ((StringUtils.isNotBlank(data.firstName) && StringUtils.isNotBlank(data.lastName) || StringUtils.isNotBlank(data.name)));
-    }
-
-    public static IdentityVerificationResponse parse(GetClientsClientIdResponse client) {
-        IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
-        IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData = new IdentityVerificationResponse.IdentityVerificationResponseData();
-        identityVerificationResponseData.setFirstName(client.getFirstName());
-        identityVerificationResponseData.setLastName(client.getLastName());
-        identityVerificationResponseData.setMobile(client.getPhoneNumber());
-        identityVerificationResponseData.setEmail(client.getEmailAddress());
-        identityVerificationResponse.setData(identityVerificationResponseData);
-        identityVerificationResponse.setSuccess(true);
-        identityVerificationResponse.setDataSource("INTERNAL");
-        return identityVerificationResponse;
-    }
-
-    public static IdentityVerificationResponse parse(IdentityVerificationData identityVerificationData) {
-        IdentityVerificationResponse identityVerificationResponse = new IdentityVerificationResponse();
-        IdentityVerificationResponse.IdentityVerificationResponseData identityVerificationResponseData = new IdentityVerificationResponse.IdentityVerificationResponseData();
-        identityVerificationResponseData.setId(identityVerificationData.getId());
-        identityVerificationResponseData.setFirstName(identityVerificationData.getFirstName());
-        identityVerificationResponseData.setMiddleName(identityVerificationData.getMiddleName());
-        identityVerificationResponseData.setLastName(identityVerificationData.getLastName());
-        identityVerificationResponseData.setImage(identityVerificationData.getImage());
-        identityVerificationResponseData.setMobile(identityVerificationData.getMobile());
-        identityVerificationResponseData.setReligion(identityVerificationData.getReligion());
-        identityVerificationResponseData.setEmail(identityVerificationData.getEmail());
-        identityVerificationResponseData.setGender(identityVerificationData.getGender());
-        identityVerificationResponseData.setDateOfBirth(identityVerificationData.getDateOfBirth());
-        IdentityVerificationResponseData.Address address = null;
-        if (StringUtils.isNotBlank(identityVerificationData.getAddressLine())
-                || StringUtils.isNotBlank(identityVerificationData.getTown())
-                || StringUtils.isNotBlank(identityVerificationData.getLga())
-                || StringUtils.isNotBlank(identityVerificationData.getState())) {
-
-            address = new IdentityVerificationResponseData.Address();
-            address.setAddressLine(identityVerificationData.getAddressLine());
-            address.setTown(identityVerificationData.getTown());
-            address.setLga(identityVerificationData.getLga());
-            address.setState(identityVerificationData.getState());
-        }
-        identityVerificationResponseData.setAddress(address);
-        identityVerificationResponse.setData(identityVerificationResponseData);
-        identityVerificationResponse.setSuccess(true);
-        identityVerificationResponse.setDataSource("EXTERNAL");
-        return identityVerificationResponse;
-    }
+    identityVerificationResponseData.setAddress(address);
+    identityVerificationResponse.setData(identityVerificationResponseData);
+    identityVerificationResponse.setSuccess(true);
+    identityVerificationResponse.setDataSource("EXTERNAL");
+    return identityVerificationResponse;
+  }
 }

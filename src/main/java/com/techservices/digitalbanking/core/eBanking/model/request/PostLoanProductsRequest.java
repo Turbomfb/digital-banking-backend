@@ -1,18 +1,16 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.request;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanFeeToIncomeAccountMappings;
 import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanPaymentChannelToFundSourceMappings;
-
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,185 +21,181 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PostLoanProductsRequest {
 
-	private Boolean accountMovesOutOfNPAOnlyOnArrearsCompletion;
+  private Boolean accountMovesOutOfNPAOnlyOnArrearsCompletion;
 
-	private Integer accountingRule;
-	private Long minimumGap;
+  private Integer accountingRule;
+  private Long minimumGap;
 
-	private Boolean allowApprovedDisbursedAmountsOverApplied;
+  private Boolean allowApprovedDisbursedAmountsOverApplied;
 
-	private Object allowAttributeOverrides;
+  private Object allowAttributeOverrides;
 
-	private Boolean allowPartialPeriodInterestCalcualtion;
+  private Boolean allowPartialPeriodInterestCalcualtion;
 
-	private Boolean allowVariableInstallments;
+  private Boolean allowVariableInstallments;
 
-	private Integer amortizationType;
+  private Integer amortizationType;
 
-	private Boolean canDefineInstallmentAmount;
+  private Boolean canDefineInstallmentAmount;
 
-	private Boolean canUseForTopup;
+  private Boolean canUseForTopup;
 
-	@Valid
-	private List<@Valid Object> charges = new ArrayList<>();
+  @Valid private List<@Valid Object> charges = new ArrayList<>();
 
-	private String closeDate;
+  private String closeDate;
 
-	private String currencyCode;
+  private String currencyCode;
 
-	private String dateFormat;
+  private String dateFormat;
 
-	private Integer daysInMonthType;
+  private Integer daysInMonthType;
 
-	private Integer daysInYearType;
+  private Integer daysInYearType;
 
-	private String description;
+  private String description;
 
-	private Integer digitsAfterDecimal;
+  private Integer digitsAfterDecimal;
 
-	private Boolean disallowExpectedDisbursements;
+  private Boolean disallowExpectedDisbursements;
 
-	@Valid
-	private Set<@Valid GetLoanFeeToIncomeAccountMappings> feeToIncomeAccountMappings = new LinkedHashSet<>();
+  @Valid
+  private Set<@Valid GetLoanFeeToIncomeAccountMappings> feeToIncomeAccountMappings =
+      new LinkedHashSet<>();
 
-	private BigDecimal fixedPrincipalPercentagePerInstallment;
+  private BigDecimal fixedPrincipalPercentagePerInstallment;
 
-	private Long fundId;
+  private Long fundId;
 
-	private Integer fundSourceAccountId;
+  private Integer fundSourceAccountId;
 
-	private Integer graceOnArrearsAgeing;
+  private Integer graceOnArrearsAgeing;
 
-	private Boolean holdGuaranteeFunds;
+  private Boolean holdGuaranteeFunds;
 
-	private Integer inMultiplesOf;
+  private Integer inMultiplesOf;
 
-	private Boolean includeInBorrowerCycle;
+  private Boolean includeInBorrowerCycle;
 
-	private Integer incomeFromFeeAccountId;
+  private Integer incomeFromFeeAccountId;
 
-	private Integer incomeFromPenaltyAccountId;
+  private Integer incomeFromPenaltyAccountId;
 
-	private Long incomeFromRecoveryAccountId;
+  private Long incomeFromRecoveryAccountId;
 
-	private Integer installmentAmountInMultiplesOf;
+  private Integer installmentAmountInMultiplesOf;
 
-	private Integer interestCalculationPeriodType;
+  private Integer interestCalculationPeriodType;
 
-	private Integer interestOnLoanAccountId;
+  private Integer interestOnLoanAccountId;
 
-	private Integer interestRateFrequencyType;
+  private Integer interestRateFrequencyType;
 
-	private Double interestRatePerPeriod;
+  private Double interestRatePerPeriod;
 
-	@Valid
-	private List<Integer> interestRateVariationsForBorrowerCycle = new ArrayList<>();
+  @Valid private List<Integer> interestRateVariationsForBorrowerCycle = new ArrayList<>();
 
-	private Integer interestRecalculationCompoundingMethod;
+  private Integer interestRecalculationCompoundingMethod;
 
-	private Integer interestType;
+  private Integer interestType;
 
-	private Boolean isEqualAmortization;
+  private Boolean isEqualAmortization;
 
-	private Boolean isInterestRecalculationEnabled;
+  private Boolean isInterestRecalculationEnabled;
 
-	private Boolean isLinkedToFloatingInterestRates;
+  private Boolean isLinkedToFloatingInterestRates;
 
-	private Integer loanPortfolioAccountId;
+  private Integer loanPortfolioAccountId;
 
-	private String locale;
+  private String locale;
 
-	private Double maxInterestRatePerPeriod;
+  private Double maxInterestRatePerPeriod;
 
-	private Integer maxNumberOfRepayments;
+  private Integer maxNumberOfRepayments;
 
-	private Double maxPrincipal;
+  private Double maxPrincipal;
 
-	private Integer maxTrancheCount;
+  private Integer maxTrancheCount;
 
-	private Double minInterestRatePerPeriod;
+  private Double minInterestRatePerPeriod;
 
-	private Integer minNumberOfRepayments;
+  private Integer minNumberOfRepayments;
 
-	private Double minPrincipal;
+  private Double minPrincipal;
 
-	private Integer minimumDaysBetweenDisbursalAndFirstRepayment;
+  private Integer minimumDaysBetweenDisbursalAndFirstRepayment;
 
-	private Boolean multiDisburseLoan;
+  private Boolean multiDisburseLoan;
 
-	private String name;
+  private String name;
 
-	@Valid
-	private List<Integer> numberOfRepaymentVariationsForBorrowerCycle = new ArrayList<>();
+  @Valid private List<Integer> numberOfRepaymentVariationsForBorrowerCycle = new ArrayList<>();
 
-	private Integer numberOfRepayments;
+  private Integer numberOfRepayments;
 
-	private Double outstandingLoanBalance;
+  private Double outstandingLoanBalance;
 
-	private String overAppliedCalculationType;
+  private String overAppliedCalculationType;
 
-	private Integer overAppliedNumber;
+  private Integer overAppliedNumber;
 
-	private Integer overdueDaysForNPA;
+  private Integer overdueDaysForNPA;
 
-	private Integer overpaymentLiabilityAccountId;
+  private Integer overpaymentLiabilityAccountId;
 
-	@Valid
-	private Set<@Valid GetLoanPaymentChannelToFundSourceMappings> paymentChannelToFundSourceMappings = new LinkedHashSet<>();
+  @Valid
+  private Set<@Valid GetLoanPaymentChannelToFundSourceMappings> paymentChannelToFundSourceMappings =
+      new LinkedHashSet<>();
 
-	@Valid
-	private List<@Valid Object> penaltyToIncomeAccountMappings = new ArrayList<>();
+  @Valid private List<@Valid Object> penaltyToIncomeAccountMappings = new ArrayList<>();
 
-	private Integer preClosureInterestCalculationStrategy;
+  private Integer preClosureInterestCalculationStrategy;
 
-	private Double principal;
+  private Double principal;
 
-	private Integer principalThresholdForLastInstallment;
+  private Integer principalThresholdForLastInstallment;
 
-	@Valid
-	private List<Integer> principalVariationsForBorrowerCycle = new ArrayList<>();
+  @Valid private List<Integer> principalVariationsForBorrowerCycle = new ArrayList<>();
 
-	@Valid
-	private List<@Valid Object> rates = new ArrayList<>();
+  @Valid private List<@Valid Object> rates = new ArrayList<>();
 
-	private Integer recalculationRestFrequencyType;
+  private Integer recalculationRestFrequencyType;
 
-	private Integer receivableFeeAccountId;
+  private Integer receivableFeeAccountId;
 
-	private Integer receivableInterestAccountId;
+  private Integer receivableInterestAccountId;
 
-	private Integer receivablePenaltyAccountId;
+  private Integer receivablePenaltyAccountId;
 
-	private Integer repaymentEvery;
+  private Integer repaymentEvery;
 
-	private Integer repaymentFrequencyType;
+  private Integer repaymentFrequencyType;
 
-	private Integer rescheduleStrategyMethod;
+  private Integer rescheduleStrategyMethod;
 
-	private String shortName;
+  private String shortName;
 
-	private String startDate;
+  private String startDate;
 
-	private Integer transactionProcessingStrategyId;
+  private Integer transactionProcessingStrategyId;
 
-	private Long transfersInSuspenseAccountId;
+  private Long transfersInSuspenseAccountId;
 
-	private Boolean useBorrowerCycle;
+  private Boolean useBorrowerCycle;
 
-	private Integer writeOffAccountId;
+  private Integer writeOffAccountId;
 
-	private Long repaymentStartDateType;
-	private Object fixedLength;
-	private String transactionProcessingStrategyCode;
-	private Object graceOnPrincipalPayment;
-	private Object graceOnInterestPayment;
-	private BigDecimal inArrearsTolerance;
-	private Boolean allowPartialPeriodInterestCalculation;
-	private Object delinquencyBucketId;
-	private Boolean enableDownPayment;
-	private Boolean enableInstallmentLevelDelinquency;
-	private Long dueDaysForRepaymentEvent;
-	private Long overDueDaysForRepaymentEvent;
-	private String loanScheduleType;
-	private String isArrearsBasedOnOriginalSchedule;
+  private Long repaymentStartDateType;
+  private Object fixedLength;
+  private String transactionProcessingStrategyCode;
+  private Object graceOnPrincipalPayment;
+  private Object graceOnInterestPayment;
+  private BigDecimal inArrearsTolerance;
+  private Boolean allowPartialPeriodInterestCalculation;
+  private Object delinquencyBucketId;
+  private Boolean enableDownPayment;
+  private Boolean enableInstallmentLevelDelinquency;
+  private Long dueDaysForRepaymentEvent;
+  private Long overDueDaysForRepaymentEvent;
+  private String loanScheduleType;
+  private String isArrearsBasedOnOriginalSchedule;
 }

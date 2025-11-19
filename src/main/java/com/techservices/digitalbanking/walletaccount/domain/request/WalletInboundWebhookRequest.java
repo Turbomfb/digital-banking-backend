@@ -1,12 +1,11 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.walletaccount.domain.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
 
 @Setter
 @Getter
@@ -14,15 +13,15 @@ import java.math.BigDecimal;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WalletInboundWebhookRequest {
 
-    private BigDecimal amount;
+  private BigDecimal amount;
 
-    private String transactionDate;
+  private String transactionDate;
 
-    private String channel;
+  private String channel;
 
-    private String reference;
+  private String reference;
 
-    private String processor;
+  private String processor;
 
-    private String status;
+  private String status;
 }

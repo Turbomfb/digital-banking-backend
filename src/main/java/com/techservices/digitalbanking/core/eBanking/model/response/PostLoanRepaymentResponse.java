@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -10,5 +11,5 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostLoanRepaymentResponse {
-    private String message;
+  private String message;
 }

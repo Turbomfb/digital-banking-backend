@@ -1,3 +1,4 @@
+/* (C)2025 */
 package com.techservices.digitalbanking.core.eBanking.model.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -10,6 +11,6 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FlexInvestmentCreationRequest {
-    private String externalId;
-    private String gender;
+  private String externalId;
+  private String gender;
 }

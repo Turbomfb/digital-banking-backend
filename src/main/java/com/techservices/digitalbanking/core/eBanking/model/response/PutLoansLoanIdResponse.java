@@ -1,172 +1,191 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.eBanking.model.response;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
+import java.util.Objects;
 
 /** PutLoansLoanIdResponse */
 @Schema(name = "PutLoansLoanIdResponse", description = "PutLoansLoanIdResponse")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]", comments = "Generator version: 7.5.0")
+@Generated(
+    value = "org.openapitools.codegen.languages.SpringCodegen",
+    date = "2024-04-30T13:54:37.023258+01:00[Africa/Lagos]",
+    comments = "Generator version: 7.5.0")
 public class PutLoansLoanIdResponse {
 
-	private PutLoansLoanIdChanges changes;
+  private PutLoansLoanIdChanges changes;
 
-	private Integer clientId;
+  private Integer clientId;
 
-	private Integer loanId;
+  private Integer loanId;
 
-	private Integer officeId;
+  private Integer officeId;
 
-	private Integer resourceId;
+  private Integer resourceId;
 
-	public PutLoansLoanIdResponse changes(PutLoansLoanIdChanges changes) {
-		this.changes = changes;
-		return this;
-	}
+  public PutLoansLoanIdResponse changes(PutLoansLoanIdChanges changes) {
 
-	/**
-	 * Get changes
-	 *
-	 * @return changes
-	 */
-	@Valid
-	@Schema(name = "changes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("changes")
-	public PutLoansLoanIdChanges getChanges() {
-		return changes;
-	}
+    this.changes = changes;
+    return this;
+  }
 
-	public void setChanges(PutLoansLoanIdChanges changes) {
-		this.changes = changes;
-	}
+  /**
+   * Get changes
+   *
+   * @return changes
+   */
+  @Valid
+  @Schema(name = "changes", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("changes")
+  public PutLoansLoanIdChanges getChanges() {
 
-	public PutLoansLoanIdResponse clientId(Integer clientId) {
-		this.clientId = clientId;
-		return this;
-	}
+    return changes;
+  }
 
-	/**
-	 * Get clientId
-	 *
-	 * @return clientId
-	 */
-	@Schema(name = "clientId", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("clientId")
-	public Integer getClientId() {
-		return clientId;
-	}
+  public void setChanges(PutLoansLoanIdChanges changes) {
 
-	public void setClientId(Integer clientId) {
-		this.clientId = clientId;
-	}
+    this.changes = changes;
+  }
 
-	public PutLoansLoanIdResponse loanId(Integer loanId) {
-		this.loanId = loanId;
-		return this;
-	}
+  public PutLoansLoanIdResponse clientId(Integer clientId) {
 
-	/**
-	 * Get loanId
-	 *
-	 * @return loanId
-	 */
-	@Schema(name = "loanId", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("loanId")
-	public Integer getLoanId() {
-		return loanId;
-	}
+    this.clientId = clientId;
+    return this;
+  }
 
-	public void setLoanId(Integer loanId) {
-		this.loanId = loanId;
-	}
+  /**
+   * Get clientId
+   *
+   * @return clientId
+   */
+  @Schema(name = "clientId", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("clientId")
+  public Integer getClientId() {
 
-	public PutLoansLoanIdResponse officeId(Integer officeId) {
-		this.officeId = officeId;
-		return this;
-	}
+    return clientId;
+  }
 
-	/**
-	 * Get officeId
-	 *
-	 * @return officeId
-	 */
-	@Schema(name = "officeId", example = "2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("officeId")
-	public Integer getOfficeId() {
-		return officeId;
-	}
+  public void setClientId(Integer clientId) {
 
-	public void setOfficeId(Integer officeId) {
-		this.officeId = officeId;
-	}
+    this.clientId = clientId;
+  }
 
-	public PutLoansLoanIdResponse resourceId(Integer resourceId) {
-		this.resourceId = resourceId;
-		return this;
-	}
+  public PutLoansLoanIdResponse loanId(Integer loanId) {
 
-	/**
-	 * Get resourceId
-	 *
-	 * @return resourceId
-	 */
-	@Schema(name = "resourceId", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-	@JsonProperty("resourceId")
-	public Integer getResourceId() {
-		return resourceId;
-	}
+    this.loanId = loanId;
+    return this;
+  }
 
-	public void setResourceId(Integer resourceId) {
-		this.resourceId = resourceId;
-	}
+  /**
+   * Get loanId
+   *
+   * @return loanId
+   */
+  @Schema(name = "loanId", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("loanId")
+  public Integer getLoanId() {
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		PutLoansLoanIdResponse putLoansLoanIdResponse = (PutLoansLoanIdResponse) o;
-		return Objects.equals(this.changes, putLoansLoanIdResponse.changes)
-				&& Objects.equals(this.clientId, putLoansLoanIdResponse.clientId)
-				&& Objects.equals(this.loanId, putLoansLoanIdResponse.loanId)
-				&& Objects.equals(this.officeId, putLoansLoanIdResponse.officeId)
-				&& Objects.equals(this.resourceId, putLoansLoanIdResponse.resourceId);
-	}
+    return loanId;
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(changes, clientId, loanId, officeId, resourceId);
-	}
+  public void setLoanId(Integer loanId) {
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("class PutLoansLoanIdResponse {\n");
-		sb.append("    changes: ").append(toIndentedString(changes)).append("\n");
-		sb.append("    clientId: ").append(toIndentedString(clientId)).append("\n");
-		sb.append("    loanId: ").append(toIndentedString(loanId)).append("\n");
-		sb.append("    officeId: ").append(toIndentedString(officeId)).append("\n");
-		sb.append("    resourceId: ").append(toIndentedString(resourceId)).append("\n");
-		sb.append("}");
-		return sb.toString();
-	}
+    this.loanId = loanId;
+  }
 
-	/**
-	 * Convert the given object to string with each line indented by 4 spaces
-	 * (except the first line).
-	 */
-	private String toIndentedString(Object o) {
-		if (o == null) {
-			return "null";
-		}
-		return o.toString().replace("\n", "\n    ");
-	}
+  public PutLoansLoanIdResponse officeId(Integer officeId) {
+
+    this.officeId = officeId;
+    return this;
+  }
+
+  /**
+   * Get officeId
+   *
+   * @return officeId
+   */
+  @Schema(name = "officeId", example = "2", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("officeId")
+  public Integer getOfficeId() {
+
+    return officeId;
+  }
+
+  public void setOfficeId(Integer officeId) {
+
+    this.officeId = officeId;
+  }
+
+  public PutLoansLoanIdResponse resourceId(Integer resourceId) {
+
+    this.resourceId = resourceId;
+    return this;
+  }
+
+  /**
+   * Get resourceId
+   *
+   * @return resourceId
+   */
+  @Schema(name = "resourceId", example = "1", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonProperty("resourceId")
+  public Integer getResourceId() {
+
+    return resourceId;
+  }
+
+  public void setResourceId(Integer resourceId) {
+
+    this.resourceId = resourceId;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    PutLoansLoanIdResponse putLoansLoanIdResponse = (PutLoansLoanIdResponse) o;
+    return Objects.equals(this.changes, putLoansLoanIdResponse.changes)
+        && Objects.equals(this.clientId, putLoansLoanIdResponse.clientId)
+        && Objects.equals(this.loanId, putLoansLoanIdResponse.loanId)
+        && Objects.equals(this.officeId, putLoansLoanIdResponse.officeId)
+        && Objects.equals(this.resourceId, putLoansLoanIdResponse.resourceId);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(changes, clientId, loanId, officeId, resourceId);
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("class PutLoansLoanIdResponse {\n");
+    sb.append("    changes: ").append(toIndentedString(changes)).append("\n");
+    sb.append("    clientId: ").append(toIndentedString(clientId)).append("\n");
+    sb.append("    loanId: ").append(toIndentedString(loanId)).append("\n");
+    sb.append("    officeId: ").append(toIndentedString(officeId)).append("\n");
+    sb.append("    resourceId: ").append(toIndentedString(resourceId)).append("\n");
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /**
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
+   */
+  private String toIndentedString(Object o) {
+
+    if (o == null) {
+      return "null";
+    }
+    return o.toString().replace("\n", "\n    ");
+  }
 }
