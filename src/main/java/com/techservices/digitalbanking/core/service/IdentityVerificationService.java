@@ -197,8 +197,8 @@ public class IdentityVerificationService {
     List<String> mismatchedFields = new ArrayList<>();
 
     if (dataType.isIndividual()) {
-      double matchPercentage = calculateSimilarityPercentage(
-          customerData.getFullName(), responseData.getFullName()
+      double matchPercentage = calculateNameMatchPercentage(
+          customerData.getFirstname(), customerData.getLastname(), responseData.getFirstName(), responseData.getLastName()
       );
 
       if (matchPercentage < systemProperty.getIdentityVerificationThreshold()) {
@@ -222,39 +222,65 @@ public class IdentityVerificationService {
     return mismatchedFields;
   }
 
-  private static double calculateNameMatchPercentage(String firstName1, String lastName1,
-      String firstName2, String lastName2) {
-    double firstNameMatch = calculateSimilarityPercentage(firstName1, firstName2);
-    double lastNameMatch = calculateSimilarityPercentage(lastName1, lastName2);
+  private static double calculateNameMatchPercentage(String custFirst, String custLast,
+      String docFirst, String docLast) {
+    if (isEmpty(custFirst) || isEmpty(custLast) || isEmpty(docFirst) || isEmpty(docLast)) {
+      return 0.0;
+    }
 
-    double firstNameSwapMatch = calculateSimilarityPercentage(firstName1, lastName2);
-    double lastNameSwapMatch = calculateSimilarityPercentage(lastName1, firstName2);
+    String c1 = normalize(custFirst);
+    String c2 = normalize(custLast);
+    String d1 = normalize(docFirst);
+    String d2 = normalize(docLast);
 
-    double normalOrderScore = (firstNameMatch + lastNameMatch) / 2;
-    double swappedOrderScore = (firstNameSwapMatch + lastNameSwapMatch) / 2;
+    double normalScore = (similarity(c1, d1) + similarity(c2, d2)) / 2.0;
+    double swappedScore = (similarity(c1, d2) + similarity(c2, d1)) / 2.0;
 
-    return Math.max(normalOrderScore, swappedOrderScore);
+    double score = normalScore;
+
+    if (swappedScore > normalScore + 15 &&
+        similarity(c1, d2) >= 80 &&
+        similarity(c2, d1) >= 80) {
+
+      score = swappedScore;
+      log.info("Name order swap accepted: '{}' {}' ↔ '{}' {}' (score: {})",
+          custFirst, custLast, docFirst, docLast, score);
+    }
+
+    return Math.round(score * 10) / 10.0;
+  }
+
+  private static double similarity(String s1, String s2) {
+    String a = normalize(s1);
+    String b = normalize(s2);
+    if (a.isEmpty() || b.isEmpty()) return 0.0;
+
+    return new JaroWinklerSimilarity().apply(a, b) * 100;
+  }
+
+  private static String normalize(String s) {
+    if (s == null) return "";
+    return s.trim()
+        .toLowerCase()
+        .replaceAll("[^a-z\\s-]", "")
+        .replaceAll("\\s+", " ")
+        .replaceAll("-+", "-");
+  }
+
+  private static boolean isEmpty(String s) {
+    return s == null || s.trim().isEmpty();
   }
 
   private static double calculateSimilarityPercentage(String str1, String str2) {
+    log.info("Calculating similarity for {} and {}", str1, str2);
     if (str1 == null || str2 == null) {
       return 0.0;
     }
 
-    String s1 = str1.toLowerCase().trim();
-    String s2 = str2.toLowerCase().trim();
+    String s1 = normalize(str1);
+    String s2 = normalize(str2);
 
-    if (s1.isEmpty() && s2.isEmpty()) {
-      return 100.0;
-    }
-
-    if (s1.isEmpty() || s2.isEmpty()) {
-      return 0.0;
-    }
-
-    // Jaro-Winkler returns 0.0 to 1.0, convert to percentage
-    JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
-    return similarity.apply(s1, s2) * 100;
+    return similarity(s1, s2);
   }
 
 	@Transactional
