@@ -27,7 +27,7 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomerDtoResponse extends BaseAppResponse {
-	private Long id;
+	private String id;
 	private String accountId;
 	private String firstname;
 	private String lastname;
@@ -59,7 +59,13 @@ public class CustomerDtoResponse extends BaseAppResponse {
 	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	private LocalDateTime updatedAt;
 
-	public static CustomerDtoResponse parse(Customer customer, ClientService clientService) {
+  public static CustomerDtoResponse uniqueId(String uniqueId) {
+    CustomerDtoResponse customerDtoResponse = new CustomerDtoResponse();
+    customerDtoResponse.setId(uniqueId);
+    return customerDtoResponse;
+  }
+
+  public static CustomerDtoResponse parse(Customer customer, ClientService clientService) {
 
 		CustomerDtoResponse customerDtoResponse = getCustomerDtoResponse(customer);
 		if (customer.isActive() && StringUtils.isNotBlank(customer.getExternalId()))
@@ -71,7 +77,7 @@ public class CustomerDtoResponse extends BaseAppResponse {
 	private static CustomerDtoResponse getCustomerDtoResponse(Customer customer) {
 
 		CustomerDtoResponse customerDtoResponse = new CustomerDtoResponse();
-		customerDtoResponse.setId(customer.getId());
+		customerDtoResponse.setId(String.valueOf(customer.getId()));
 		customerDtoResponse.setAccountId(customer.getAccountId());
 		customerDtoResponse.setFirstname(customer.getFirstname());
 		customerDtoResponse.setLastname(customer.getLastname());

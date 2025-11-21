@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -163,20 +164,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Override
 	public GenericApiResponse createPassword(PasswordMgtRequest passwordMgtRequest) {
-
-		Customer foundCustomer = customerService.getCustomerById(passwordMgtRequest.getCustomerId());
-		if (StringUtils.isBlank(foundCustomer.getPassword())) {
 			if (StringUtils.isNotBlank(passwordMgtRequest.getPassword())) {
-				foundCustomer.setPassword(passwordEncoder.encode(passwordMgtRequest.getPassword()));
-				customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer, true);
-				return new GenericApiResponse("Password created successfully", "success",
-						CustomerDtoResponse.parse(foundCustomer));
+        CreateCustomerRequest createCustomerRequest = redisService.retrieveData(passwordMgtRequest.getCustomerId(), CreateCustomerRequest.class);
+        if (createCustomerRequest != null && createCustomerRequest.isOtpValidated()) {
+          createCustomerRequest.setPassword(passwordMgtRequest.getPassword());
+          CustomerDtoResponse savedCustomer = customerService.completeCustomerRegistration(createCustomerRequest);
+          redisService.delete(passwordMgtRequest.getCustomerId());
+          return new GenericApiResponse("Password created successfully", "success", savedCustomer);
+        } else {
+          throw new ValidationException("password.creation.failed", "Kindly reinitiate the Otp process");
+        }
 			} else {
 				throw new ValidationException("Invalid.credentials.provided", "password cannot be blank");
 			}
-		}
-		throw new ValidationException("password.already.exists",
-				"Password has already been set for this customer. Please use the update password endpoint.");
 	}
 
 	@Override
@@ -188,7 +188,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 					passwordMgtRequest.getEmailAddress(), passwordMgtRequest.getPhoneNumber(), customerType);
 			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(
 					passwordMgtRequest.getPhoneNumber(), passwordMgtRequest.getEmailAddress());
-			passwordMgtRequest.setCustomerId(foundCustomer.getId());
+			passwordMgtRequest.setCustomerId(String.valueOf(foundCustomer.getId()));
 			OtpDto otpDto = this.redisService.generateOtpRequest(passwordMgtRequest, OtpType.FORGOT_PASSWORD,
 					notificationRequestDto, null);
 			return new GenericApiResponse(otpDto.getUniqueId(), passwordMgtRequest.getPhoneNumber(),
@@ -218,7 +218,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			OtpDto otpDto = redisService.validateOtpWithoutOtp(passwordMgtRequest.getUniqueId());
 			String password = passwordEncoder.encode(passwordMgtRequest.getPassword());
 			PasswordMgtRequest passwordRequest = (PasswordMgtRequest) otpDto.getData();
-			Customer foundCustomer = customerService.getCustomerById(passwordRequest.getCustomerId());
+			Customer foundCustomer = customerService.getCustomerById(
+          Long.valueOf(passwordRequest.getCustomerId()));
 			foundCustomer.setPassword(password);
 			customerService.updateCustomer(null, foundCustomer.getId(), foundCustomer, true);
 			return new GenericApiResponse("Password has been changed successfully", "success", null);
@@ -236,7 +237,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	@Override
 	public GenericApiResponse changePassword(PasswordMgtRequest passwordMgtRequest) {
 
-		Customer foundCustomer = customerService.getCustomerById(passwordMgtRequest.getCustomerId());
+		Customer foundCustomer = customerService.getCustomerById(
+        Long.valueOf(passwordMgtRequest.getCustomerId()));
 		if (passwordEncoder.matches(passwordMgtRequest.getPassword(), foundCustomer.getPassword())) {
 			if (StringUtils.isBlank(passwordMgtRequest.getNewPassword())) {
 				throw new ValidationException("Invalid.data.provided", "new password cannot be blank");

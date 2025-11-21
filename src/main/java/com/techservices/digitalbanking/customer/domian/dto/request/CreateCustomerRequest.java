@@ -54,6 +54,8 @@ public class CreateCustomerRequest {
 	private String firstname;
 	private String lastname;
 	private String referralCode;
+  private String password;
+  private boolean isOtpValidated;
 
 	private String businessName;
 	private Long industryId;

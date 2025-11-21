@@ -65,7 +65,7 @@ public class CustomerApiResource {
 			@Parameter(description = "Customer creation request details", required = true) @Validated @RequestBody CreateCustomerRequest createCustomerRequest,
 			@Parameter(description = "Command to execute during customer creation", example = "generate-otp", schema = @Schema(allowableValues = {
 					"generate-otp",
-					"skip-otp"})) @RequestParam(name = "command", required = false, defaultValue = "generate-otp") String command,
+					"verify-otp"})) @RequestParam(name = "command", required = false, defaultValue = "generate-otp") String command,
 			@Parameter(description = "Type of customer account to create", example = "RETAIL", schema = @Schema(implementation = UserType.class)) @RequestParam(name = "customerType", required = false, defaultValue = "RETAIL") UserType customerType) {
 
 		BaseAppResponse postClientsResponse = customerService.createCustomer(createCustomerRequest, command,

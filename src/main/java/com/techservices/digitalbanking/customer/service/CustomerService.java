@@ -17,7 +17,7 @@ import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoR
 public interface CustomerService {
 
 	BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command, UserType customerType);
-
+  CustomerDtoResponse completeCustomerRegistration(CreateCustomerRequest createCustomerRequest);
 	Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer existingCustomer,
 			boolean isExternalServiceUpdateAllowed);
 

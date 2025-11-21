@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PasswordMgtRequest {
-	private Long customerId;
+	private String customerId;
 	private String password;
 	private String emailAddress;
 	private String phoneNumber;

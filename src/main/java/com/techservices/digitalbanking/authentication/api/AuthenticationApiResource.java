@@ -127,7 +127,7 @@ public class AuthenticationApiResource {
 			@Parameter(description = "Password change request containing current password and new password", required = true, content = @Content(schema = @Schema(implementation = PasswordMgtRequest.class))) @RequestBody PasswordMgtRequest passwordMgtRequest) {
 
 		Long customerId = springSecurityAuditorAware.getAuthenticatedUser().getUserId();
-		passwordMgtRequest.setCustomerId(customerId);
+		passwordMgtRequest.setCustomerId(String.valueOf(customerId));
 		return ResponseEntity.ok(authenticationService.changePassword(passwordMgtRequest));
 	}
 
