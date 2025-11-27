@@ -4,6 +4,8 @@ package com.techservices.digitalbanking.core.eBanking.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
+import com.techservices.digitalbanking.walletaccount.domain.request.InterBankTransferRequest;
 import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.core.domain.dto.TransactionDto;
@@ -85,4 +87,8 @@ public class AccountTransactionService {
 
 		return transactionApiClient.retrieveAllTransactionsByAccountNo(filter);
 	}
+
+  public GenericApiResponse processInterBankTransfer(InterBankTransferRequest intraBankTransferRequest) {
+    return transactionApiClient.processInterBankTransfer(intraBankTransferRequest);
+  }
 }

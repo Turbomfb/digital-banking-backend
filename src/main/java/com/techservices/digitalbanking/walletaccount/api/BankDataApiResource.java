@@ -67,6 +67,6 @@ public class BankDataApiResource {
 					+ "and bank code must correspond to a supported financial institution. "
 					+ "All fields should be properly formatted and comply with banking standards.", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = NameEnquiryRequest.class))) @RequestBody NameEnquiryRequest request) {
 
-		return ResponseEntity.ok(bankDataService.processNameEnquiry(request));
+		return ResponseEntity.ok(bankDataService.processNameEnquiryV2(request));
 	}
 }

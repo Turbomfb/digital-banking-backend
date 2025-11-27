@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.techservices.digitalbanking.walletaccount.domain.request.InterBankTransferRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -131,7 +132,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 					.getData();
 			if (otpData.getAmount().compareTo(request.getAmount()) != 0) {
 				throw new ValidationException("error.msg.sender.transaction.amount.mismatch",
-						"Invalid payment reference provided");
+						"");
 			}
 			this.validateCustomerAccount(request, customerId);
 			request.validateForOtpVerification();
@@ -139,7 +140,6 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 
 			boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankNipCode(),
 					bankConfigurationService.getBankCode());
-			TransactionLog transactionLog = null;
 			AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(sender.getId());
 			BigDecimal balance = accountResponse.getAccountBalance().subtract(otpData.getAmount());
 			BigDecimal recipientBalance = null;
@@ -166,31 +166,22 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 				}
 			} else {
 				try {
-					transactionLog = createInterbankTransactionLog(request, sender);
-					transactionLog = transactionLogRepository.save(transactionLog);
-					log.info("Created interbank transaction log with PENDING status: {}",
-							transactionLog.getTransactionReference());
+          InterBankTransferRequest intraBankTransferRequest = new InterBankTransferRequest();
+          intraBankTransferRequest.setReceiverBankCode(request.getBankNipCode());
+          intraBankTransferRequest.setNarration("Transfer | " + request.getNarration());
+          intraBankTransferRequest.setAmount(otpData.getAmount());
+          intraBankTransferRequest.setReceiverAccountNumber(request.getAccountNumber());
+          intraBankTransferRequest.setReceiverName(request.getAccountName());
+          intraBankTransferRequest.setSenderAccountNumber(sender.getNuban());
+          intraBankTransferRequest.setSenderName(sender.getFullName());
 
-					accountTransactionService.handleWithdrawal(sender.getAccountId(), request.getAmount(), null,
-							"Transfer | " + request.getNarration());
-					log.info("Successfully debited sender account for transaction: {}",
-							transactionLog.getTransactionReference());
+					accountTransactionService.processInterBankTransfer(intraBankTransferRequest);
 				} catch (Exception e) {
 					log.error("Error processing transaction command: {}", e.getMessage(), e);
 					throw new ValidationException("error.processing.transaction",
 							"We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists",
-							e);
+							e.getMessage());
 				}
-				try {
-					externalPaymentService.initiateTransfer(request, transactionLog);
-				} catch (Exception e) {
-					transactionLog.setResponseCode("99");
-					transactionLog.setResponseMessage(e.getMessage());
-					log.error("Error processing transaction command: {}", e.getMessage(), e);
-				}
-			}
-			if (transactionLog != null) {
-				transactionLogRepository.save(transactionLog);
 			}
 			this.redisService.validateOtp(request.getReference(), request.getOtp(), OtpType.TRANSFER);
 			this.redisService.save(request, OtpType.TRANSFER, request.getReference());

@@ -35,6 +35,7 @@ public class AccountDto {
 	private String allocationName;
 	private String nuban;
 	private BigDecimal accountBalance = BigDecimal.ZERO;
+	private BigDecimal availableBalance = BigDecimal.ZERO;
 	private Double annualInterestRate;
 	private BigDecimal expectedInterest = BigDecimal.ZERO;
 	private BigDecimal interestEarned = BigDecimal.ZERO;

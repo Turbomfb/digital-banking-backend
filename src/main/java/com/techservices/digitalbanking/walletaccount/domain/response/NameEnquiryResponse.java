@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.techservices.digitalbanking.core.configuration.BankConfigurationService;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 
+import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse.NameEnquiryResponseData.NameEnquiryResponseDataBankDetail;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,8 +28,8 @@ public class NameEnquiryResponse {
 		response.setSuccess(true);
 		response.setStatus(SUCCESS);
 
-		NameEnquiryResponse.NameEnquiryResponseData data = response.new NameEnquiryResponseData();
-		NameEnquiryResponse.NameEnquiryResponseData.BankDetail bankDetail = data.new BankDetail();
+		NameEnquiryResponse.NameEnquiryResponseData data = new NameEnquiryResponseData();
+		NameEnquiryResponseDataBankDetail bankDetail = new NameEnquiryResponseDataBankDetail();
 
 		bankDetail.setAccountName(customer.getFullName());
 		bankDetail.setAccountNumber(customer.getNuban());
@@ -43,12 +44,12 @@ public class NameEnquiryResponse {
 
 	@Setter
 	@Getter
-	public class NameEnquiryResponseData {
-		private BankDetail bankDetails;
+	public static class NameEnquiryResponseData {
+		private NameEnquiryResponseDataBankDetail bankDetails;
 
 		@Setter
 		@Getter
-		public class BankDetail {
+		public static class NameEnquiryResponseDataBankDetail {
 			private String accountName;
 			private String accountNumber;
 			private String bankName;

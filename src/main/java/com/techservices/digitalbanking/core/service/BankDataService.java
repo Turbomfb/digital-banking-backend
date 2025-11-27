@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import com.techservices.digitalbanking.core.eBanking.api.TransactionApiClient;
+import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse.NameEnquiryResponseData;
+import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse.NameEnquiryResponseData.NameEnquiryResponseDataBankDetail;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.http.HttpHeaders;
@@ -65,14 +68,15 @@ public class BankDataService {
 	private final String pathUrl = "/v2/api/identity/ng/bank-account-number/";
 	private final BankConfigurationService bankConfigurationService;
 	private final CustomerRepository customerRepository;
+  private final TransactionApiClient transactionApiClient;
 
-	public BankDataResponse retrieveAllBanks() {
+  public BankDataResponse retrieveAllBanks() {
 
 		BankDataResponse bankDataResponse = new BankDataResponse();
 		bankDataResponse.setSuccess(true);
 		bankDataResponse.setStatusCode(200);
 		bankDataResponse.setMessage("Bank data retrieved successfully");
-		bankDataResponse.setData(bankDataRepository.findAll());
+		bankDataResponse.setData(transactionApiClient.retrieveAllBanks());
 		return bankDataResponse;
 	}
 
@@ -117,6 +121,58 @@ public class BankDataService {
 		} catch (Exception directFailure) {
 			log.info("Direct enquiry failed ({}). Falling back to fuzzy match.", directFailure.getMessage());
 			resp = this.processWithFuzzyMatching(request);
+		}
+		try {
+			NameEnquiryCache cache = NameEnquiryCache.parse(resp, request.getAccountNumber(), request.getBankCode());
+			log.info("Saving name enquiry data to cache: {}", cache);
+			nameEnquiryCacheRepository.save(cache);
+		} catch (Exception e) {
+			log.error("Failed to save name enquiry data to cache: {}", e.getMessage(), e);
+		}
+		return resp;
+	}
+
+	public NameEnquiryResponse processNameEnquiryV2(NameEnquiryRequest request) {
+
+		log.info("Processing name enquiry for bank code: {}, account: {}", request.getBankCode(),
+				request.getAccountNumber());
+
+		validateRequest(request);
+
+		Optional<NameEnquiryCache> cachedData = nameEnquiryCacheRepository
+				.findByAccountNumberAndBankCode(request.getAccountNumber(), request.getBankCode());
+
+		if (cachedData.isPresent()) {
+			log.info("Name enquiry data found in cache for: accountNumber={}, bankCode={}", request.getAccountNumber(),
+					request.getBankCode());
+			return cachedData.get().toResponse();
+		}
+
+		boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankCode(),
+				bankConfigurationService.getBankCode());
+		if (isIntraBankTransfer) {
+			Optional<Customer> customer = customerRepository.findByNuban(request.getAccountNumber());
+			log.info("Customer lookup for intra-bank transfer: accountNumber={}, found={}", request.getAccountNumber(),
+					customer.isPresent());
+			if (customer.orElseThrow(() -> new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR)) != null) {
+				return NameEnquiryResponse.from(customer.get(), bankConfigurationService);
+			}
+		}
+
+		log.info("Fetching name enquiry data from external API for: accountNumber={}, bankCode={}",
+				request.getAccountNumber(), request.getBankCode());
+    NameEnquiryResponseDataBankDetail nameEnquiryResponseDataBankDetail;
+    NameEnquiryResponse resp = new NameEnquiryResponse();
+		try {
+      nameEnquiryResponseDataBankDetail = transactionApiClient.processNameEnquiry(request);
+      resp.setSuccess(true);
+      NameEnquiryResponseData data = new NameEnquiryResponseData();
+      nameEnquiryResponseDataBankDetail.setAccountNumber(request.getAccountNumber());
+      data.setBankDetails(nameEnquiryResponseDataBankDetail);
+      resp.setData(data);
+		} catch (Exception directFailure) {
+      log.error(ACCOUNT_VERIFICATION_FAILED_ERROR+":: {}",  directFailure.getMessage(), directFailure);
+      throw new ValidationException(ACCOUNT_VERIFICATION_FAILED_ERROR);
 		}
 		try {
 			NameEnquiryCache cache = NameEnquiryCache.parse(resp, request.getAccountNumber(), request.getBankCode());

@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse;
 
+import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse.NameEnquiryResponseData;
+import com.techservices.digitalbanking.walletaccount.domain.response.NameEnquiryResponse.NameEnquiryResponseData.NameEnquiryResponseDataBankDetail;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -66,7 +68,7 @@ public class NameEnquiryCache {
 		cache.setCreatedAt(LocalDateTime.now());
 
 		if (response.getData() != null && response.getData().getBankDetails() != null) {
-			NameEnquiryResponse.NameEnquiryResponseData.BankDetail bankDetail = response.getData().getBankDetails();
+			NameEnquiryResponseDataBankDetail bankDetail = response.getData().getBankDetails();
 			cache.setAccountName(bankDetail.getAccountName());
 			cache.setBankName(bankDetail.getBankName());
 			cache.setAccountCurrency(bankDetail.getAccountCurrency());
@@ -83,8 +85,8 @@ public class NameEnquiryCache {
 		response.setSuccess(true);
 		response.setStatus(SUCCESS);
 
-		NameEnquiryResponse.NameEnquiryResponseData data = response.new NameEnquiryResponseData();
-		NameEnquiryResponse.NameEnquiryResponseData.BankDetail bankDetail = data.new BankDetail();
+		NameEnquiryResponse.NameEnquiryResponseData data = new NameEnquiryResponseData();
+		NameEnquiryResponseDataBankDetail bankDetail = new NameEnquiryResponseDataBankDetail();
 
 		bankDetail.setAccountName(this.accountName);
 		bankDetail.setAccountNumber(this.accountNumber);
