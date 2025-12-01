@@ -7,6 +7,8 @@ import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import com.techservices.digitalbanking.core.configuration.SystemProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,7 @@ public class RedisService {
 
 	private final RedisProperty redisProperty;
 	private final NotificationService notificationService;
+	private final SystemProperty systemProperty;
 
 	private final RedisTemplate<String, Object> redisTemplate;
 
@@ -78,10 +81,14 @@ public class RedisService {
 
 	public boolean isOtpValid(OtpDto otpDto, OtpType otpType, String otp) {
 
-		return !otpDto.getOtp().equals(otp) && !"123456".equals(otp) && otpDto.getOtpType().equals(otpType);
+		return (otpDto.getOtp().equals(otp) || isDevEnvAndIsDefaultCode(otp)) && otpDto.getOtpType().equals(otpType);
 	}
 
-	public void save(Object request, OtpType otpType, String uniqueId) {
+  private boolean isDevEnvAndIsDefaultCode(String otp) {
+    return "123456".equals(otp) && StringUtils.equalsIgnoreCase(systemProperty.getActiveProfile(), "dev");
+  }
+
+  public void save(Object request, OtpType otpType, String uniqueId) {
 
 		OtpDto otpDto = new OtpDto();
 		otpDto.setUniqueId(uniqueId);
@@ -142,7 +149,7 @@ public class RedisService {
 		if (otpDto == null) {
 			throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
 		}
-		if (this.isOtpValid(otpDto, otpType, otp)) {
+		if (!this.isOtpValid(otpDto, otpType, otp)) {
 			throw new ValidationException("invalid.otp", "Invalid OTP provided.");
 		}
 		this.delete(otpDto.getUniqueId());
@@ -155,7 +162,7 @@ public class RedisService {
 		if (otpDto == null) {
 			throw new ValidationException("otp.expired", "OTP has expired or does not exist.");
 		}
-		if (this.isOtpValid(otpDto, otpType, otp)) {
+		if (!this.isOtpValid(otpDto, otpType, otp)) {
 			throw new ValidationException("invalid.otp", "Invalid OTP provided.");
 		}
 		otpDto.setValidated(true);
