@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.util;
 
 import java.io.IOException;
@@ -31,6 +31,7 @@ public class JsonUtil {
 	}
 
 	public static boolean isJSONValid(String jsonString) {
+
 		try {
 			JsonNode jsonNode = OBJECT_MAPPER.readTree(jsonString);
 			return jsonNode.isObject() || jsonNode.isArray();
@@ -40,6 +41,7 @@ public class JsonUtil {
 	}
 
 	public static <T> T convertJsonBodyToObject(String jsonBody, Class<T> clazz) throws RuntimeException {
+
 		if (StringUtils.isEmpty(jsonBody)) {
 			throw new RuntimeException("Received empty response body");
 		}
@@ -52,6 +54,7 @@ public class JsonUtil {
 	}
 
 	public static <T> List<T> convertJsonArrayToList(String jsonArray, Class<T> clazz) throws RuntimeException {
+
 		if (StringUtils.isEmpty(jsonArray)) {
 			throw new PlatformServiceException("Received empty response body");
 		}
@@ -66,6 +69,7 @@ public class JsonUtil {
 	}
 
 	public static String objToJsonStringMapper(final Object obj) {
+
 		try {
 			return new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).findAndRegisterModules()
 					.writeValueAsString(obj);

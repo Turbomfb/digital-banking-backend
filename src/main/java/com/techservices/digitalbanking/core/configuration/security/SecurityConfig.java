@@ -1,24 +1,9 @@
-/*
- * Copyright (c) 2025 Techservice Engineering Team.
- * All rights reserved.
- *
- * This software is proprietary and confidential. It may not be reproduced,
- * distributed, or transmitted in any form or by any means, including photocopying,
- * recording, or other electronic or mechanical methods, without the prior written
- * permission of Techservice Engineering Team.
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- *
- * For any questions regarding this license, please contact:
- * Techservice Engineering Team
- * Email: engineering@techservice.com
- */ 
+/* (C)2025 */
 package com.techservices.digitalbanking.core.configuration.security;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -36,97 +21,84 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.techservices.digitalbanking.core.configuration.SystemProperty;
+import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
+
+import lombok.RequiredArgsConstructor;
 
 import static com.techservices.digitalbanking.core.configuration.security.JwtUtil.MAX_AGE_SECONDS;
-import static com.techservices.digitalbanking.core.util.AppUtil.PUBLIC_ENDPOINTS;
-import static com.techservices.digitalbanking.core.util.AppUtil.PUBLIC_POST_ENDPOINTS;
-
+import static com.techservices.digitalbanking.core.util.AppUtil.*;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-  @Value("${jwt.secret}")
-  private String secretKey;
+	private final SystemProperty systemProperty;
+	private final CustomerRepository customerRepository;
 
-  @Value("${application.client.url}")
-  private String clientUrl;
+	@Value("${jwt.secret}")
+	private String secretKey;
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
-    return http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                    .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
-  }
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter)
+			throws Exception {
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
+		return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.csrf(AbstractHttpConfigurer::disable)
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+						.requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+						.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().anyRequest().authenticated())
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
+	}
 
-    // Configure allowed origins
-    configuration.setAllowedOriginPatterns(List.of(
-            "http://localhost:*",
-            clientUrl
-    ));
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
 
-    // Configure allowed methods
-    configuration.setAllowedMethods(List.of(
-            HttpMethod.GET.name(),
-            HttpMethod.POST.name(),
-            HttpMethod.PUT.name(),
-            HttpMethod.PATCH.name(),
-            HttpMethod.DELETE.name(),
-            HttpMethod.OPTIONS.name()
-    ));
+		CorsConfiguration configuration = new CorsConfiguration();
 
-    // Configure allowed headers
-    configuration.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type",
-            "X-Requested-With",
-            "Accept",
-            "Origin",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
-    ));
+		// Configure allowed origins
+		configuration
+				.setAllowedOriginPatterns(Stream.concat(Stream.of("http://localhost:*", systemProperty.getClientUrl()),
+						systemProperty.getCorsAllowedOrigins().stream()).collect(Collectors.toList()));
 
-    // Configure exposed headers
-    configuration.setExposedHeaders(List.of(
-            "Access-Control-Allow-Origin",
-            "Access-Control-Allow-Methods",
-            "Access-Control-Allow-Headers"
-    ));
+		// Configure allowed methods
+		configuration.setAllowedMethods(List.of(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(),
+				HttpMethod.PATCH.name(), HttpMethod.DELETE.name(), HttpMethod.OPTIONS.name()));
 
-    configuration.setMaxAge(MAX_AGE_SECONDS);
-    configuration.setAllowCredentials(true);
+		// Configure allowed headers
+		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin",
+				"Access-Control-Request-Method", "X-User-Location", "User-Agent", "Access-Control-Request-Headers"));
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-  }
+		// Configure exposed headers
+		configuration.setExposedHeaders(
+				List.of("Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers"));
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder(12);
-  }
+		configuration.setMaxAge(MAX_AGE_SECONDS);
+		configuration.setAllowCredentials(true);
 
-  @Bean
-  public JwtUtil jwtUtil() {
-    return new JwtUtil(secretKey);
-  }
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
+	}
 
-  @Bean
-  public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil) {
-    return new JwtAuthenticationFilter(jwtUtil);
-  }
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+
+		return new BCryptPasswordEncoder(12);
+	}
+
+	@Bean
+	public JwtUtil jwtUtil() {
+
+		return new JwtUtil(secretKey, customerRepository);
+	}
+
+	@Bean
+	public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil) {
+
+		return new JwtAuthenticationFilter(jwtUtil);
+	}
 }

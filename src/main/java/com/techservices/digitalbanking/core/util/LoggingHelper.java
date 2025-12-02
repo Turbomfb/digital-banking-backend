@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.util;
 
 import org.springframework.stereotype.Component;
@@ -17,10 +17,12 @@ public class LoggingHelper {
 
 	@PostConstruct
 	public void init() {
+
 		objectMapper = new ObjectMapper();
 	}
 
 	public void logRequest(Object object) {
+
 		try {
 			log.info(objectMapper.writeValueAsString(object));
 		} catch (JsonProcessingException e) {

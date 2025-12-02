@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.loan.domain.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

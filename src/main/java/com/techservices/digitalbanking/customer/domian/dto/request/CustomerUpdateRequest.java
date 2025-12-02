@@ -1,16 +1,14 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.customer.domian.dto.request;
 
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientNonPersonDetails;
-import com.techservices.digitalbanking.core.fineract.model.request.PostClientsAddressRequest;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostClientsAddressRequest;
 
 import jakarta.validation.Valid;
 import lombok.Data;
@@ -43,16 +41,20 @@ public class CustomerUpdateRequest {
 	@JsonProperty("nin")
 	private String nin;
 
+	private String tin;
+
 	@JsonProperty("externalId")
 	private String externalId;
 
 	@JsonProperty("dateOfBirth")
 	private String dateOfBirth;
 
-	private String kycTier;
+	private String rcNumber;
+	private String businessName;
+
+	private Long kycTier;
 
 	private Boolean proofOfAddress;
-
 
 	@Valid
 	private List<@Valid PostClientsAddressRequest> address = Collections.emptyList();

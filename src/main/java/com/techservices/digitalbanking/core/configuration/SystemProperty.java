@@ -1,13 +1,15 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.configuration;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import lombok.Data;
+import lombok.Getter;
 
 @Configuration
-@Data
+@Getter
 public class SystemProperty {
 
 	@Value("${spring.profiles.active}")
@@ -48,4 +50,22 @@ public class SystemProperty {
 
 	@Value("${sms.notification.service.sender-id}")
 	private String smsNotificationServiceSenderId;
+
+	@Value("${application.client.url}")
+	private String clientUrl;
+
+	@Value("${application.cors.allowed-origins}")
+	private List<String> corsAllowedOrigins;
+
+	@Value("${application.client.payment.redirect.url}")
+	private String clientPaymentRedirectUrl;
+
+	@Value("${payinvert.public.key}")
+	private String payinvertPublicKey;
+
+	@Value("${payinvert.api.key}")
+	private String payinvertApiKey;
+
+	@Value("${payinvert.integration.url}")
+	private String payinvertIntegrationUrl;
 }

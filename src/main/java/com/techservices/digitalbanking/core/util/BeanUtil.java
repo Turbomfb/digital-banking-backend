@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.util;
 
 import org.springframework.beans.BeansException;
@@ -13,14 +13,17 @@ public class BeanUtil implements ApplicationContextAware {
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
 		context = applicationContext;
 	}
 
 	public static <T> T getBean(Class<T> beanClass) {
+
 		return context.getBean(beanClass);
 	}
 
 	public static <T> T getBean(String beanName, Class<T> beanClass) {
+
 		return context.getBean(beanName, beanClass);
 	}
 }

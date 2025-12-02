@@ -1,259 +1,527 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.customer.service.impl;
+
+import java.math.BigDecimal;
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.techservices.digitalbanking.common.domain.enums.UserType;
 import com.techservices.digitalbanking.core.domain.BaseAppResponse;
+import com.techservices.digitalbanking.core.domain.data.model.CustomerStatusAudit;
+import com.techservices.digitalbanking.core.domain.data.repository.CustomerStatusAuditRepository;
+import com.techservices.digitalbanking.core.domain.dto.AccountDto;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
 import com.techservices.digitalbanking.core.domain.dto.GenericApiResponse;
 import com.techservices.digitalbanking.core.domain.dto.request.NotificationRequestDto;
 import com.techservices.digitalbanking.core.domain.dto.request.OtpDto;
-import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
-import com.techservices.digitalbanking.core.domain.enums.AccountType;
+import com.techservices.digitalbanking.core.domain.enums.AlertType;
+import com.techservices.digitalbanking.core.domain.enums.CustomerStatusAuditType;
 import com.techservices.digitalbanking.core.domain.enums.OtpType;
+import com.techservices.digitalbanking.core.eBanking.model.response.*;
+import com.techservices.digitalbanking.core.eBanking.service.AccountService;
+import com.techservices.digitalbanking.core.eBanking.service.ClientService;
+import com.techservices.digitalbanking.core.eBanking.service.LockDepositAccountService;
 import com.techservices.digitalbanking.core.exception.AbstractPlatformResourceNotFoundException;
+import com.techservices.digitalbanking.core.exception.UnAuthenticatedUserException;
 import com.techservices.digitalbanking.core.exception.ValidationException;
-import com.techservices.digitalbanking.core.fineract.service.AccountService;
 import com.techservices.digitalbanking.core.redis.service.RedisService;
+import com.techservices.digitalbanking.core.service.AlertPreferenceService;
 import com.techservices.digitalbanking.core.util.AppUtil;
 import com.techservices.digitalbanking.customer.domian.data.model.Customer;
 import com.techservices.digitalbanking.customer.domian.data.repository.CustomerRepository;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerTransactionPinRequest;
+import com.techservices.digitalbanking.customer.domian.dto.request.*;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDashboardResponse;
 import com.techservices.digitalbanking.customer.domian.dto.response.CustomerDtoResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.*;
-import com.techservices.digitalbanking.core.fineract.service.ClientService;
-import com.techservices.digitalbanking.customer.domian.dto.request.CreateCustomerRequest;
-import com.techservices.digitalbanking.customer.domian.dto.request.CustomerUpdateRequest;
 import com.techservices.digitalbanking.customer.service.CustomerService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import static com.techservices.digitalbanking.core.util.AppUtil.normalizePhoneNumber;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CustomerServiceImpl implements CustomerService {
 
-	private final ClientService clientService;
-	private final AccountService accountService;
-	private final CustomerRepository customerRepository;
-	private final RedisService redisService;
+  private final ClientService clientService;
+  private final AccountService accountService;
+  private final CustomerRepository customerRepository;
+  private final RedisService redisService;
+  private final PasswordEncoder passwordEncoder;
+  private final CustomerStatusAuditRepository customerStatusAuditRepository;
+  private final AlertPreferenceService alertPreferenceService;
+  private final LockDepositAccountService lockDepositAccountService;
 
-	@Override
-	public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command) {
-		if ("generate-otp".equalsIgnoreCase(command)) {
-			log.info("Generating otp");
-			if (StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()) && createCustomerRequest.getTransactionPin().length() < 4) {
-				throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
-			}
-			validateDuplicateCustomer(createCustomerRequest.getEmailAddress(), createCustomerRequest.getPhoneNumber());
-			NotificationRequestDto notificationRequestDto = new NotificationRequestDto(createCustomerRequest.getPhoneNumber(), createCustomerRequest.getEmailAddress());
-			OtpDto otpDto = this.redisService.generateOtpRequest(createCustomerRequest, OtpType.ONBOARDING, notificationRequestDto, null);
-			return new GenericApiResponse(otpDto.getUniqueId(), "We sent an OTP to "+ AppUtil.maskPhoneNumber(createCustomerRequest.getPhoneNumber())+" and "+AppUtil.maskEmailAddress(createCustomerRequest.getEmailAddress()), "success", null);
-		} else if ("verify-otp".equalsIgnoreCase(command)) {
-			OtpDto otpDto = this.redisService.validateOtp(createCustomerRequest.getUniqueId(), createCustomerRequest.getOtp(), OtpType.ONBOARDING);
-			createCustomerRequest = (CreateCustomerRequest) otpDto.getData();
-			return this.completeCustomerRegistration(createCustomerRequest);
-		}
-		else {
-			throw new ValidationException("invalid.command", "Invalid command: " + command);
-		}
-	}
+  @Override
+  public BaseAppResponse createCustomer(CreateCustomerRequest createCustomerRequest, String command,
+      UserType customerType) {
 
-	private CustomerDtoResponse completeCustomerRegistration(CreateCustomerRequest createCustomerRequest) {
-		boolean isInitialRegistration = isInitialRegistration(createCustomerRequest);
-		PostClientsResponse postClientsResponse = isInitialRegistration ? new PostClientsResponse() : clientService.createCustomer(createCustomerRequest);
+    if ("generate-otp".equalsIgnoreCase(command)) {
+      createCustomerRequest.setCustomerType(customerType != null ? customerType : UserType.RETAIL);
+      validateCreateCustomer(createCustomerRequest, customerType);
+      log.info("Generating otp");
+      if (StringUtils.isNotBlank(createCustomerRequest.getTransactionPin())
+          && createCustomerRequest.getTransactionPin().length() < 4) {
+        throw new ValidationException("transaction.pin.length",
+            "Transaction pin must be at least 4 characters long.");
+      }
+      validateDuplicateCustomer(createCustomerRequest, createCustomerRequest.getCustomerType());
+      NotificationRequestDto notificationRequestDto = new NotificationRequestDto(
+          createCustomerRequest.getPhoneNumber(), createCustomerRequest.getEmailAddress());
+      OtpDto otpDto = this.redisService.generateOtpRequest(createCustomerRequest,
+          OtpType.ONBOARDING,
+          notificationRequestDto, null);
+      return new GenericApiResponse(otpDto.getUniqueId(), createCustomerRequest.getPhoneNumber(),
+          createCustomerRequest.getEmailAddress(), true);
+    } else if ("verify-otp".equalsIgnoreCase(command)) {
+      String uniqueId = createCustomerRequest.getUniqueId();
+      OtpDto otpDto = this.redisService.validateOtpWithoutDeletingRecord(uniqueId,
+          createCustomerRequest.getOtp(),
+          OtpType.ONBOARDING);
+      createCustomerRequest = (CreateCustomerRequest) otpDto.getData();
+      createCustomerRequest.setOtpValidated(true);
+      otpDto.setData(createCustomerRequest);
+      redisService.save(uniqueId, otpDto);
+      return CustomerDtoResponse.uniqueId(uniqueId);
+    } else {
+      throw new ValidationException("invalid.command", "Invalid command: " + command);
+    }
+  }
 
-		Customer customer = buildCustomer(createCustomerRequest, postClientsResponse, isInitialRegistration);
-		return CustomerDtoResponse.parse(customerRepository.save(customer), clientService);
-	}
+  private static void validateCreateCustomer(CreateCustomerRequest createCustomerRequest,
+      UserType customerType) {
 
-	@Override
-	public Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId, Customer customer) {
-		customer = customer == null ? getCustomerById(customerId) : customer;
-		updateCustomerDetails(customerUpdateRequest, customer);
-		return getCustomerById(customerId);
-	}
+    if (StringUtils.isNotBlank(createCustomerRequest.getPhoneNumber())) {
+      createCustomerRequest.setPhoneNumber(
+          normalizePhoneNumber(createCustomerRequest.getPhoneNumber()));
+    }
+    if (StringUtils.isBlank(createCustomerRequest.getEmailAddress())) {
+      throw new ValidationException("email.is.required",
+          "Email address is required for retail customers.");
+    }
+    if (StringUtils.isBlank(createCustomerRequest.getPhoneNumber())) {
+      throw new ValidationException("phone.number.is.required",
+          "Phone number is required for retail customers.");
+    }
+    if (customerType == UserType.RETAIL) {
+      if (StringUtils.isNotBlank(createCustomerRequest.getBusinessName())) {
+        throw new ValidationException("business.name.not.allowed",
+            "Business name is not allowed for retail customers.");
+      }
+      if (StringUtils.isNotBlank(createCustomerRequest.getRcNumber())) {
+        throw new ValidationException("rc.number.not.allowed",
+            "RC number is not allowed for retail customers.");
+      }
+    } else if (customerType == UserType.CORPORATE) {
+      if (StringUtils.isBlank(createCustomerRequest.getBusinessName())) {
+        throw new ValidationException("business.name.required",
+            "Business name is required for corporate customers.");
+      }
+      if (StringUtils.isBlank(createCustomerRequest.getRcNumber())) {
+        throw new ValidationException("rc.number.required",
+            "RC number is required for corporate customers.");
+      }
+    } else {
+      throw new ValidationException("invalid.customer.type", "Invalid customer type provided.");
+    }
+  }
 
-	@Override
-	public Customer getCustomerById(Long customerId) {
-		return customerRepository.findById(customerId).orElseThrow(() ->
-				new AbstractPlatformResourceNotFoundException("customer.not.found.with.id", "Customer not found with id: " + customerId, customerId)
-		);
-	}
+  public CustomerDtoResponse completeCustomerRegistration(
+      CreateCustomerRequest createCustomerRequest) {
 
-	@Override
-	public Optional<Customer> getCustomerByEmailAddress(String emailAddress) {
-		return customerRepository.findByEmailAddress(emailAddress);
-	}
+    boolean isInitialRegistration = isInitialRegistration(createCustomerRequest);
+    PostClientsResponse postClientsResponse = isInitialRegistration
+        ? new PostClientsResponse()
+        : clientService.createCustomer(createCustomerRequest);
 
-	@Override
-	public Optional<Customer> getCustomerByPhoneNumber(String phoneNumber) {
-		return customerRepository.findByPhoneNumber(phoneNumber);
-	}
+    Customer customer = buildCustomer(createCustomerRequest, postClientsResponse,
+        isInitialRegistration);
+    Customer savedCustomer = customerRepository.save(customer);
+    alertPreferenceService.updatePreference(savedCustomer.getId(), AlertType.LOGIN, true, false,
+        false);
+    alertPreferenceService.updatePreference(savedCustomer.getId(), AlertType.TRANSACTION, true,
+        false, false);
+    return CustomerDtoResponse.parse(savedCustomer, clientService);
+  }
 
-	@Override
-	public BasePageResponse<CustomerDtoResponse> getAllCustomers(Pageable pageable) {
-		return BasePageResponse.instance(customerRepository.findAll(pageable).map(CustomerDtoResponse::parse));
-	}
+  @Override
+  public Customer updateCustomer(CustomerUpdateRequest customerUpdateRequest, Long customerId,
+      Customer customer,
+      boolean isExternalServiceUpdateAllowed) {
 
-	@Override
-	public GetClientsClientIdAccountsResponse getClientAccountsByClientId(Long customerId, String accountType) {
-		String externalId = this.retrieveCustomerExternalId(customerId);
-		return clientService.getClientAccountsByClientId(externalId, accountType);
-	}
+    customer = customer == null ? getCustomerById(customerId) : customer;
+    updateCustomerDetails(customerUpdateRequest, customer, isExternalServiceUpdateAllowed);
+    return getCustomerById(customerId);
+  }
 
-	private String retrieveCustomerExternalId(Long customerId) {
-		return getCustomerById(customerId).getExternalId();
-	}
+  @Override
+  public Customer getCustomerById(Long customerId) {
 
-	@Override
-	public CustomerDashboardResponse retrieveCustomerDashboard(Long customerId) {
-		String externalId = this.retrieveCustomerExternalId(customerId);
-		GetClientsClientIdAccountsResponse customerAccounts = clientService.getClientAccountsByClientId(externalId, null);
-		CustomerDashboardResponse customerDashboardResponse = CustomerDashboardResponse.builder()
-				.walletAccount(
-						new CustomerDashboardResponse.Account(
-								customerAccounts.getTotalAccountBalanceFor(AccountType.SAVINGS),
-								customerAccounts.getTotalAccountInterestsFor(AccountType.SAVINGS, accountService),
-								customerAccounts.getTotalAccountDepositsFor(AccountType.SAVINGS, accountService),
-								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.SAVINGS, accountService),
-								customerAccounts.getTotalActivePlanFor(AccountType.SAVINGS, accountService)
-						)
-				)
-				.flexAccount(
-						new CustomerDashboardResponse.Account(
-								customerAccounts.getTotalAccountBalanceFor(AccountType.RECURRING_DEPOSIT),
-								customerAccounts.getTotalAccountInterestsFor(AccountType.RECURRING_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountDepositsFor(AccountType.RECURRING_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.RECURRING_DEPOSIT, accountService),
-								customerAccounts.getTotalActivePlanFor(AccountType.RECURRING_DEPOSIT, accountService)
-						)
-				)
-				.lockAccount(
-						new CustomerDashboardResponse.Account(
-								customerAccounts.getTotalAccountBalanceFor(AccountType.FIXED_DEPOSIT),
-								customerAccounts.getTotalAccountInterestsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountDepositsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalAccountWithdrawalsFor(AccountType.FIXED_DEPOSIT, accountService),
-								customerAccounts.getTotalActivePlanFor(AccountType.FIXED_DEPOSIT, accountService)
-						)
-				)
-				.build();
-		customerDashboardResponse.setInvestmentMetrics(
-				new CustomerDashboardResponse.Account(
-						null,
-						customerDashboardResponse.getFlexAccount().getTotalInterestEarned().add(customerDashboardResponse.getLockAccount().getTotalInterestEarned()),
-						customerDashboardResponse.getFlexAccount().getTotalDeposit().add(customerDashboardResponse.getLockAccount().getTotalDeposit()),
-						customerDashboardResponse.getFlexAccount().getTotalWithdrawal().add(customerDashboardResponse.getLockAccount().getTotalWithdrawal()),
-						customerDashboardResponse.getFlexAccount().getTotalActivePlan() + customerDashboardResponse.getLockAccount().getTotalActivePlan()
-				)
-		);
-		return customerDashboardResponse;
-	}
+    return customerRepository.findById(customerId)
+        .orElseThrow(
+            () -> new AbstractPlatformResourceNotFoundException("customer.not.found.with.id",
+                "Customer not found with id: " + customerId, customerId));
+  }
 
-	@Override
-	public GenericApiResponse createTransactionPin(Long customerId, CustomerTransactionPinRequest customerTransactionPinRequest) {
-		Customer foundCustomer = getCustomerById(customerId);
-		if (StringUtils.isBlank(customerTransactionPinRequest.getPin())) {
-			throw new ValidationException("transaction.pin.required", "pin field is required.");
-		}
-		if (StringUtils.isNotBlank(foundCustomer.getTransactionPin())){
-			throw new ValidationException("transaction.pin.already.set", "Transaction pin has already been set for this customer. Kindly reset it.");
-		}
-		if (customerTransactionPinRequest.getPin().length() < 4) {
-			throw new ValidationException("transaction.pin.length", "Transaction pin must be at least 4 characters long.");
-		}
-		foundCustomer.setTransactionPin(customerTransactionPinRequest.getPin());
-		foundCustomer.setTransactionPinSet(true);
-		customerRepository.save(foundCustomer);
-		return new GenericApiResponse(null, "Transaction pin created successfully", "success", CustomerDtoResponse.parse(foundCustomer));
-	}
+  @Override
+  public Optional<Customer> getCustomerByEmailAddressAndUserType(String emailAddress,
+      UserType customerType) {
 
-	@Override
-	public String getCustomerSavingsId(Long customerId) {
-		Customer customer = this.getCustomerById(customerId);
-		if (StringUtils.isBlank(customer.getAccountId())) {
-			log.error("No savings account found for customer ID: {}", customerId);
-			throw new ValidationException("No savings account found for customer ID: " + customerId);
-		}
-		return customer.getAccountId();
-	}
+    return customerRepository.findByEmailAddressAndUserType(emailAddress, customerType);
+  }
 
-	private void validateDuplicateCustomer(String emailAddress, String phoneNumber) {
-		log.info("Validating duplicate customer email address: {}", emailAddress);
-		validateDuplicateCustomerByEmailAddress(emailAddress);
-		log.info("Validating duplicate customer phone number: {}", phoneNumber);
-		validateDuplicateCustomerByPhoneNumber(phoneNumber);
-	}
+  @Override
+  public Optional<Customer> getCustomerByPhoneNumberAndUserType(String phoneNumber,
+      UserType customerType) {
 
-	private void validateDuplicateCustomerByEmailAddress(String emailAddress) {
-		getCustomerByEmailAddress(emailAddress).ifPresent(existingCustomer -> {
-			throw new ValidationException("customer.exist", "Customer already exists. Please proceed to login");
-		});
-	}
+    String normalizedPhone = normalizePhoneNumber(phoneNumber);
+    return customerRepository.findByPhoneNumberAndUserType(normalizedPhone, customerType);
+  }
 
-	private void validateDuplicateCustomerByPhoneNumber(String phoneNumber) {
-		log.info("Validating duplicate customer phone number: {}", phoneNumber);
-		getCustomerByPhoneNumber(phoneNumber).ifPresent(existingCustomer -> {
-			throw new ValidationException("customer.exist", "Customer already exists. Please proceed to login");
-		});
-	}
+  public Optional<Customer> getCustomerByBusinessName(String businessName) {
 
-	private boolean isInitialRegistration(CreateCustomerRequest createCustomerRequest) {
-		return StringUtils.isAllBlank(createCustomerRequest.getBvn(), createCustomerRequest.getNin());
-	}
+    return customerRepository.findByBusinessName(businessName);
+  }
 
-	private Customer buildCustomer(CreateCustomerRequest createCustomerRequest, PostClientsResponse postClientsResponse, boolean isInitialRegistration) {
-		Customer customer = new Customer();
-		customer.setAccountId(postClientsResponse.getSavingsAccountId());
-		customer.setFirstname(createCustomerRequest.getFirstname());
-		customer.setLastname(createCustomerRequest.getLastname());
-		customer.setEmailAddress(createCustomerRequest.getEmailAddress());
-		customer.setPhoneNumber(createCustomerRequest.getPhoneNumber());
-		customer.setExternalId(postClientsResponse.getClientId());
-		customer.setReferralCode(createCustomerRequest.getReferralCode());
-		customer.setTransactionPin(createCustomerRequest.getTransactionPin());
-		customer.setTransactionPinSet(StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()));
-		customer.setUserType(UserType.CUSTOMER);
-		customer.setActive(!isInitialRegistration);
-		return customer;
-	}
+  public Optional<Customer> getCustomerByRcNumber(String rcNumber) {
 
-	private void updateCustomerDetails(CustomerUpdateRequest customerUpdateRequest, Customer customer) {
-		if (customerUpdateRequest != null) {
-			if (customer.getExternalId() != null) {
-				clientService.updateCustomer(customerUpdateRequest, Long.valueOf(customer.getExternalId()));
-			}
-			updateCustomerFields(customerUpdateRequest, customer);
-		}
-		customerRepository.save(customer);
-	}
+    return customerRepository.findByRcNumber(rcNumber);
+  }
 
-	private void updateCustomerFields(CustomerUpdateRequest customerUpdateRequest, Customer customer) {
-		if (StringUtils.isNotBlank(customerUpdateRequest.getFirstname())) {
-			customer.setFirstname(customerUpdateRequest.getFirstname());
-		}
-		if (StringUtils.isNotBlank(customerUpdateRequest.getLastname())) {
-			customer.setLastname(customerUpdateRequest.getLastname());
-		}
-		if (StringUtils.isNotBlank(customerUpdateRequest.getEmailAddress())) {
-			customer.setEmailAddress(customerUpdateRequest.getEmailAddress());
-		}
-		if (StringUtils.isNotBlank(customerUpdateRequest.getPhoneNumber())) {
-			customer.setPhoneNumber(customerUpdateRequest.getPhoneNumber());
-		}
-		if (StringUtils.isNotBlank(customerUpdateRequest.getExternalId())) {
-			customer.setExternalId(customerUpdateRequest.getExternalId());
-		}
-		if (StringUtils.isNotBlank(customerUpdateRequest.getBvn())) {
-			customer.setBvn(customerUpdateRequest.getBvn());
-		}
-		if (StringUtils.isNotBlank(customerUpdateRequest.getNin())) {
-			customer.setNin(customerUpdateRequest.getNin());
-		}
-	}
+  @Override
+  public Optional<Customer> getCustomerByEmailAddress(String emailAddress) {
+
+    return customerRepository.findByEmailAddress(emailAddress);
+  }
+
+  @Override
+  public Optional<Customer> getCustomerByPhoneNumber(String phoneNumber) {
+
+    String normalizedPhone = normalizePhoneNumber(phoneNumber);
+    return customerRepository.findByPhoneNumber(normalizedPhone);
+  }
+
+  @Override
+  public BasePageResponse<CustomerDtoResponse> getAllCustomers(Pageable pageable) {
+
+    return BasePageResponse.instance(
+        customerRepository.findAll(pageable).map(CustomerDtoResponse::parse));
+  }
+
+  @Override
+  public CustomerDashboardResponse retrieveCustomerDashboard(Long customerId) {
+
+    Customer foundCustomer = getCustomerById(customerId);
+    String externalId = foundCustomer.getExternalId();
+    List<@Valid AccountDto> savingsAccounts = clientService.getAllWalletAccountByExternalId(
+        externalId);
+    List<@Valid AccountDto> flexAccounts = clientService.getAllFlexAccountByExternalId(externalId);
+    AccountDto walletAccount = clientService.getCustomerWalletAccount(foundCustomer);
+    AccountDto flexAccount = clientService.getFlexAccountByCustomer(foundCustomer);
+    List<@Valid AccountDto> lockAccount = lockDepositAccountService
+        .retrieveAllLockInvestmentForAnAccount(foundCustomer.getAccountId());
+    CustomerDashboardResponse customerDashboardResponse = CustomerDashboardResponse.builder()
+        .walletAccount(new CustomerDashboardResponse.Account(
+            walletAccount.getAccountBalance() == null ? BigDecimal.ZERO
+                : walletAccount.getAccountBalance(),
+            walletAccount.getInterestEarned() == null ? BigDecimal.ZERO
+                : walletAccount.getInterestEarned(),
+            BigDecimal.ZERO, BigDecimal.ZERO, (long) savingsAccounts.size()))
+        .flexAccount(new CustomerDashboardResponse.Account(
+            flexAccount.getAccountBalance() == null ? BigDecimal.ZERO
+                : flexAccount.getAccountBalance(),
+            flexAccount.getInterestEarned() == null ? BigDecimal.ZERO
+                : flexAccount.getInterestEarned(),
+            BigDecimal.ZERO, BigDecimal.ZERO, (long) flexAccounts.size()))
+        .lockAccount(new CustomerDashboardResponse.Account(
+            lockAccount.stream()
+                .map(a -> a.getAccountBalance() == null ? BigDecimal.ZERO : a.getAccountBalance())
+                .reduce(BigDecimal.ZERO, BigDecimal::add),
+            lockAccount.stream()
+                .map(a -> a.getInterestEarned() == null ? BigDecimal.ZERO : a.getInterestEarned())
+                .reduce(BigDecimal.ZERO, BigDecimal::add),
+            BigDecimal.ZERO, BigDecimal.ZERO, (long) lockAccount.size()))
+        .build();
+    customerDashboardResponse.setInvestmentMetrics(new CustomerDashboardResponse.Account(
+        AppUtil.safeAdd(customerDashboardResponse.getFlexAccount().getBalance(),
+            customerDashboardResponse.getLockAccount().getBalance()),
+        AppUtil.safeAdd(customerDashboardResponse.getFlexAccount().getTotalInterestEarned(),
+            customerDashboardResponse.getLockAccount().getTotalInterestEarned()),
+        AppUtil.safeAdd(customerDashboardResponse.getFlexAccount().getTotalDeposit(),
+            customerDashboardResponse.getLockAccount().getTotalDeposit()),
+        AppUtil.safeAdd(customerDashboardResponse.getFlexAccount().getTotalWithdrawal(),
+            customerDashboardResponse.getLockAccount().getTotalWithdrawal()),
+        (customerDashboardResponse.getFlexAccount().getTotalActivePlan() == null
+            ? 0
+            : customerDashboardResponse.getFlexAccount().getTotalActivePlan())
+            + (customerDashboardResponse.getLockAccount().getTotalActivePlan() == null
+            ? 0
+            : customerDashboardResponse.getLockAccount().getTotalActivePlan())));
+
+    return customerDashboardResponse;
+  }
+
+  @Override
+  public GenericApiResponse createTransactionPin(Long customerId,
+      CustomerTransactionPinRequest customerTransactionPinRequest) {
+
+    Customer foundCustomer = getCustomerById(customerId);
+    if (StringUtils.isBlank(customerTransactionPinRequest.getPin())) {
+      throw new ValidationException("transaction.pin.required", "pin field is required.");
+    }
+    if (StringUtils.isNotBlank(foundCustomer.getTransactionPin())) {
+      throw new ValidationException("transaction.pin.already.set",
+          "Transaction pin has already been set for this customer. Kindly reset it.");
+    }
+    if (customerTransactionPinRequest.getPin().length() < 4) {
+      throw new ValidationException("transaction.pin.length",
+          "Transaction pin must be at least 4 characters long.");
+    }
+    foundCustomer.setTransactionPin(passwordEncoder.encode(customerTransactionPinRequest.getPin()));
+    foundCustomer.setTransactionPinSet(true);
+    customerRepository.save(foundCustomer);
+    return new GenericApiResponse(null, "Transaction pin created successfully", "success",
+        CustomerDtoResponse.parse(foundCustomer));
+  }
+
+  @Override
+  public String getCustomerSavingsId(Long customerId) {
+
+    Customer customer = this.getCustomerById(customerId);
+    if (StringUtils.isBlank(customer.getAccountId())) {
+      log.error("No savings account found for customer ID: {}", customerId);
+      throw new ValidationException("No savings account found for customer ID: " + customerId);
+    }
+    return customer.getAccountId();
+  }
+
+  @Override
+  public GenericApiResponse closeAccount(Long customerId, CustomerAccountClosureRequest request) {
+
+    Customer customer = this.getCustomerById(customerId);
+
+    Optional<CustomerStatusAudit> customerStatusAudit = customerStatusAuditRepository
+        .findByCustomerIdAndTypeAndIsActive(customer.getId(),
+            CustomerStatusAuditType.ACCOUNT_CLOSURE, true);
+    if (customerStatusAudit.isPresent()) {
+      throw new ValidationException("validation.error.exists", "Account already closed");
+    }
+    if (StringUtils.isBlank(request.getReasonForClosure())) {
+      throw new ValidationException("validation.error.reasonForClosure",
+          "reasonForClosure is required");
+    }
+    CustomerStatusAudit audit = new CustomerStatusAudit();
+    audit.setCustomerId(customerId);
+    audit.setReason(request.getReasonForClosure());
+    audit.setType(CustomerStatusAuditType.ACCOUNT_CLOSURE);
+    audit.setActive(true);
+    customerStatusAuditRepository.save(audit);
+    customer.setActive(false);
+    customerRepository.save(customer);
+    return GenericApiResponse.builder().status(HttpStatus.OK.name())
+        .message("Account closed successfully").build();
+  }
+
+  @Override
+  public Customer getCustomerByEmailOrPhoneNumber(String emailAddress, String phoneNumber,
+      UserType customerType) {
+
+    Customer foundCustomer;
+
+    if (StringUtils.isNotBlank(emailAddress)) {
+      foundCustomer = this.getCustomerByEmailAddressAndUserType(emailAddress, customerType)
+          .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided",
+              "Invalid email or password"));
+    } else if (StringUtils.isNotBlank(phoneNumber)) {
+      foundCustomer = this.getCustomerByPhoneNumberAndUserType(phoneNumber, customerType)
+          .orElseThrow(() -> new UnAuthenticatedUserException("Invalid.credentials.provided",
+              "Invalid phone number or password"));
+    } else {
+      throw new ValidationException("Invalid.credentials.provided",
+          "Email or phone number must be provided");
+    }
+
+    return foundCustomer;
+  }
+
+  @Override
+  public GenericApiResponse activateAccount(CustomerAccountActivationRequest request,
+      UserType userType) {
+
+    Customer customer;
+    if (request.getCustomerId() == null) {
+      if (StringUtils.isAllBlank(request.getEmailAddress(), request.getPhoneNumber())) {
+        throw new ValidationException("validation.error.email.or.phone",
+            "Either customerId, emailAddress or phoneNumber is required");
+      }
+      customer = this.getCustomerByEmailOrPhoneNumber(request.getEmailAddress(),
+          request.getPhoneNumber(),
+          userType);
+    } else {
+      customer = this.getCustomerById(request.getCustomerId());
+    }
+
+    Optional<CustomerStatusAudit> customerStatusAudit = customerStatusAuditRepository
+        .findByCustomerIdAndTypeAndIsActive(customer.getId(),
+            CustomerStatusAuditType.ACCOUNT_CLOSURE, true);
+    if (customerStatusAudit.isPresent()) {
+      CustomerStatusAudit audit = customerStatusAudit.get();
+      audit.setActive(false);
+      customerStatusAuditRepository.save(audit);
+    } else {
+      throw new ValidationException("validation.error.exists", "Account is already active");
+    }
+
+    return GenericApiResponse.builder().status(HttpStatus.OK.name())
+        .message("Account activated successfully")
+        .build();
+  }
+
+  private void validateDuplicateCustomer(CreateCustomerRequest createCustomerRequest,
+      UserType customerType) {
+
+    String emailAddress = createCustomerRequest.getEmailAddress();
+    String phoneNumber = createCustomerRequest.getPhoneNumber();
+    log.info("Validating duplicate customer email address: {}", emailAddress);
+    validateDuplicateCustomerByEmailAddress(emailAddress, customerType);
+    log.info("Validating duplicate customer phone number: {}", phoneNumber);
+    validateDuplicateCustomerByPhoneNumber(phoneNumber, customerType);
+    if (customerType.isCorporate()) {
+      String rcNumber = createCustomerRequest.getRcNumber();
+      validateDuplicateCustomerByRcNumber(rcNumber);
+    }
+  }
+
+  private void validateDuplicateCustomerByEmailAddress(String emailAddress, UserType customerType) {
+
+    getCustomerByEmailAddressAndUserType(emailAddress, customerType).ifPresent(existingCustomer -> {
+      throw new ValidationException("customer.exist",
+          "Customer already exists. Please proceed to login");
+    });
+  }
+
+  private void validateDuplicateCustomerByPhoneNumber(String phoneNumber, UserType customerType) {
+
+    log.info("Validating duplicate customer phone number: {}", phoneNumber);
+    getCustomerByPhoneNumberAndUserType(phoneNumber, customerType).ifPresent(existingCustomer -> {
+      throw new ValidationException("customer.exist",
+          "Customer already exists. Please proceed to login");
+    });
+  }
+
+  private void validateDuplicateCustomerByBusinessName(String businessName, UserType customerType) {
+
+    log.info("Validating duplicate customer business name: {}", businessName);
+    getCustomerByBusinessName(businessName).ifPresent(existingCustomer -> {
+      throw new ValidationException("customer.exist",
+          "Customer already exists. Please proceed to login");
+    });
+  }
+
+  @Override
+  public void validateDuplicateCustomerByRcNumber(String rcNumber) {
+
+    log.info("Validating duplicate customer rcNumber: {}", rcNumber);
+    getCustomerByRcNumber(rcNumber).ifPresent(existingCustomer -> {
+      if (existingCustomer.isActive()) {
+        throw new ValidationException("customer.with.rcNumber.exist",
+            "Customer already exists. Please proceed to login");
+      } else {
+        log.error(
+            "Customer with rcNumber {} exists but is inactive. Reactivate instead of creating a new one.",
+            rcNumber);
+      }
+    });
+  }
+
+  private boolean isInitialRegistration(CreateCustomerRequest createCustomerRequest) {
+
+    return StringUtils.isAllBlank(createCustomerRequest.getBvn(), createCustomerRequest.getNin());
+  }
+
+  private Customer buildCustomer(CreateCustomerRequest createCustomerRequest,
+      PostClientsResponse postClientsResponse,
+      boolean isInitialRegistration) {
+
+    Customer customer = new Customer();
+    customer.setAccountId(postClientsResponse.getSavingsAccountId());
+    customer.setFirstname(createCustomerRequest.getFirstname());
+    customer.setLastname(createCustomerRequest.getLastname());
+    customer.setEmailAddress(createCustomerRequest.getEmailAddress());
+    customer.setPhoneNumber(createCustomerRequest.getPhoneNumber());
+    customer.setExternalId(postClientsResponse.getCustomerId());
+    customer.setReferralCode(createCustomerRequest.getReferralCode());
+    customer.setTransactionPin(createCustomerRequest.getTransactionPin());
+    customer.setTransactionPinSet(
+        StringUtils.isNotBlank(createCustomerRequest.getTransactionPin()));
+    customer.setUserType(createCustomerRequest.getCustomerType());
+    if (createCustomerRequest.getCustomerType() == UserType.CORPORATE) {
+      customer.setIndustryId(String.valueOf(createCustomerRequest.getIndustryId()));
+      customer.setBusinessName(createCustomerRequest.getBusinessName());
+      customer.setRcNumber(createCustomerRequest.getRcNumber());
+    }
+    customer.setActive(!isInitialRegistration);
+
+    if (StringUtils.isNotBlank(createCustomerRequest.getPassword())) {
+      customer.setPassword(passwordEncoder.encode(createCustomerRequest.getPassword()));
+    } else {
+      throw new ValidationException("Invalid.credentials.provided", "password cannot be blank");
+    }
+    return customer;
+  }
+
+  private void updateCustomerDetails(CustomerUpdateRequest customerUpdateRequest, Customer customer,
+      boolean isExternalServiceUpdateAllowed) {
+
+    if (customerUpdateRequest != null) {
+      if (StringUtils.isNotBlank(customer.getExternalId()) && isExternalServiceUpdateAllowed) {
+        clientService.updateCustomer(customerUpdateRequest, customer.getExternalId(),
+            customer.getUserType());
+      }
+      updateCustomerFields(customerUpdateRequest, customer);
+    }
+    customerRepository.save(customer);
+  }
+
+  private void updateCustomerFields(CustomerUpdateRequest customerUpdateRequest,
+      Customer customer) {
+
+    if (StringUtils.isNotBlank(customerUpdateRequest.getFirstname())) {
+      customer.setFirstname(customerUpdateRequest.getFirstname());
+    }
+    if (StringUtils.isNotBlank(customerUpdateRequest.getLastname())) {
+      customer.setLastname(customerUpdateRequest.getLastname());
+    }
+    if (StringUtils.isNotBlank(customerUpdateRequest.getEmailAddress())) {
+      customer.setEmailAddress(customerUpdateRequest.getEmailAddress());
+    }
+    if (StringUtils.isNotBlank(customerUpdateRequest.getPhoneNumber())) {
+      customer.setPhoneNumber(customerUpdateRequest.getPhoneNumber());
+    }
+    if (StringUtils.isNotBlank(customerUpdateRequest.getExternalId())) {
+      customer.setExternalId(customerUpdateRequest.getExternalId());
+    }
+    if (StringUtils.isNotBlank(customerUpdateRequest.getBvn())) {
+      customer.setBvn(customerUpdateRequest.getBvn());
+    }
+    if (StringUtils.isNotBlank(customerUpdateRequest.getNin())) {
+      customer.setNin(customerUpdateRequest.getNin());
+    }
+    if (StringUtils.isNotBlank(customerUpdateRequest.getRcNumber())) {
+      customer.setRcNumber(customerUpdateRequest.getRcNumber());
+    }
+    if (StringUtils.isNotBlank(customerUpdateRequest.getBusinessName())) {
+      customer.setBusinessName(customerUpdateRequest.getBusinessName());
+    }
+  }
 }

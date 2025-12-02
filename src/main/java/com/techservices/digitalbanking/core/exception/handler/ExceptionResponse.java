@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.core.exception.handler;
 
 import java.util.Collections;
@@ -29,25 +29,30 @@ public class ExceptionResponse {
 	private Object[] defaultUserMessageArgs;
 
 	public ExceptionResponse(Date timestamp, String message, List<String> details) {
+
 		this.timestamp = timestamp;
 		this.message = message;
 		this.details = details;
 	}
 
 	public ExceptionResponse(Date timestamp, String message, String details) {
+
 		this.timestamp = timestamp;
 		this.message = message;
 		this.details = Collections.singletonList(details);
 	}
 
 	public ExceptionResponse(Date timestamp, String message, String details, String globalisationMessageCode) {
+
 		this.timestamp = timestamp;
 		this.message = message;
 		this.details = Collections.singletonList(details);
 		this.globalisationMessageCode = globalisationMessageCode;
 	}
 
-	public ExceptionResponse(Date timestamp, String message, String details, String globalisationMessageCode, Object[] defaultUserMessageArgs) {
+	public ExceptionResponse(Date timestamp, String message, String details, String globalisationMessageCode,
+			Object[] defaultUserMessageArgs) {
+
 		this.timestamp = timestamp;
 		this.message = message;
 		this.details = Collections.singletonList(details);
@@ -56,6 +61,7 @@ public class ExceptionResponse {
 	}
 
 	public static ExceptionResponse getCodeAndNarration(RuntimeException e, WebRequest request) {
+
 		return new ExceptionResponse(new Date(), e.getLocalizedMessage(), request.getDescription(false));
 	}
 }

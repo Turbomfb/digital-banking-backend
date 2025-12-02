@@ -1,4 +1,4 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.investment.domain.request;
 
 import java.math.BigDecimal;
@@ -13,17 +13,14 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FixedDepositApplicationRequest {
 
-	private Long clientId;
+	private String externalId;
 
 	private BigDecimal depositAmount;
 
 	private Long depositPeriod;
 
-	private Long depositPeriodFrequencyId;
-
-	private Long productId;
-
 	private String accountNo;
+	private String allocationName;
 
-	private Long linkAccountId;
+	private String walletAccountNumber;
 }

@@ -1,16 +1,16 @@
-/* Developed by MKAN Engineering (C)2024 */
+/* (C)2024 */
 package com.techservices.digitalbanking.loan.service;
 
-import java.util.List;
-
-import com.techservices.digitalbanking.core.fineract.model.request.PostLoanProductsRequest;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsProductIdResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.GetLoanProductsTemplateResponse;
-import com.techservices.digitalbanking.core.fineract.model.response.PostLoanProductsResponse;
+import com.techservices.digitalbanking.core.domain.dto.BasePageResponse;
+import com.techservices.digitalbanking.core.eBanking.model.request.PostLoanProductsRequest;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsProductIdResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.GetLoanProductsTemplateResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.LoanProductListResponse;
+import com.techservices.digitalbanking.core.eBanking.model.response.PostLoanProductsResponse;
 
 public interface LoanProductService {
 
-	List<GetLoanProductsProductIdResponse> getLoanProducts(Long fields);
+	BasePageResponse<LoanProductListResponse> getLoanProducts(Long fields);
 
 	GetLoanProductsProductIdResponse getLoanProductById(Long productId, Long fields, Long template);
 

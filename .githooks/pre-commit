@@ -1,0 +1,9 @@
+#!/bin/sh
+  # Run Spotless Apply
+  mvn spotless:apply
+
+  # Check if the previous command failed
+  if [ $? -ne 0 ]; then
+  echo "Spotless Apply failed. Commit aborted."
+  exit 1
+  fi
