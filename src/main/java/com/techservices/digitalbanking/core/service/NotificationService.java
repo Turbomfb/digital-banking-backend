@@ -3,6 +3,7 @@ package com.techservices.digitalbanking.core.service;
 
 import java.util.Optional;
 
+import com.techservices.digitalbanking.core.domain.dto.request.SmsNotificationRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,9 @@ public class NotificationService {
 	public NotificationResponse sendSms(String phoneNumber, String message) {
 
 		try {
-			String url = this.buildSmsUrl(phoneNumber, message);
-			return apiService.callExternalApi(url, NotificationResponse.class, HttpMethod.POST, null, null);
+			SmsNotificationRequest smsPayload = this.buildSmsPayload(phoneNumber, message);
+      String url = systemProperty.getSmsNotificationServiceUrl();
+			return apiService.callExternalApi(url, NotificationResponse.class, HttpMethod.POST, smsPayload, null);
 		} catch (Exception e) {
 			logError(e.getMessage());
 		}
@@ -43,7 +45,7 @@ public class NotificationService {
 		log.error("Error sending SMS: {}", e);
 	}
 
-	private String buildSmsUrl(String phoneNumber, String message) {
+	private SmsNotificationRequest buildSmsPayload(String phoneNumber, String message) {
 
 		if (phoneNumber == null || !phoneNumber.startsWith("+")) {
 			if (phoneNumber == null || phoneNumber.isEmpty()) {
@@ -55,12 +57,18 @@ public class NotificationService {
 			phoneNumber = "+234" + phoneNumber.trim();
 		}
 
-		String baseUrl = systemProperty.getSmsNotificationServiceUrl();
 		String apiKey = systemProperty.getSmsNotificationServiceApiKey();
 		String senderId = systemProperty.getSmsNotificationServiceSenderId();
 
-		return String.format("%s?to=%s&from=%s&sms=%s&type=plain&channel=generic&api_key=%s", baseUrl, phoneNumber,
-				senderId, message, apiKey);
+    return SmsNotificationRequest.builder()
+        .from(senderId)
+        .to(phoneNumber)
+        .sms(message)
+        .channel("generic")
+        .messageType("NUMERIC")
+        .type("plain")
+        .apiKey(apiKey)
+        .build();
 	}
 
 	@Async
