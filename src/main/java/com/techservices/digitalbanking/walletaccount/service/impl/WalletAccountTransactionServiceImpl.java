@@ -128,7 +128,7 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			Optional<Customer> recipient = customerRepository.findByNuban(request.getAccountNumber());
 
 			SavingsAccountTransactionRequest otpData = (SavingsAccountTransactionRequest) this.redisService
-					.validateOtpWithoutDeletingRecord(request.getReference(), request.getOtp(), OtpType.KYC_UPGRADE)
+					.validateOtpWithoutDeletingRecord(request.getReference(), request.getOtp(), OtpType.TRANSFER)
 					.getData();
 			if (otpData.getAmount().compareTo(request.getAmount()) != 0) {
 				throw new ValidationException("error.msg.sender.transaction.amount.mismatch",
