@@ -8,9 +8,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 
 import com.techservices.digitalbanking.walletaccount.domain.request.InterBankTransferRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -81,6 +84,10 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 	private final TransactionLogRepository transactionLogRepository;
 	private final BeneficiaryService beneficiaryService;
 
+  @Autowired
+  @Qualifier("taskExecutor")
+  private Executor taskExecutor;
+
 	@Override
 	public BasePageResponse<TransactionDto> retrieveSavingsAccountTransactions(Long customerId, String startDate,
 			String endDate, Long limit, TransactionType transactionType) {
@@ -148,41 +155,44 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 				"Command not supported. Supported commands are: " + GENERATE_OTP_COMMAND + ", " + VERIFY_OTP_COMMAND);
 	}
 
+
   @Async("taskExecutor")
   protected CompletableFuture<Void> processTransaction(SavingsAccountTransactionRequest request,
       Long customerId, Customer sender, SavingsAccountTransactionRequest otpData,
       Optional<Customer> recipient) {
 
+    String transactionRef = request.getReference();
+
+    // Use the injected taskExecutor instead of default ForkJoinPool
     return CompletableFuture.runAsync(() -> {
-      String transactionRef = request.getReference();
+          try {
+            // Process the transfer
+            processTransferTransaction(request, sender, otpData, recipient);
 
-      try {
-        // Process the transfer
-        processTransferTransaction(request, sender, otpData, recipient);
+            // Validate and save OTP
+            redisService.validateOtp(transactionRef, request.getOtp(), OtpType.TRANSFER);
+            redisService.save(request, OtpType.TRANSFER, transactionRef);
 
-        // Validate and save OTP
-        redisService.validateOtp(transactionRef, request.getOtp(), OtpType.TRANSFER);
-        redisService.save(request, OtpType.TRANSFER, transactionRef);
+            // Send notifications (non-critical, handled separately)
+            sendTransactionNotifications(request, sender, otpData, recipient);
 
-        // Send notifications (non-critical, handled separately)
-        sendTransactionNotifications(request, sender, otpData, recipient);
+            // Mark beneficiary (non-critical, handled separately)
+            updateBeneficiaryUsage(request, customerId);
 
-        // Mark beneficiary (non-critical, handled separately)
-        updateBeneficiaryUsage(request, customerId);
-
-      } catch (ValidationException e) {
-        log.error("Validation error in transaction {}: {}", transactionRef, e.getMessage(), e);
-        throw e;
-      } catch (Exception e) {
-        log.error("Unexpected error processing transaction {}: {}", transactionRef, e.getMessage(), e);
-        throw new ValidationException("error.processing.transaction",
-            "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists",
-            e);
-      }
-    }).exceptionally(ex -> {
-      log.error("Async execution failed for transaction {}: {}", request.getReference(), ex.getMessage(), ex);
-      throw new CompletionException(ex);
-    });
+          } catch (ValidationException e) {
+            log.error("Validation error in transaction {}: {}", transactionRef, e.getMessage(), e);
+            throw e;
+          } catch (Exception e) {
+            log.error("Unexpected error processing transaction {}: {}", transactionRef, e.getMessage(), e);
+            throw new ValidationException("error.processing.transaction",
+                "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists",
+                e);
+          }
+        }, taskExecutor)  // <-- CRITICAL: Use injected executor
+        .exceptionally(ex -> {
+          log.error("Async execution failed for transaction {}: {}", transactionRef, ex.getMessage(), ex);
+          throw new CompletionException(ex);
+        });
   }
 
   private void processTransferTransaction(SavingsAccountTransactionRequest request,
