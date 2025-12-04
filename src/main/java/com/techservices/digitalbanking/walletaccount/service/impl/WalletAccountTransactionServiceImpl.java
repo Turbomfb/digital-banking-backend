@@ -6,9 +6,12 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import com.techservices.digitalbanking.walletaccount.domain.request.InterBankTransferRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -138,82 +141,173 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 			request.validateForOtpVerification();
 			ExternalPaymentTransactionOtpVerificationResponse response;
 
-			boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankNipCode(),
-					bankConfigurationService.getBankCode());
-			AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(sender.getId());
-			BigDecimal balance = accountResponse.getAccountBalance().subtract(otpData.getAmount());
-			BigDecimal recipientBalance = null;
-			if (isIntraBankTransfer) {
-				try {
-					if (recipient.isPresent()) {
-						Customer foundRecipient = recipient.get();
-						recipientBalance = walletAccountService.retrieveSavingsAccountById(foundRecipient.getId())
-								.getAccountBalance().add(otpData.getAmount());
-						accountTransactionService.processIntraTransafer(sender.getAccountId(),
-								foundRecipient.getAccountId(), request.getAmount(),
-								"Transfer | " + request.getNarration());
-					} else {
-						log.error("Recipient with account number {} not found for intra-bank transfer",
-								request.getAccountNumber());
-						throw new ValidationException("error.processing.transaction",
-								"We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists");
-					}
-				} catch (Exception e) {
-					log.error("Error processing transaction command: {}", e.getMessage(), e);
-					throw new ValidationException("error.processing.transaction",
-							"We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists",
-							e);
-				}
-			} else {
-				try {
-          InterBankTransferRequest intraBankTransferRequest = new InterBankTransferRequest();
-          intraBankTransferRequest.setReceiverBankCode(request.getBankNipCode());
-          intraBankTransferRequest.setNarration("Transfer | " + request.getNarration());
-          intraBankTransferRequest.setAmount(otpData.getAmount());
-          intraBankTransferRequest.setReceiverAccountNumber(request.getAccountNumber());
-          intraBankTransferRequest.setReceiverName(request.getAccountName());
-          intraBankTransferRequest.setSenderAccountNumber(sender.getNuban());
-          intraBankTransferRequest.setSenderName(sender.getFullName());
-
-					accountTransactionService.processInterBankTransfer(intraBankTransferRequest);
-				} catch (Exception e) {
-					log.error("Error processing transaction command: {}", e.getMessage(), e);
-					throw new ValidationException("error.processing.transaction",
-							"We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists",
-							e.getMessage());
-				}
-			}
-			this.redisService.validateOtp(request.getReference(), request.getOtp(), OtpType.TRANSFER);
-			this.redisService.save(request, OtpType.TRANSFER, request.getReference());
-			try {
-				String transactionMessage = notificationUtil.getTransactionNotificationTemplate(
-						TransactionType.DEBIT.name(), request.getAmount().toString(), balance, request.getNarration());
-				notificationService.notifyUser(sender, transactionMessage, AlertType.TRANSACTION);
-
-				if (isIntraBankTransfer) {
-					Customer foundRecipient = recipient.get();
-					transactionMessage = notificationUtil.getTransactionNotificationTemplate(
-							TransactionType.CREDIT.name(), request.getAmount().toString(), recipientBalance,
-							request.getNarration());
-					notificationService.notifyUser(foundRecipient, transactionMessage, AlertType.TRANSACTION);
-				}
-			} catch (Exception e) {
-				log.error("Error sending transaction notification: {}", e.getMessage(), e);
-			}
-
-			try {
-				beneficiaryService.markBeneficiaryAsUsed(request.getAccountNumber(), request.getBankNipCode(),
-						request.getAccountName(), request.getBankName(), request.isAddToBeneficiary(), customerId);
-			} catch (Exception e) {
-				log.error("Error marking beneficiary as used: {}", e.getMessage(), e);
-			}
-			return new GenericApiResponse("Transaction has been processed successfully", "success", null);
+      processTransaction(request, customerId, sender, otpData, recipient);
+      return new GenericApiResponse("Transaction has been submitted successfully", "success", null);
 		}
 		throw new ValidationException("error.command.not.supported",
 				"Command not supported. Supported commands are: " + GENERATE_OTP_COMMAND + ", " + VERIFY_OTP_COMMAND);
 	}
 
-	private TransactionLog createInterbankTransactionLog(SavingsAccountTransactionRequest request, Customer customer) {
+  @Async("taskExecutor")
+  protected CompletableFuture<Void> processTransaction(SavingsAccountTransactionRequest request,
+      Long customerId, Customer sender, SavingsAccountTransactionRequest otpData,
+      Optional<Customer> recipient) {
+
+    return CompletableFuture.runAsync(() -> {
+      String transactionRef = request.getReference();
+
+      try {
+        // Process the transfer
+        processTransferTransaction(request, sender, otpData, recipient);
+
+        // Validate and save OTP
+        redisService.validateOtp(transactionRef, request.getOtp(), OtpType.TRANSFER);
+        redisService.save(request, OtpType.TRANSFER, transactionRef);
+
+        // Send notifications (non-critical, handled separately)
+        sendTransactionNotifications(request, sender, otpData, recipient);
+
+        // Mark beneficiary (non-critical, handled separately)
+        updateBeneficiaryUsage(request, customerId);
+
+      } catch (ValidationException e) {
+        log.error("Validation error in transaction {}: {}", transactionRef, e.getMessage(), e);
+        throw e;
+      } catch (Exception e) {
+        log.error("Unexpected error processing transaction {}: {}", transactionRef, e.getMessage(), e);
+        throw new ValidationException("error.processing.transaction",
+            "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists",
+            e);
+      }
+    }).exceptionally(ex -> {
+      log.error("Async execution failed for transaction {}: {}", request.getReference(), ex.getMessage(), ex);
+      throw new CompletionException(ex);
+    });
+  }
+
+  private void processTransferTransaction(SavingsAccountTransactionRequest request,
+      Customer sender, SavingsAccountTransactionRequest otpData, Optional<Customer> recipient) {
+
+    boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankNipCode(),
+        bankConfigurationService.getBankCode());
+
+    if (isIntraBankTransfer) {
+      processIntraBankTransfer(request, sender, otpData, recipient);
+    } else {
+      processInterBankTransfer(request, sender, otpData);
+    }
+  }
+
+  private void processIntraBankTransfer(SavingsAccountTransactionRequest request,
+      Customer sender, SavingsAccountTransactionRequest otpData, Optional<Customer> recipient) {
+
+    if (!recipient.isPresent()) {
+      log.error("Recipient with account number {} not found for intra-bank transfer",
+          request.getAccountNumber());
+      throw new ValidationException("error.recipient.not.found",
+          "Recipient account not found. Please verify the account number and try again");
+    }
+
+    try {
+      Customer foundRecipient = recipient.get();
+      accountTransactionService.processIntraTransafer(sender.getAccountId(),
+          foundRecipient.getAccountId(), request.getAmount(),
+          "Transfer | " + request.getNarration());
+
+      log.info("Intra-bank transfer completed: {} -> {}, amount: {}",
+          sender.getAccountId(), foundRecipient.getAccountId(), request.getAmount());
+
+    } catch (Exception e) {
+      log.error("Error processing intra-bank transfer for account {}: {}",
+          request.getAccountNumber(), e.getMessage(), e);
+      throw new ValidationException("error.processing.transaction",
+          "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists",
+          e);
+    }
+  }
+
+  private void processInterBankTransfer(SavingsAccountTransactionRequest request,
+      Customer sender, SavingsAccountTransactionRequest otpData) {
+
+    try {
+      InterBankTransferRequest intraBankTransferRequest = new InterBankTransferRequest();
+      intraBankTransferRequest.setReceiverBankCode(request.getBankNipCode());
+      intraBankTransferRequest.setNarration("Transfer | " + request.getNarration());
+      intraBankTransferRequest.setAmount(otpData.getAmount());
+      intraBankTransferRequest.setReceiverAccountNumber(request.getAccountNumber());
+      intraBankTransferRequest.setReceiverName(request.getAccountName());
+      intraBankTransferRequest.setSenderAccountNumber(sender.getNuban());
+      intraBankTransferRequest.setSenderName(sender.getFullName());
+
+      accountTransactionService.processInterBankTransfer(intraBankTransferRequest);
+
+      log.info("Inter-bank transfer completed: {} -> {} ({}), amount: {}",
+          sender.getNuban(), request.getAccountNumber(), request.getBankNipCode(), request.getAmount());
+
+    } catch (Exception e) {
+      log.error("Error processing inter-bank transfer to {}: {}",
+          request.getAccountNumber(), e.getMessage(), e);
+      throw new ValidationException("error.processing.transaction",
+          "We're unable to process your transaction command at the moment. Please try again or contact support if the issue persists",
+          e);
+    }
+  }
+
+  private void sendTransactionNotifications(SavingsAccountTransactionRequest request,
+      Customer sender, SavingsAccountTransactionRequest otpData, Optional<Customer> recipient) {
+
+    try {
+      boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankNipCode(),
+          bankConfigurationService.getBankCode());
+
+      // Get sender's balance
+      AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(sender.getId());
+      BigDecimal balance = accountResponse.getAccountBalance().subtract(otpData.getAmount());
+
+      // Notify sender
+      String transactionMessage = notificationUtil.getTransactionNotificationTemplate(
+          TransactionType.DEBIT.name(), request.getAmount().toString(), balance,
+          request.getNarration());
+      notificationService.notifyUser(sender, transactionMessage, AlertType.TRANSACTION);
+
+      // Notify recipient for intra-bank transfers
+      if (isIntraBankTransfer && recipient.isPresent()) {
+        Customer foundRecipient = recipient.get();
+        BigDecimal recipientBalance = walletAccountService.retrieveSavingsAccountById(
+                foundRecipient.getId())
+            .getAccountBalance().add(otpData.getAmount());
+
+        transactionMessage = notificationUtil.getTransactionNotificationTemplate(
+            TransactionType.CREDIT.name(), request.getAmount().toString(), recipientBalance,
+            request.getNarration());
+        notificationService.notifyUser(foundRecipient, transactionMessage, AlertType.TRANSACTION);
+      }
+
+      log.debug("Transaction notifications sent successfully for reference: {}", request.getReference());
+
+    } catch (Exception e) {
+      log.error("Error sending transaction notification for reference {}: {}",
+          request.getReference(), e.getMessage(), e);
+      // Don't throw - notifications are non-critical
+    }
+  }
+
+  private void updateBeneficiaryUsage(SavingsAccountTransactionRequest request, Long customerId) {
+    try {
+      beneficiaryService.markBeneficiaryAsUsed(request.getAccountNumber(),
+          request.getBankNipCode(), request.getAccountName(), request.getBankName(),
+          request.isAddToBeneficiary(), customerId);
+
+      log.debug("Beneficiary updated for account: {}", request.getAccountNumber());
+
+    } catch (Exception e) {
+      log.error("Error marking beneficiary as used for account {}: {}",
+          request.getAccountNumber(), e.getMessage(), e);
+      // Don't throw - beneficiary update is non-critical
+    }
+  }
+
+  private TransactionLog createInterbankTransactionLog(SavingsAccountTransactionRequest request, Customer customer) {
 
 		TransactionLog log = new TransactionLog();
 		log.setId(UUID.randomUUID().toString());
