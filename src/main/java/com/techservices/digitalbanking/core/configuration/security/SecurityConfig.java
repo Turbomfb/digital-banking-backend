@@ -40,22 +40,19 @@ public class SecurityConfig {
 	@Value("${jwt.secret}")
 	private String secretKey;
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter)
-      throws Exception {
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter)
+			throws Exception {
 
-    return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(AbstractHttpConfigurer::disable)
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-            .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
-            .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
-            .anyRequest().authenticated())
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .build();
-  }
+		return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.csrf(AbstractHttpConfigurer::disable)
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+						.requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+						.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
+						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().anyRequest().authenticated())
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
+	}
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
