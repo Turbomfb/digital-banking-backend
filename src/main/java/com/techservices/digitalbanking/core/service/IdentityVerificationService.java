@@ -198,7 +198,8 @@ public class IdentityVerificationService {
 
     if (dataType.isIndividual()) {
       double matchPercentage = calculateNameMatchPercentage(
-          customerData.getFirstname(), customerData.getLastname(), responseData.getFirstName(), responseData.getLastName()
+          customerData.getFirstname(), customerData.getLastname(), responseData.getFirstName(), responseData.getLastName(),
+          responseData.getMiddleName()
       );
 
       if (matchPercentage < systemProperty.getIdentityVerificationThreshold()) {
@@ -223,14 +224,14 @@ public class IdentityVerificationService {
   }
 
   private static double calculateNameMatchPercentage(String custFirst, String custLast,
-      String docFirst, String docLast) {
+      String docFirst, String docLast, String docMiddle) {
     if (isEmpty(custFirst) || isEmpty(custLast) || isEmpty(docFirst) || isEmpty(docLast)) {
       return 0.0;
     }
 
-    String c1 = normalize(custFirst);
+    String c1 = normalize(custFirst) +" "+docMiddle;
     String c2 = normalize(custLast);
-    String d1 = normalize(docFirst);
+    String d1 = normalize(docFirst) +" "+docMiddle;
     String d2 = normalize(docLast);
 
     double normalScore = (similarity(c1, d1) + similarity(c2, d2)) / 2.0;
@@ -239,8 +240,8 @@ public class IdentityVerificationService {
     double score = normalScore;
 
     if (swappedScore > normalScore + 15 &&
-        similarity(c1, d2) >= 80 &&
-        similarity(c2, d1) >= 80) {
+        similarity(c1, d2) >= 70 &&
+        similarity(c2, d1) >= 70) {
 
       score = swappedScore;
       log.info("Name order swap accepted: '{}' {}' ↔ '{}' {}' (score: {})",
