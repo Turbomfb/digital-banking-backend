@@ -185,7 +185,6 @@ public class RedisService {
   private String buildOtpEmailHtml(OtpType otpType, String otp, BigDecimal amount) {
     String title = getOtpTitle(otpType);
     String description = getOtpDescription(otpType, amount);
-    String icon = getOtpIcon(otpType);
     String gradientColors = getOtpGradientColors(otpType);
 
     return String.format("""
@@ -210,18 +209,9 @@ public class RedisService {
 			            </td>
 			          </tr>
 			          
-			          <!-- Icon -->
-			          <tr>
-			            <td style="padding: 40px 30px 20px 30px; text-align: center;">
-			              <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, %s); border-radius: 50%%; box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);">
-			                %s
-			              </div>
-			            </td>
-			          </tr>
-			          
 			          <!-- Content -->
 			          <tr>
-			            <td style="padding: 0 40px 30px 40px;">
+			            <td style="padding: 40px 40px 30px 40px;">
 			              <h2 style="margin: 0 0 16px 0; color: #1a202c; font-size: 24px; font-weight: 600; text-align: center;">%s</h2>
 			              <p style="margin: 0 0 24px 0; color: #4a5568; font-size: 16px; line-height: 1.6; text-align: center;">%s</p>
 			              
@@ -275,8 +265,6 @@ public class RedisService {
 			""",
         title,
         gradientColors,
-        gradientColors,
-        icon,
         title,
         description,
         otp,
@@ -310,41 +298,6 @@ public class RedisService {
       case ADD_BENEFICIARY -> "You're adding a new beneficiary to your account. Please confirm this action with the code below.";
       case DELETE_BENEFICIARY -> "You're about to remove a beneficiary. Please confirm this action with the code below.";
       case UPDATE_BENEFICIARY -> "You're updating beneficiary information. Please confirm this action with the code below.";
-    };
-  }
-
-  private String getOtpIcon(OtpType otpType) {
-    return switch (otpType) {
-      case ONBOARDING -> """
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 20px;">
-				  <path d="M12 2L2 7V11C2 16.55 6.84 21.74 12 23C17.16 21.74 22 16.55 22 11V7L12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="white"/>
-				</svg>
-				""";
-      case KYC_UPGRADE -> """
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 20px;">
-				  <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="white"/>
-				</svg>
-				""";
-      case FORGOT_PASSWORD -> """
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 20px;">
-				  <path d="M18 8H17V6C17 3.24 14.76 1 12 1C9.24 1 7 3.24 7 6V8H6C4.9 8 4 8.9 4 10V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V10C20 8.9 19.1 8 18 8ZM12 17C10.9 17 10 16.1 10 15C10 13.9 10.9 13 12 13C13.1 13 14 13.9 14 15C14 16.1 13.1 17 12 17ZM15.1 8H8.9V6C8.9 4.29 10.29 2.9 12 2.9C13.71 2.9 15.1 4.29 15.1 6V8Z" fill="white"/>
-				</svg>
-				""";
-      case TRANSFER -> """
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 20px;">
-				  <path d="M20 4H4C2.89 4 2.01 4.89 2.01 6L2 18C2 19.11 2.89 20 4 20H20C21.11 20 22 19.11 22 18V6C22 4.89 21.11 4 20 4ZM20 18H4V12H20V18ZM20 8H4V6H20V8Z" fill="white"/>
-				</svg>
-				""";
-      case ADD_BENEFICIARY, UPDATE_BENEFICIARY -> """
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 20px;">
-				  <path d="M15 12C17.21 12 19 10.21 19 8C19 5.79 17.21 4 15 4C12.79 4 11 5.79 11 8C11 10.21 12.79 12 15 12ZM6 10V7H4V10H1V12H4V15H6V12H9V10H6ZM15 14C12.33 14 7 15.34 7 18V20H23V18C23 15.34 17.67 14 15 14Z" fill="white"/>
-				</svg>
-				""";
-      case DELETE_BENEFICIARY -> """
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 20px;">
-				  <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="white"/>
-				</svg>
-				""";
     };
   }
 
