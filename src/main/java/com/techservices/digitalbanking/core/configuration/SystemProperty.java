@@ -68,4 +68,19 @@ public class SystemProperty {
 
 	@Value("${payinvert.integration.url}")
 	private String payinvertIntegrationUrl;
+
+  @Value("${smtp.host}")
+  private String smtpHost;
+
+  @Value("${smtp.port}")
+  private Integer smtpPort;
+
+  @Value("${smtp.username}")
+  private String smtpUsername;
+
+  @Value("${smtp.password}")
+  private String smtpPassword;
+
+  @Value("${email.notification.sender.email}")
+  private String smtpSenderEmail;
 }
