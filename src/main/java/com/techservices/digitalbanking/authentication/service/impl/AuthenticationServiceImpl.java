@@ -111,9 +111,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 		try {
 			this.processUserLoginActivity(userAgent, request, foundCustomer, authenticationResponse);
-			String loginMessage = notificationUtil.getLoginNotificationTemplate(
-					foundCustomer.getFirstname() + " " + foundCustomer.getLastname(), getFormattedCurrentDateTime());
-			notificationService.notifyUser(foundCustomer, loginMessage, AlertType.LOGIN);
+      String loginTime = getFormattedCurrentDateTime();
+      String customerName = foundCustomer.getFirstname() + " " + foundCustomer.getLastname();
+
+      String smsMessage = notificationUtil.getLoginNotificationTemplate(customerName, loginTime);
+
+      String htmlMessage = notificationUtil.getLoginEmailTemplate(customerName, loginTime);
+
+      notificationService.notifyUser(foundCustomer, smsMessage, AlertType.LOGIN,
+          NotificationUtil.LOGIN_SUBJECT, htmlMessage);
 		} catch (Exception e) {
 			log.error("Error processing user login activity: {}", e.getMessage());
 		}

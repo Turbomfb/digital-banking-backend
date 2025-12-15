@@ -270,27 +270,34 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
       boolean isIntraBankTransfer = StringUtils.equalsIgnoreCase(request.getBankNipCode(),
           bankConfigurationService.getBankCode());
 
-      // Get sender's balance
       AccountDto accountResponse = walletAccountService.retrieveSavingsAccountById(sender.getId());
       BigDecimal balance = accountResponse.getAccountBalance().subtract(otpData.getAmount());
 
-      // Notify sender
-      String transactionMessage = notificationUtil.getTransactionNotificationTemplate(
+      String smsMessage = notificationUtil.getTransactionNotificationTemplate(
           TransactionType.DEBIT.name(), request.getAmount().toString(), balance,
           request.getNarration());
-      notificationService.notifyUser(sender, transactionMessage, AlertType.TRANSACTION);
 
-      // Notify recipient for intra-bank transfers
+      String htmlMessage = notificationUtil.getDebitEmailTemplate(
+          request.getAmount().toString(), balance, request.getNarration());
+
+      notificationService.notifyUser(sender, smsMessage, AlertType.TRANSACTION,
+          NotificationUtil.DEBIT_SUBJECT, htmlMessage);
+
       if (isIntraBankTransfer && recipient.isPresent()) {
         Customer foundRecipient = recipient.get();
         BigDecimal recipientBalance = walletAccountService.retrieveSavingsAccountById(
                 foundRecipient.getId())
             .getAccountBalance().add(otpData.getAmount());
 
-        transactionMessage = notificationUtil.getTransactionNotificationTemplate(
+        String recipientSmsMessage = notificationUtil.getTransactionNotificationTemplate(
             TransactionType.CREDIT.name(), request.getAmount().toString(), recipientBalance,
             request.getNarration());
-        notificationService.notifyUser(foundRecipient, transactionMessage, AlertType.TRANSACTION);
+
+        String recipientHtmlMessage = notificationUtil.getCreditEmailTemplate(
+            request.getAmount().toString(), recipientBalance, request.getNarration());
+
+        notificationService.notifyUser(foundRecipient, recipientSmsMessage, AlertType.TRANSACTION,
+            NotificationUtil.CREDIT_SUBJECT, recipientHtmlMessage);
       }
 
       log.debug("Transaction notifications sent successfully for reference: {}", request.getReference());
@@ -298,7 +305,6 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
     } catch (Exception e) {
       log.error("Error sending transaction notification for reference {}: {}",
           request.getReference(), e.getMessage(), e);
-      // Don't throw - notifications are non-critical
     }
   }
 
@@ -389,7 +395,8 @@ public class WalletAccountTransactionServiceImpl implements WalletAccountTransac
 					String transactionMessage = notificationUtil.getTransactionNotificationTemplate(
 							TransactionType.CREDIT.name(), paymentOrderEntity.getAmount().toString(), balance,
 							paymentOrderEntity.getReference());
-					notificationService.notifyUser(customer, transactionMessage, AlertType.TRANSACTION);
+					notificationService.notifyUser(customer, transactionMessage, AlertType.TRANSACTION,
+              NotificationUtil.CREDIT_SUBJECT);
 					return new GenericApiResponse("Inbound transaction successfully processed", "success");
 				} catch (Exception e) {
 					log.error("Error processing deposit for payment order {}: {}", paymentOrderEntity.getReference(),
