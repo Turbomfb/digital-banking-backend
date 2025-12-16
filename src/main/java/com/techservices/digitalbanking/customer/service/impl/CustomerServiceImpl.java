@@ -147,10 +147,10 @@ public class CustomerServiceImpl implements CustomerService {
     Customer customer = buildCustomer(createCustomerRequest, postClientsResponse,
         isInitialRegistration);
     Customer savedCustomer = customerRepository.save(customer);
-    alertPreferenceService.updatePreference(savedCustomer.getId(), AlertType.LOGIN, true, false,
+    alertPreferenceService.updatePreference(savedCustomer.getId(), AlertType.LOGIN, false, true,
         false);
-    alertPreferenceService.updatePreference(savedCustomer.getId(), AlertType.TRANSACTION, true,
-        false, false);
+    alertPreferenceService.updatePreference(savedCustomer.getId(), AlertType.TRANSACTION, false,
+        true, false);
     return CustomerDtoResponse.parse(savedCustomer, clientService);
   }
 
