@@ -116,7 +116,6 @@ public class RedisService {
     log.info("Sending OTP notification for uniqueId: {}", notificationRequestDto);
 
     if (notificationRequestDto != null) {
-      // Build messages based on OTP type
       String smsMessage = buildSmsMessage(otpType, otpDto.getOtp(), amount);
       String emailSubject = buildEmailSubject(otpType);
       String emailHtml = buildOtpEmailHtml(otpType, otpDto.getOtp(), amount);
@@ -125,17 +124,28 @@ public class RedisService {
         log.info("Sending OTP notification for channel: {}", notificationRequestDto.getChannel());
 
         if (notificationRequestDto.getChannel().equals(NotificationChannel.SMS)) {
-          notificationService.sendSms(notificationRequestDto.getPhoneNumber(), smsMessage);
+          notificationService.sendSmsAsync(notificationRequestDto.getPhoneNumber(), smsMessage);
 
         } else if (notificationRequestDto.getChannel().equals(NotificationChannel.EMAIL)) {
-          sendOtpEmail(notificationRequestDto.getEmailAddress(), emailSubject, smsMessage, emailHtml);
+          notificationService.sendEmailAsync(
+              notificationRequestDto.getEmailAddress(),
+              emailSubject,
+              smsMessage,
+              emailHtml
+          );
 
         } else if (notificationRequestDto.getChannel().equals(NotificationChannel.SMS_AND_EMAIL)) {
-          notificationService.sendSms(notificationRequestDto.getPhoneNumber(), smsMessage);
-          sendOtpEmail(notificationRequestDto.getEmailAddress(), emailSubject, smsMessage, emailHtml);
+          notificationService.sendSmsAsync(notificationRequestDto.getPhoneNumber(), smsMessage);
+          notificationService.sendEmailAsync(
+              notificationRequestDto.getEmailAddress(),
+              emailSubject,
+              smsMessage,
+              emailHtml
+          );
         }
       }
     }
+    log.info("OTP generated and notifications queued asynchronously");
     return otpDto;
   }
 
